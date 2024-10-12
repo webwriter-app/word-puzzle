@@ -3,7 +3,7 @@ import {LitElementWw} from "@webwriter/lit"
 import {customElement} from "lit/decorators.js"
 
 @customElement("webwriter-widget-word-puzzles")
-export class WebwriterWidget-word-puzzles extends LitElementWw {
+export class WebwriterWidget_word_puzzles extends LitElementWw {
   render() {
     return html`Hello, world!`
   }

@@ -1,16 +1,21 @@
 {
   "name": "@webwriter/widget-word-puzzles",
   "version": "0.0.1-local",
+  "keywords": ["webwriter-widget"],
+  "script": {
+      "prepublishOnly": "npx @webwriter/build"
+  },
+  "exports": {
+    "./widgets/webwriter-widget-word-puzzles.*": {
+        "source": "./widgets/webwriter-widget-word-puzzles.ts",
+        "default": "./widgets/webwriter-widget-word-puzzles.ts"
+    }
+  },
   "dependencies": {
     "lit": "^3",
     "@webwriter/lit": "^1"
   },
-  "exports": {
-    "./widgets/webwriter-widget-word-puzzles": "./widgets/webwriter-widget-word-puzzles.ts"
-  },
-  "keywords": [
-    "webwriter-widget"
-  ],
+  "description": "WebWriter Widget for creating crossword puzzles and/or find-the-word puzzles.",
   "license": "MIT",
   "author": "Alexia Weiss"
 }
