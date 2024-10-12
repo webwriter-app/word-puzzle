@@ -1,0 +1,16 @@
+{
+  "name": "@webwriter/widget-word-puzzles",
+  "version": "0.0.1-local",
+  "dependencies": {
+    "lit": "^3",
+    "@webwriter/lit": "^1"
+  },
+  "exports": {
+    "./widgets/webwriter-widget-word-puzzles": "./widgets/webwriter-widget-word-puzzles.ts"
+  },
+  "keywords": [
+    "webwriter-widget"
+  ],
+  "license": "MIT",
+  "author": "Alexia Weiss"
+}
