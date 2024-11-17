@@ -1,19 +1,21 @@
 {
-  "name": "@webwriter/widget-word-puzzles",
+  "name": "@webwriter/word-puzzles",
   "version": "0.0.1-local",
-  "keywords": ["webwriter-widget"],
+  "keywords": [
+    "webwriter-widget"
+  ],
   "script": {
-      "prepublishOnly": "npx @webwriter/build"
+    "prepublishOnly": "npx @webwriter/build"
   },
   "exports": {
     "./widgets/webwriter-widget-word-puzzles.*": {
-        "source": "./widgets/webwriter-widget-word-puzzles.ts",
-        "default": "./widgets/webwriter-widget-word-puzzles.ts"
+      "source": "./widgets/webwriter-word-puzzles.ts",
+      "default": "./widgets/webwriter-word-puzzles.*"
     }
   },
   "dependencies": {
-    "lit": "^3",
-    "@webwriter/lit": "^1"
+    "@webwriter/lit": "^1.6.3",
+    "lit": "^3"
   },
   "description": "WebWriter Widget for creating crossword puzzles and/or find-the-word puzzles.",
   "license": "MIT",
