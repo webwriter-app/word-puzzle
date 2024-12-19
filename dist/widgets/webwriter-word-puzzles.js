@@ -1,5 +1,6 @@
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i5 = decorators.length - 1, decorator; i5 >= 0; i5--)
@@ -8,6 +9,7 @@ var __decorateClass = (decorators, target, key, kind) => {
   if (kind && result) __defProp(target, key, result);
   return result;
 };
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -15,8 +17,8 @@ var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "a
 var s = Symbol();
 var o = /* @__PURE__ */ new WeakMap();
 var n = class {
-  constructor(t5, e6, o5) {
-    if (this._$cssResult$ = true, o5 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+  constructor(t5, e6, o6) {
+    if (this._$cssResult$ = true, o6 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t5, this.t = e6;
   }
   get styleSheet() {
@@ -33,11 +35,19 @@ var n = class {
   }
 };
 var r = (t5) => new n("string" == typeof t5 ? t5 : t5 + "", void 0, s);
-var S = (s4, o5) => {
-  if (e) s4.adoptedStyleSheets = o5.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet);
-  else for (const e6 of o5) {
-    const o6 = document.createElement("style"), n6 = t.litNonce;
-    void 0 !== n6 && o6.setAttribute("nonce", n6), o6.textContent = e6.cssText, s4.appendChild(o6);
+var i = (t5, ...e6) => {
+  const o6 = 1 === t5.length ? t5[0] : e6.reduce((e7, s4, o7) => e7 + ((t6) => {
+    if (true === t6._$cssResult$) return t6.cssText;
+    if ("number" == typeof t6) return t6;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t6 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s4) + t5[o7 + 1], t5[0]);
+  return new n(o6, t5, s);
+};
+var S = (s4, o6) => {
+  if (e) s4.adoptedStyleSheets = o6.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet);
+  else for (const e6 of o6) {
+    const o7 = document.createElement("style"), n6 = t.litNonce;
+    void 0 !== n6 && o7.setAttribute("nonce", n6), o7.textContent = e6.cssText, s4.appendChild(o7);
   }
 };
 var c = e ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
@@ -94,8 +104,8 @@ var b = class extends HTMLElement {
   }
   static createProperty(t5, s4 = y) {
     if (s4.state && (s4.attribute = false), this._$Ei(), this.elementProperties.set(t5, s4), !s4.noAccessor) {
-      const i5 = Symbol(), r6 = this.getPropertyDescriptor(t5, i5, s4);
-      void 0 !== r6 && e2(this.prototype, t5, r6);
+      const i5 = Symbol(), r7 = this.getPropertyDescriptor(t5, i5, s4);
+      void 0 !== r7 && e2(this.prototype, t5, r7);
     }
   }
   static getPropertyDescriptor(t5, s4, i5) {
@@ -107,8 +117,8 @@ var b = class extends HTMLElement {
     return { get() {
       return e6?.call(this);
     }, set(s5) {
-      const r6 = e6?.call(this);
-      h4.call(this, s5), this.requestUpdate(t5, r6, i5);
+      const r7 = e6?.call(this);
+      h4.call(this, s5), this.requestUpdate(t5, r7, i5);
     }, configurable: true, enumerable: true };
   }
   static getPropertyOptions(t5) {
@@ -184,15 +194,15 @@ var b = class extends HTMLElement {
   _$EC(t5, s4) {
     const i5 = this.constructor.elementProperties.get(t5), e6 = this.constructor._$Eu(t5, i5);
     if (void 0 !== e6 && true === i5.reflect) {
-      const r6 = (void 0 !== i5.converter?.toAttribute ? i5.converter : u).toAttribute(s4, i5.type);
-      this._$Em = t5, null == r6 ? this.removeAttribute(e6) : this.setAttribute(e6, r6), this._$Em = null;
+      const r7 = (void 0 !== i5.converter?.toAttribute ? i5.converter : u).toAttribute(s4, i5.type);
+      this._$Em = t5, null == r7 ? this.removeAttribute(e6) : this.setAttribute(e6, r7), this._$Em = null;
     }
   }
   _$AK(t5, s4) {
     const i5 = this.constructor, e6 = i5._$Eh.get(t5);
     if (void 0 !== e6 && this._$Em !== e6) {
-      const t6 = i5.getPropertyOptions(e6), r6 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== t6.converter?.fromAttribute ? t6.converter : u;
-      this._$Em = e6, this[e6] = r6.fromAttribute(s4, t6.type), this._$Em = null;
+      const t6 = i5.getPropertyOptions(e6), r7 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== t6.converter?.fromAttribute ? t6.converter : u;
+      this._$Em = e6, this[e6] = r7.fromAttribute(s4, t6.type), this._$Em = null;
     }
   }
   requestUpdate(t5, s4, i5) {
@@ -299,20 +309,20 @@ function P(t5, i5) {
   return void 0 !== s2 ? s2.createHTML(i5) : i5;
 }
 var V = (t5, i5) => {
-  const s4 = t5.length - 1, o5 = [];
-  let r6, l4 = 2 === i5 ? "<svg>" : 3 === i5 ? "<math>" : "", c5 = f2;
+  const s4 = t5.length - 1, o6 = [];
+  let r7, l4 = 2 === i5 ? "<svg>" : 3 === i5 ? "<math>" : "", c5 = f2;
   for (let i6 = 0; i6 < s4; i6++) {
     const s5 = t5[i6];
     let a4, u4, d4 = -1, y4 = 0;
-    for (; y4 < s5.length && (c5.lastIndex = y4, u4 = c5.exec(s5), null !== u4); ) y4 = c5.lastIndex, c5 === f2 ? "!--" === u4[1] ? c5 = v : void 0 !== u4[1] ? c5 = _ : void 0 !== u4[2] ? ($.test(u4[2]) && (r6 = RegExp("</" + u4[2], "g")), c5 = m) : void 0 !== u4[3] && (c5 = m) : c5 === m ? ">" === u4[0] ? (c5 = r6 ?? f2, d4 = -1) : void 0 === u4[1] ? d4 = -2 : (d4 = c5.lastIndex - u4[2].length, a4 = u4[1], c5 = void 0 === u4[3] ? m : '"' === u4[3] ? g : p2) : c5 === g || c5 === p2 ? c5 = m : c5 === v || c5 === _ ? c5 = f2 : (c5 = m, r6 = void 0);
+    for (; y4 < s5.length && (c5.lastIndex = y4, u4 = c5.exec(s5), null !== u4); ) y4 = c5.lastIndex, c5 === f2 ? "!--" === u4[1] ? c5 = v : void 0 !== u4[1] ? c5 = _ : void 0 !== u4[2] ? ($.test(u4[2]) && (r7 = RegExp("</" + u4[2], "g")), c5 = m) : void 0 !== u4[3] && (c5 = m) : c5 === m ? ">" === u4[0] ? (c5 = r7 ?? f2, d4 = -1) : void 0 === u4[1] ? d4 = -2 : (d4 = c5.lastIndex - u4[2].length, a4 = u4[1], c5 = void 0 === u4[3] ? m : '"' === u4[3] ? g : p2) : c5 === g || c5 === p2 ? c5 = m : c5 === v || c5 === _ ? c5 = f2 : (c5 = m, r7 = void 0);
     const x3 = c5 === m && t5[i6 + 1].startsWith("/>") ? " " : "";
-    l4 += c5 === f2 ? s5 + n3 : d4 >= 0 ? (o5.push(a4), s5.slice(0, d4) + e3 + s5.slice(d4) + h2 + x3) : s5 + h2 + (-2 === d4 ? i6 : x3);
+    l4 += c5 === f2 ? s5 + n3 : d4 >= 0 ? (o6.push(a4), s5.slice(0, d4) + e3 + s5.slice(d4) + h2 + x3) : s5 + h2 + (-2 === d4 ? i6 : x3);
   }
-  return [P(t5, l4 + (t5[s4] || "<?>") + (2 === i5 ? "</svg>" : 3 === i5 ? "</math>" : "")), o5];
+  return [P(t5, l4 + (t5[s4] || "<?>") + (2 === i5 ? "</svg>" : 3 === i5 ? "</math>" : "")), o6];
 };
 var N = class _N {
   constructor({ strings: t5, _$litType$: s4 }, n6) {
-    let r6;
+    let r7;
     this.parts = [];
     let c5 = 0, a4 = 0;
     const u4 = t5.length - 1, d4 = this.parts, [f4, v3] = V(t5, s4);
@@ -320,24 +330,24 @@ var N = class _N {
       const t6 = this.el.content.firstChild;
       t6.replaceWith(...t6.childNodes);
     }
-    for (; null !== (r6 = C.nextNode()) && d4.length < u4; ) {
-      if (1 === r6.nodeType) {
-        if (r6.hasAttributes()) for (const t6 of r6.getAttributeNames()) if (t6.endsWith(e3)) {
-          const i5 = v3[a4++], s5 = r6.getAttribute(t6).split(h2), e6 = /([.?@])?(.*)/.exec(i5);
-          d4.push({ type: 1, index: c5, name: e6[2], strings: s5, ctor: "." === e6[1] ? H : "?" === e6[1] ? I : "@" === e6[1] ? L : k }), r6.removeAttribute(t6);
-        } else t6.startsWith(h2) && (d4.push({ type: 6, index: c5 }), r6.removeAttribute(t6));
-        if ($.test(r6.tagName)) {
-          const t6 = r6.textContent.split(h2), s5 = t6.length - 1;
+    for (; null !== (r7 = C.nextNode()) && d4.length < u4; ) {
+      if (1 === r7.nodeType) {
+        if (r7.hasAttributes()) for (const t6 of r7.getAttributeNames()) if (t6.endsWith(e3)) {
+          const i5 = v3[a4++], s5 = r7.getAttribute(t6).split(h2), e6 = /([.?@])?(.*)/.exec(i5);
+          d4.push({ type: 1, index: c5, name: e6[2], strings: s5, ctor: "." === e6[1] ? H : "?" === e6[1] ? I : "@" === e6[1] ? L : k }), r7.removeAttribute(t6);
+        } else t6.startsWith(h2) && (d4.push({ type: 6, index: c5 }), r7.removeAttribute(t6));
+        if ($.test(r7.tagName)) {
+          const t6 = r7.textContent.split(h2), s5 = t6.length - 1;
           if (s5 > 0) {
-            r6.textContent = i3 ? i3.emptyScript : "";
-            for (let i5 = 0; i5 < s5; i5++) r6.append(t6[i5], l2()), C.nextNode(), d4.push({ type: 2, index: ++c5 });
-            r6.append(t6[s5], l2());
+            r7.textContent = i3 ? i3.emptyScript : "";
+            for (let i5 = 0; i5 < s5; i5++) r7.append(t6[i5], l2()), C.nextNode(), d4.push({ type: 2, index: ++c5 });
+            r7.append(t6[s5], l2());
           }
         }
-      } else if (8 === r6.nodeType) if (r6.data === o3) d4.push({ type: 2, index: c5 });
+      } else if (8 === r7.nodeType) if (r7.data === o3) d4.push({ type: 2, index: c5 });
       else {
         let t6 = -1;
-        for (; -1 !== (t6 = r6.data.indexOf(h2, t6 + 1)); ) d4.push({ type: 7, index: c5 }), t6 += h2.length - 1;
+        for (; -1 !== (t6 = r7.data.indexOf(h2, t6 + 1)); ) d4.push({ type: 7, index: c5 }), t6 += h2.length - 1;
       }
       c5++;
     }
@@ -350,8 +360,8 @@ var N = class _N {
 function S2(t5, i5, s4 = t5, e6) {
   if (i5 === T) return i5;
   let h4 = void 0 !== e6 ? s4._$Co?.[e6] : s4._$Cl;
-  const o5 = c3(i5) ? void 0 : i5._$litDirective$;
-  return h4?.constructor !== o5 && (h4?._$AO?.(false), void 0 === o5 ? h4 = void 0 : (h4 = new o5(t5), h4._$AT(t5, s4, e6)), void 0 !== e6 ? (s4._$Co ??= [])[e6] = h4 : s4._$Cl = h4), void 0 !== h4 && (i5 = S2(t5, h4._$AS(t5, i5.values), h4, e6)), i5;
+  const o6 = c3(i5) ? void 0 : i5._$litDirective$;
+  return h4?.constructor !== o6 && (h4?._$AO?.(false), void 0 === o6 ? h4 = void 0 : (h4 = new o6(t5), h4._$AT(t5, s4, e6)), void 0 !== e6 ? (s4._$Co ??= [])[e6] = h4 : s4._$Cl = h4), void 0 !== h4 && (i5 = S2(t5, h4._$AS(t5, i5.values), h4, e6)), i5;
 }
 var M = class {
   constructor(t5, i5) {
@@ -366,13 +376,13 @@ var M = class {
   u(t5) {
     const { el: { content: i5 }, parts: s4 } = this._$AD, e6 = (t5?.creationScope ?? r3).importNode(i5, true);
     C.currentNode = e6;
-    let h4 = C.nextNode(), o5 = 0, n6 = 0, l4 = s4[0];
+    let h4 = C.nextNode(), o6 = 0, n6 = 0, l4 = s4[0];
     for (; void 0 !== l4; ) {
-      if (o5 === l4.index) {
+      if (o6 === l4.index) {
         let i6;
         2 === l4.type ? i6 = new R(h4, h4.nextSibling, this, t5) : 1 === l4.type ? i6 = new l4.ctor(h4, l4.name, l4.strings, this, t5) : 6 === l4.type && (i6 = new z(h4, this, t5)), this._$AV.push(i6), l4 = s4[++n6];
       }
-      o5 !== l4?.index && (h4 = C.nextNode(), o5++);
+      o6 !== l4?.index && (h4 = C.nextNode(), o6++);
     }
     return C.currentNode = r3, e6;
   }
@@ -452,14 +462,14 @@ var k = class {
   }
   _$AI(t5, i5 = this, s4, e6) {
     const h4 = this.strings;
-    let o5 = false;
-    if (void 0 === h4) t5 = S2(this, t5, i5, 0), o5 = !c3(t5) || t5 !== this._$AH && t5 !== T, o5 && (this._$AH = t5);
+    let o6 = false;
+    if (void 0 === h4) t5 = S2(this, t5, i5, 0), o6 = !c3(t5) || t5 !== this._$AH && t5 !== T, o6 && (this._$AH = t5);
     else {
       const e7 = t5;
-      let n6, r6;
-      for (t5 = h4[0], n6 = 0; n6 < h4.length - 1; n6++) r6 = S2(this, e7[s4 + n6], i5, n6), r6 === T && (r6 = this._$AH[n6]), o5 ||= !c3(r6) || r6 !== this._$AH[n6], r6 === E ? t5 = E : t5 !== E && (t5 += (r6 ?? "") + h4[n6 + 1]), this._$AH[n6] = r6;
+      let n6, r7;
+      for (t5 = h4[0], n6 = 0; n6 < h4.length - 1; n6++) r7 = S2(this, e7[s4 + n6], i5, n6), r7 === T && (r7 = this._$AH[n6]), o6 ||= !c3(r7) || r7 !== this._$AH[n6], r7 === E ? t5 = E : t5 !== E && (t5 += (r7 ?? "") + h4[n6 + 1]), this._$AH[n6] = r7;
     }
-    o5 && !e6 && this.j(t5);
+    o6 && !e6 && this.j(t5);
   }
   j(t5) {
     t5 === E ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t5 ?? "");
@@ -553,13 +563,13 @@ var __knownSymbol = (name, symbol) => (symbol = Symbol[name]) ? symbol : Symbol.
 var __typeError = (msg) => {
   throw TypeError(msg);
 };
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __name = (target, value) => __defProp2(target, "name", { value, configurable: true });
 var __decoratorStart = (base) => [, , , __create(base?.[__knownSymbol("metadata")] ?? null)];
 var __decoratorStrings = ["class", "method", "getter", "setter", "accessor", "field", "value", "get", "set"];
 var __expectFn = (fn) => fn !== void 0 && typeof fn !== "function" ? __typeError("Function expected") : fn;
 var __decoratorContext = (kind, name, done, metadata, fns) => ({ kind: __decoratorStrings[kind], name, metadata, addInitializer: (fn) => done._ ? __typeError("Already initialized") : fns.push(__expectFn(fn || null)) });
-var __decoratorMetadata = (array, target) => __defNormalProp(target, __knownSymbol("metadata"), array[3]);
+var __decoratorMetadata = (array, target) => __defNormalProp2(target, __knownSymbol("metadata"), array[3]);
 var __runInitializers = (array, flags, self, value) => {
   for (var i32 = 0, fns = array[flags >> 1], n52 = fns && fns.length; i32 < n52; i32++) flags & 1 ? fns[i32].call(self) : value = fns[i32].call(self, value);
   return value;
@@ -588,7 +598,7 @@ var __decorateElement = (array, flags, name, decorators, target, extra) => {
   }
   return k22 || __decoratorMetadata(array, target), desc && __defProp2(target, name, desc), p22 ? k22 ^ 4 ? extra : desc : target;
 };
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __publicField2 = (obj, key, value) => __defNormalProp2(obj, typeof key !== "symbol" ? key + "" : key, value);
 var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
 var __privateIn = (member, obj) => Object(obj) !== obj ? __typeError('Cannot use the "in" operator on this value') : member.has(obj);
 var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
@@ -621,8 +631,8 @@ var r5 = (t22) => new n4("string" == typeof t22 ? t22 : t22 + "", void 0, s3);
 var S3 = (s22, o42) => {
   if (e4) s22.adoptedStyleSheets = o42.map((t22) => t22 instanceof CSSStyleSheet ? t22 : t22.styleSheet);
   else for (const e42 of o42) {
-    const o5 = document.createElement("style"), n52 = t3.litNonce;
-    void 0 !== n52 && o5.setAttribute("nonce", n52), o5.textContent = e42.cssText, s22.appendChild(o5);
+    const o52 = document.createElement("style"), n52 = t3.litNonce;
+    void 0 !== n52 && o52.setAttribute("nonce", n52), o52.textContent = e42.cssText, s22.appendChild(o52);
   }
 };
 var c4 = e4 ? (t22) => t22 : (t22) => t22 instanceof CSSStyleSheet ? ((t32) => {
@@ -1146,9 +1156,9 @@ var r32 = (t22 = o32, e42, r42) => {
   throw Error("Unsupported decorator location: " + n52);
 };
 function n42(t22) {
-  return (e42, o42) => "object" == typeof o42 ? r32(t22, e42, o42) : ((t32, e52, o5) => {
-    const r42 = e52.hasOwnProperty(o5);
-    return e52.constructor.createProperty(o5, r42 ? { ...t32, wrapped: true } : t32), r42 ? Object.getOwnPropertyDescriptor(e52, o5) : void 0;
+  return (e42, o42) => "object" == typeof o42 ? r32(t22, e42, o42) : ((t32, e52, o52) => {
+    const r42 = e52.hasOwnProperty(o52);
+    return e52.constructor.createProperty(o52, r42 ? { ...t32, wrapped: true } : t32), r42 ? Object.getOwnPropertyDescriptor(e52, o52) : void 0;
   })(t22, e42, o42);
 }
 var appliedClassMixins = /* @__PURE__ */ new WeakMap();
@@ -1266,12 +1276,12 @@ var LitElementWw = class extends (_a = ScopedElementsMixin2(h32), _contentEditab
   constructor() {
     super(...arguments);
     __runInitializers(_init, 5, this);
-    __publicField(this, "options");
-    __publicField(this, "actions", {});
-    __publicField(this, "localize");
+    __publicField2(this, "options");
+    __publicField2(this, "actions", {});
+    __publicField2(this, "localize");
     __privateAdd(this, _contentEditable, __runInitializers(_init, 8, this)), __runInitializers(_init, 11, this);
     __privateAdd(this, _lang, "");
-    __publicField(this, "_inTransaction", false);
+    __publicField2(this, "_inTransaction", false);
   }
   get lang() {
     return (__privateGet(this, _lang) || this.parentElement?.closest("[lang]")?.lang) ?? "";
@@ -1292,26 +1302,94 @@ _lang = /* @__PURE__ */ new WeakMap();
 __decorateElement(_init, 4, "contentEditable", _contentEditable_dec, LitElementWw, _contentEditable);
 __decorateElement(_init, 3, "lang", _lang_dec, LitElementWw);
 __decoratorMetadata(_init, LitElementWw);
-__publicField(LitElementWw, "shadowRootOptions", { ...h32.shadowRootOptions });
-__publicField(LitElementWw, "scopedElements", {});
-__publicField(LitElementWw, "options", {});
-__publicField(LitElementWw, "actions", {});
+__publicField2(LitElementWw, "shadowRootOptions", { ...h32.shadowRootOptions });
+__publicField2(LitElementWw, "scopedElements", {});
+__publicField2(LitElementWw, "options", {});
+__publicField2(LitElementWw, "actions", {});
 
 // node_modules/@lit/reactive-element/decorators/custom-element.js
-var t4 = (t5) => (e6, o5) => {
-  void 0 !== o5 ? o5.addInitializer(() => {
+var t4 = (t5) => (e6, o6) => {
+  void 0 !== o6 ? o6.addInitializer(() => {
     customElements.define(t5, e6);
   }) : customElements.define(t5, e6);
 };
 
+// node_modules/@lit/reactive-element/decorators/property.js
+var o5 = { attribute: true, type: String, converter: u, reflect: false, hasChanged: f };
+var r6 = (t5 = o5, e6, r7) => {
+  const { kind: n6, metadata: i5 } = r7;
+  let s4 = globalThis.litPropertyMetadata.get(i5);
+  if (void 0 === s4 && globalThis.litPropertyMetadata.set(i5, s4 = /* @__PURE__ */ new Map()), s4.set(r7.name, t5), "accessor" === n6) {
+    const { name: o6 } = r7;
+    return { set(r8) {
+      const n7 = e6.get.call(this);
+      e6.set.call(this, r8), this.requestUpdate(o6, n7, t5);
+    }, init(e7) {
+      return void 0 !== e7 && this.P(o6, void 0, t5), e7;
+    } };
+  }
+  if ("setter" === n6) {
+    const { name: o6 } = r7;
+    return function(r8) {
+      const n7 = this[o6];
+      e6.call(this, r8), this.requestUpdate(o6, n7, t5);
+    };
+  }
+  throw Error("Unsupported decorator location: " + n6);
+};
+function n5(t5) {
+  return (e6, o6) => "object" == typeof o6 ? r6(t5, e6, o6) : ((t6, e7, o7) => {
+    const r7 = e7.hasOwnProperty(o7);
+    return e7.constructor.createProperty(o7, r7 ? { ...t6, wrapped: true } : t6), r7 ? Object.getOwnPropertyDescriptor(e7, o7) : void 0;
+  })(t5, e6, o6);
+}
+
 // widgets/webwriter-word-puzzles.ts
 var WebwriterWordPuzzles = class extends LitElementWw {
-  //  contentEditable = 'false';
-  //  lang = 'en';
+  // Helper function: Get localized form of `str` if available, otherwise fall back to `str`
+  msg = (str) => this.lang in WebwriterWordPuzzles.localization ? WebwriterWordPuzzles.localization[this.lang][str] ?? str : str;
+  #value;
+  get value() {
+    return this.#value;
+  }
+  set value(_3) {
+    this.#value = _3;
+  }
+  #placeholder;
+  get placeholder() {
+    return this.#placeholder;
+  }
+  set placeholder(_3) {
+    this.#placeholder = _3;
+  }
+  //accessor lang = 'en'
+  static get styles() {
+    return i`
+      :host(
+        :not([contenteditable=true]):not([contenteditable=""]))
+        .author-only {
+        display: none;
+      }
+    `;
+  }
   render() {
-    return x`<span>Hello, world!</span>`;
+    DEV: console.log("current lang: ", this.lang);
+    return x`
+    <span>${this.msg("x")} ${this.lang}</span>
+    `;
   }
 };
+//  contentEditable = 'false';
+// static localization = { }
+__publicField(WebwriterWordPuzzles, "localization", {
+  "x": { "de": "Deutsch?", "en": "It's english", "es": "Espa\xF1ol" }
+});
+__decorateClass([
+  n5({ attribute: true })
+], WebwriterWordPuzzles.prototype, "value", 1);
+__decorateClass([
+  n5({ attribute: true })
+], WebwriterWordPuzzles.prototype, "placeholder", 1);
 WebwriterWordPuzzles = __decorateClass([
   t4("webwriter-word-puzzles")
 ], WebwriterWordPuzzles);

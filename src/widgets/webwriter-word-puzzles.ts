@@ -1,6 +1,6 @@
 import {html, css} from 'lit';
-import {LitElementWw} from '@webwriter/lit';
-import {customElement} from 'lit/decorators.js';
+import {LitElementWw, option} from '@webwriter/lit';
+import {customElement, property, query, queryAssignedElements} from 'lit/decorators.js';
 //import {customElement, property, query, queryAssignedElements} from 'lit/decorators.js';
 
 declare global {interface HTMLElementTagNameMap {
@@ -11,10 +11,37 @@ declare global {interface HTMLElementTagNameMap {
 @customElement("webwriter-word-puzzles")
 export class WebwriterWordPuzzles extends LitElementWw {
 //  contentEditable = 'false';
-//  lang = 'en';
+
+// static localization = { }
+static localization = {
+    "x": {"de": "Deutsch?", "en": "It's english", "es": "Español"}
+  }
+// Helper function: Get localized form of `str` if available, otherwise fall back to `str`
+  msg = (str: string) => this.lang in WebwriterWordPuzzles.localization? WebwriterWordPuzzles.localization[this.lang][str] ?? str: str
+
+  @property({attribute : true})
+  accessor value: string 
+
+  @property({attribute : true})
+  accessor placeholder: string
+
+
+    //accessor lang = 'en'
+  static get styles() {
+    return css`
+      :host(
+        :not([contenteditable=true]):not([contenteditable=""]))
+        .author-only {
+        display: none;
+      }
+    `
+  }
   
   render() {
-    return html`<span>Hello, world!</span>`
+    DEV: console.log("current lang: ", this.lang)
+    return html`
+    <span>${this.msg("x")} ${this.lang}</span>
+    `
   }
 }
 /*
