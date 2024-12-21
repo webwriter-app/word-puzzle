@@ -1,6 +1,5 @@
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i5 = decorators.length - 1, decorator; i5 >= 0; i5--)
@@ -9,7 +8,6 @@ var __decorateClass = (decorators, target, key, kind) => {
   if (kind && result) __defProp(target, key, result);
   return result;
 };
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -563,13 +561,13 @@ var __knownSymbol = (name, symbol) => (symbol = Symbol[name]) ? symbol : Symbol.
 var __typeError = (msg) => {
   throw TypeError(msg);
 };
-var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __name = (target, value) => __defProp2(target, "name", { value, configurable: true });
 var __decoratorStart = (base) => [, , , __create(base?.[__knownSymbol("metadata")] ?? null)];
 var __decoratorStrings = ["class", "method", "getter", "setter", "accessor", "field", "value", "get", "set"];
 var __expectFn = (fn) => fn !== void 0 && typeof fn !== "function" ? __typeError("Function expected") : fn;
 var __decoratorContext = (kind, name, done, metadata, fns) => ({ kind: __decoratorStrings[kind], name, metadata, addInitializer: (fn) => done._ ? __typeError("Already initialized") : fns.push(__expectFn(fn || null)) });
-var __decoratorMetadata = (array, target) => __defNormalProp2(target, __knownSymbol("metadata"), array[3]);
+var __decoratorMetadata = (array, target) => __defNormalProp(target, __knownSymbol("metadata"), array[3]);
 var __runInitializers = (array, flags, self, value) => {
   for (var i32 = 0, fns = array[flags >> 1], n52 = fns && fns.length; i32 < n52; i32++) flags & 1 ? fns[i32].call(self) : value = fns[i32].call(self, value);
   return value;
@@ -598,7 +596,7 @@ var __decorateElement = (array, flags, name, decorators, target, extra) => {
   }
   return k22 || __decoratorMetadata(array, target), desc && __defProp2(target, name, desc), p22 ? k22 ^ 4 ? extra : desc : target;
 };
-var __publicField2 = (obj, key, value) => __defNormalProp2(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
 var __privateIn = (member, obj) => Object(obj) !== obj ? __typeError('Cannot use the "in" operator on this value') : member.has(obj);
 var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
@@ -1276,12 +1274,12 @@ var LitElementWw = class extends (_a = ScopedElementsMixin2(h32), _contentEditab
   constructor() {
     super(...arguments);
     __runInitializers(_init, 5, this);
-    __publicField2(this, "options");
-    __publicField2(this, "actions", {});
-    __publicField2(this, "localize");
+    __publicField(this, "options");
+    __publicField(this, "actions", {});
+    __publicField(this, "localize");
     __privateAdd(this, _contentEditable, __runInitializers(_init, 8, this)), __runInitializers(_init, 11, this);
     __privateAdd(this, _lang, "");
-    __publicField2(this, "_inTransaction", false);
+    __publicField(this, "_inTransaction", false);
   }
   get lang() {
     return (__privateGet(this, _lang) || this.parentElement?.closest("[lang]")?.lang) ?? "";
@@ -1302,10 +1300,10 @@ _lang = /* @__PURE__ */ new WeakMap();
 __decorateElement(_init, 4, "contentEditable", _contentEditable_dec, LitElementWw, _contentEditable);
 __decorateElement(_init, 3, "lang", _lang_dec, LitElementWw);
 __decoratorMetadata(_init, LitElementWw);
-__publicField2(LitElementWw, "shadowRootOptions", { ...h32.shadowRootOptions });
-__publicField2(LitElementWw, "scopedElements", {});
-__publicField2(LitElementWw, "options", {});
-__publicField2(LitElementWw, "actions", {});
+__publicField(LitElementWw, "shadowRootOptions", { ...h32.shadowRootOptions });
+__publicField(LitElementWw, "scopedElements", {});
+__publicField(LitElementWw, "options", {});
+__publicField(LitElementWw, "actions", {});
 
 // node_modules/@lit/reactive-element/decorators/custom-element.js
 var t4 = (t5) => (e6, o6) => {
@@ -1344,25 +1342,32 @@ function n5(t5) {
   })(t5, e6, o6);
 }
 
-// widgets/webwriter-word-puzzles.ts
+// src/widgets/crossword.ts
+var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
+  render() {
+    return x`<span>wasup lol. i hav changed</span>
+        <p>WE LOVE YOU GOLDEN MOLE</p>`;
+  }
+};
+WebwriterWordPuzzlesCrossword = __decorateClass([
+  t4("webwriter-word-puzzles-crossword")
+], WebwriterWordPuzzlesCrossword);
+
+// src/widgets/webwriter-word-puzzles.ts
 var WebwriterWordPuzzles = class extends LitElementWw {
-  // Helper function: Get localized form of `str` if available, otherwise fall back to `str`
-  msg = (str) => this.lang in WebwriterWordPuzzles.localization ? WebwriterWordPuzzles.localization[this.lang][str] ?? str : str;
-  #value;
-  get value() {
-    return this.#value;
+  //  contentEditable = 'false';
+  static get scopedElements() {
+    return {
+      "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword
+    };
   }
-  set value(_3) {
-    this.#value = _3;
+  #crossword;
+  get crossword() {
+    return this.#crossword;
   }
-  #placeholder;
-  get placeholder() {
-    return this.#placeholder;
+  set crossword(_3) {
+    this.#crossword = _3;
   }
-  set placeholder(_3) {
-    this.#placeholder = _3;
-  }
-  //accessor lang = 'en'
   static get styles() {
     return i`
       :host(
@@ -1373,23 +1378,14 @@ var WebwriterWordPuzzles = class extends LitElementWw {
     `;
   }
   render() {
-    DEV: console.log("current lang: ", this.lang);
     return x`
-    <span>${this.msg("x")} ${this.lang}</span>
+    <webwriter-word-puzzles-crossword></webwriter-word-puzzles-crossword>
     `;
   }
 };
-//  contentEditable = 'false';
-// static localization = { }
-__publicField(WebwriterWordPuzzles, "localization", {
-  "x": { "de": "Deutsch?", "en": "It's english", "es": "Espa\xF1ol" }
-});
 __decorateClass([
-  n5({ attribute: true })
-], WebwriterWordPuzzles.prototype, "value", 1);
-__decorateClass([
-  n5({ attribute: true })
-], WebwriterWordPuzzles.prototype, "placeholder", 1);
+  n5({ attribute: false })
+], WebwriterWordPuzzles.prototype, "crossword", 1);
 WebwriterWordPuzzles = __decorateClass([
   t4("webwriter-word-puzzles")
 ], WebwriterWordPuzzles);

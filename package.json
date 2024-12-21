@@ -10,15 +10,16 @@
   "scripts": {
     "prepublishOnly": "npx @webwriter/build"
   },
-"exports": {
+  "exports": {
     "./widgets/webwriter-word-puzzles.*": {
       "source": "./src/widgets/webwriter-word-puzzles.ts",
       "default": "./dist/widgets/webwriter-word-puzzles.*"
     },
     "./package.json": "./package.json"
   },
- "dependencies": {
+  "dependencies": {
     "@webwriter/lit": "^2.0.0",
+    "less": "^4.2.1",
     "lit": "^3.2.0"
   },
   "devDependencies": {
