@@ -1344,11 +1344,122 @@ function n5(t5) {
 
 // src/widgets/crossword.ts
 var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
+  oldgrid;
+  width;
+  height;
+  constructor(width, height) {
+    super();
+    this.width = width;
+    this.height = height;
+  }
+  static get styles() {
+    return i`
+        div.wrapper {
+            aspect-ratio: 1;
+            width: 100%;
+            align-content: left;
+        }
+        div.gridWrapper {
+            display: flexbox;
+            width: auto;
+        }
+        div.grid {
+            display: grid;
+            grid-template-columns: auto;
+            grid-template-rows: auto;
+            background-color: pink;
+            justify-content: center;
+            align-content: center;
+            box-sizing: border-box;
+            border: 2px;
+            border-color: black;
+        }
+        div.cell {
+            aspect-ratio: 1;
+            height: 100%;
+            width: 100%;
+            min-width: 40px;
+            min-height: 40px;
+            border: 1px solid black;
+            max-width: 40px;
+            max-height: 40px;
+            position: relative;
+            background-color: red;
+            align-items: center;
+            text-align: center;
+        }
+        div.cell[black] {
+            background-color: grey;
+        }
+        `;
+  }
+  initializeCrosswordModel() {
+    if (this.width === void 0 || this.width === null || this.width < 0 || this.height === void 0 || this.height === null || this.height < 0) {
+      throw new Error("The crossword dimensions are invalid.");
+    }
+  }
+  /**
+   * Build a crossword grid _cell_ DOM element with child elements.
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
+   * @returns {HTMLDivElement} the DOM element for the _cell_
+   * Source: crosswords-js
+   */
+  newCrossword(document2) {
+    let wrapper = document2.createElement("div");
+    let gridWrapper = this.newCrosswordGrid;
+    wrapper.appendChild(gridWrapper);
+    return wrapper;
+  }
+  /**
+   * Build a crossword grid _cell_ DOM element with child elements.
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
+   * @returns {HTMLDivElement} the DOM element for the _cell_
+   * Source: crosswords-js
+   */
+  newCrosswordGrid(document2) {
+    this.width = 9;
+    this.height = 9;
+    let grid = document2.createElement("div");
+    grid.classList.add("grid");
+    let gridWrapper = document2.createElement("div");
+    gridWrapper.appendChild(grid);
+    gridWrapper.classList.add("wrapper");
+    for (let y4 = 1; y4 <= this.height; y4 += 1) {
+      for (let x3 = 1; x3 <= this.width; x3 += 1) {
+        grid.appendChild(this.newCell(document2, x3, y4));
+        DEV: console.log("added a cell, hopefully");
+      }
+    }
+    return gridWrapper;
+  }
+  newCell(document2, x3, y4) {
+    const cellDOM = document2.createElement("div");
+    cellDOM.classList.add("cell");
+    cellDOM.style.display = "grid";
+    cellDOM.style.gridColumnStart = x3.toString();
+    cellDOM.style.gridRowStart = y4.toString();
+    cellDOM.setAttribute("black", "");
+    cellDOM.setAttribute("answer", "0");
+    cellDOM.innerText = x3.toString() + ", " + y4.toString();
+    return cellDOM;
+  }
+  // TODO Add event listeners
   render() {
-    return x`<span>wasup lol. i hav changed</span>
+    return x`<div>${this.newCrosswordGrid(this.shadowRoot)}</div>
         <p>WE LOVE YOU GOLDEN MOLE</p>`;
   }
 };
+__decorateClass([
+  n5({ type: Array, state: true })
+], WebwriterWordPuzzlesCrossword.prototype, "oldgrid", 2);
+__decorateClass([
+  n5({ type: Number, state: true })
+], WebwriterWordPuzzlesCrossword.prototype, "width", 2);
+__decorateClass([
+  n5({ type: Number, state: true })
+], WebwriterWordPuzzlesCrossword.prototype, "height", 2);
 WebwriterWordPuzzlesCrossword = __decorateClass([
   t4("webwriter-word-puzzles-crossword")
 ], WebwriterWordPuzzlesCrossword);
