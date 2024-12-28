@@ -1383,6 +1383,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
             position: relative;
             align-items: center;
             text-align: center;
+            font-size: 18pt;
         }
         div.cell[black] {
             background-color: black;
@@ -1448,6 +1449,12 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
       cellDOM.contentEditable = "true";
       cellDOM.setAttribute("tabindex", "0");
     }
+    cellDOM.addEventListener("keypress", (e6) => {
+      e6.preventDefault();
+      const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
+      if (isAlphaChar(e6.key))
+        cellDOM.textContent = e6.key.toUpperCase();
+    });
     return cellDOM;
   }
   // TODO Add event listeners

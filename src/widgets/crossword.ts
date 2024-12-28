@@ -14,7 +14,7 @@ import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
  * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
  * @returns {HTMLDivElement} the DOM element for the _cell_
  */
-type Cell =  {
+type Cell = {
     black: boolean;
     char: string;
     answer: string;
@@ -26,13 +26,13 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
     // TODO Add a skeleton for the grid while the crossword is being created?
 
-    @property({type: Array, state: true})
+    @property({ type: Array, state: true })
     protected oldgrid: Cell[][]
 
-    @property({type: Number, state: true})
+    @property({ type: Number, state: true })
     width: number
 
-    @property({type: Number, state: true})
+    @property({ type: Number, state: true })
     height: number
 
     constructor(width: number, height: number) {
@@ -72,6 +72,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             position: relative;
             align-items: center;
             text-align: center;
+            font-size: 18pt;
         }
         div.cell[black] {
             background-color: black;
@@ -84,7 +85,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
 
     initializeCrosswordModel() {
-       if (
+        if (
             this.width === undefined ||
             this.width === null ||
             this.width < 0 ||
@@ -127,9 +128,9 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         gridWrapper.classList.add('wrapper')
         for (let y = 1; y <= this.height; y += 1) {
             for (let x = 1; x <= this.width; x += 1) {
-            //  Build the cell element and place cell in grid element
-            grid.appendChild(this.newCell(document, x, y));
-            DEV: console.log("added a cell, hopefully") 
+                //  Build the cell element and place cell in grid element
+                grid.appendChild(this.newCell(document, x, y));
+                DEV: console.log("added a cell, hopefully")
             }
         }
         return gridWrapper
@@ -144,8 +145,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         cellDOM.style.gridRowStart = (y).toString()
         if (x % 2 === 0)
             cellDOM.setAttribute("black", "")
-        if (cellDOM.hasAttribute("black"))
-        {
+        if (cellDOM.hasAttribute("black")) {
             cellDOM.setAttribute("answer", "0");
             cellDOM.contentEditable = "false";
         }
@@ -154,8 +154,16 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             // This is how you make divs focusable
             cellDOM.setAttribute("tabindex", "0")
         }
+
+        cellDOM.addEventListener('keypress', (e) => {
+            e.preventDefault(); // Prevent default character insertion
+            const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
+            if (isAlphaChar(e.key))
+                cellDOM.textContent = e.key.toUpperCase(); // Replace content with pressed key
+        });
         return cellDOM
     }
+
 
     // TODO Add event listeners
 
