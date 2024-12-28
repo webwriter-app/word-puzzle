@@ -46,9 +46,12 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         div.wrapper {
             width: 100%;
             align-content: left;
+            display: flex;
         }
-        div.gridWrapper {
-            width: max-content;
+        div.clueBox {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
         }
         div.grid {
             display: grid;
@@ -106,8 +109,10 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      */
     newCrossword(document) {
         let wrapper = document.createElement('div')
-        let gridWrapper = this.newCrosswordGrid
+        let gridWrapper = this.newCrosswordGrid(document)
         wrapper.appendChild(gridWrapper)
+        //wrapper.appendChild(this.clueBox)
+        gridWrapper.appendChild(this.newClueBox(document))
         return wrapper
     }
 
@@ -119,8 +124,8 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * Source: crosswords-js
      */
     newCrosswordGrid(document) {
-        this.width = 9
-        this.height = 9
+        this.width = 5
+        this.height = 5
         let grid = document.createElement('div');
         grid.classList.add('grid')
         let gridWrapper = document.createElement('div');
@@ -143,6 +148,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         cellDOM.style.display = 'grid'
         cellDOM.style.gridColumnStart = (x).toString()
         cellDOM.style.gridRowStart = (y).toString()
+        // This is just temporary for testing
         if (x % 2 === 0)
             cellDOM.setAttribute("black", "")
         if (cellDOM.hasAttribute("black")) {
@@ -154,7 +160,6 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             // This is how you make divs focusable
             cellDOM.setAttribute("tabindex", "0")
         }
-
         cellDOM.addEventListener('keypress', (e) => {
             e.preventDefault(); // Prevent default character insertion
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
@@ -164,13 +169,18 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         return cellDOM
     }
 
-
-    // TODO Add event listeners
+    protected newClueBox(document) {
+        const clueBox: HTMLElement = document.createElement('div');
+        clueBox.setAttribute("innerText", "clues here ig")
+        clueBox.classList.add('clueBox')
+        return clueBox
+    }
 
     render() {
-        return html`<div>${this.newCrosswordGrid(this.shadowRoot)}</div>
-        <p>WE LOVE YOU GOLDEN MOLE</p>`
-
+        return (html`<div>
+                ${this.newCrossword(this.shadowRoot)}
+            </div>
+            <p>WE LOVE YOU GOLDEN MOLE</p>`)
     }
 
 }

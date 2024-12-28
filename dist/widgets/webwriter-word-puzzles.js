@@ -1357,9 +1357,12 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
         div.wrapper {
             width: 100%;
             align-content: left;
+            display: flex;
         }
-        div.gridWrapper {
-            width: max-content;
+        div.clueBox {
+            width: 200px;
+            height: 200px;
+            border: 2px solid black;
         }
         div.grid {
             display: grid;
@@ -1407,8 +1410,9 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
    */
   newCrossword(document2) {
     let wrapper = document2.createElement("div");
-    let gridWrapper = this.newCrosswordGrid;
+    let gridWrapper = this.newCrosswordGrid(document2);
     wrapper.appendChild(gridWrapper);
+    gridWrapper.appendChild(this.newClueBox(document2));
     return wrapper;
   }
   /**
@@ -1419,8 +1423,8 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
    * Source: crosswords-js
    */
   newCrosswordGrid(document2) {
-    this.width = 9;
-    this.height = 9;
+    this.width = 5;
+    this.height = 5;
     let grid = document2.createElement("div");
     grid.classList.add("grid");
     let gridWrapper = document2.createElement("div");
@@ -1457,10 +1461,17 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     });
     return cellDOM;
   }
-  // TODO Add event listeners
+  newClueBox(document2) {
+    const clueBox = document2.createElement("div");
+    clueBox.setAttribute("innerText", "clues here ig");
+    clueBox.classList.add("clueBox");
+    return clueBox;
+  }
   render() {
-    return x`<div>${this.newCrosswordGrid(this.shadowRoot)}</div>
-        <p>WE LOVE YOU GOLDEN MOLE</p>`;
+    return x`<div>
+                ${this.newCrossword(this.shadowRoot)}
+            </div>
+            <p>WE LOVE YOU GOLDEN MOLE</p>`;
   }
 };
 __decorateClass([
