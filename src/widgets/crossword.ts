@@ -44,24 +44,21 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     static get styles() {
         return css`
         div.wrapper {
-            aspect-ratio: 1;
             width: 100%;
             align-content: left;
         }
         div.gridWrapper {
-            display: flexbox;
-            width: auto;
+            width: max-content;
         }
         div.grid {
             display: grid;
             grid-template-columns: auto;
             grid-template-rows: auto;
-            background-color: pink;
             justify-content: center;
             align-content: center;
             box-sizing: border-box;
-            border: 2px;
-            border-color: black;
+            width: max-content;
+            border: 2px solid black;
         }
         div.cell {
             aspect-ratio: 1;
@@ -73,12 +70,14 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             max-width: 40px;
             max-height: 40px;
             position: relative;
-            background-color: red;
             align-items: center;
             text-align: center;
         }
         div.cell[black] {
-            background-color: grey;
+            background-color: black;
+        }
+        div.cell:focus {
+            background-color: pink;
         }
         `
     }
@@ -143,9 +142,18 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         cellDOM.style.display = 'grid'
         cellDOM.style.gridColumnStart = (x).toString()
         cellDOM.style.gridRowStart = (y).toString()
-        cellDOM.setAttribute("black", "")
-        cellDOM.setAttribute("answer", "0")
-        cellDOM.innerText = x.toString() + ", " + y.toString()
+        if (x % 2 === 0)
+            cellDOM.setAttribute("black", "")
+        if (cellDOM.hasAttribute("black"))
+        {
+            cellDOM.setAttribute("answer", "0");
+            cellDOM.contentEditable = "false";
+        }
+        else {
+            cellDOM.contentEditable = "true";
+            // This is how you make divs focusable
+            cellDOM.setAttribute("tabindex", "0")
+        }
         return cellDOM
     }
 
