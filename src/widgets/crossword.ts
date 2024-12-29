@@ -2,6 +2,9 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
+import "@shoelace-style/shoelace/dist/themes/light.css";
+import SlButton from '@shoelace-style/shoelace/dist/react/button/index.js'
+import SlIcon from '@shoelace-style/shoelace/dist/react/icon/index.js'
 
 // TODO add 
 // NOTE Almost all methods within this class are from the crosswords-js module
@@ -35,6 +38,12 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     @property({ type: Number, state: true })
     height: number
 
+    @property({ type: HTMLDivElement, state: true })
+    grid: HTMLDivElement
+
+    @property({ type: HTMLTableElement, state: true })
+    clueBox: HTMLTableElement
+
     constructor(width: number, height: number) {
         super()
         this.width = width
@@ -45,16 +54,63 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         return css`
         div.wrapper {
             width: 100%;
-            align-content: left;
+            //align-content: left;
+            justify-content: space-around;
             display: flex;
         }
-        div.clueBox {
-            width: 200px;
-            height: 200px;
-            border: 2px solid black;
+        table.clueBox {
+            // Temporary width and height
+            min-width: 200px;
+            min-height: 200px;
+            height: fit-content;
+            border: 1px solid var(--sl-color-gray-400);
+            //border-bottom: 1px solid var(--sl-color-gray-200);
+            border-collapse: collapse;
+            font-family: var(--sl-font-sans);
+            color: var(--sl-color-gray-700);
+            background-color: var(--sl-color-gray-100);
+            //flex-basis: content;
         }
+        table.cluebox > thead {
+            font-family: var(--sl-font-sans);
+            color: var(--sl-color-gray-700);
+            background-color: var(--sl-color-gray-300);
+            padding: 10px;
+        }
+        table.cluebox > thead > tr > th {
+            font-family: var(--sl-font-sans);
+            color: var(--sl-color-gray-700);
+            border-bottom: 1px solid var(--sl-color-gray-200);
+            background-color: var(--sl-color-gray-300);
+            padding: 10px;
+        }
+        table.cluebox > tbody {
+            max-width: 50%;
+        }
+        table.cluebox > tbody > tr > td {
+            font-family: var(--sl-font-sans);
+            color: var(--sl-color-gray-900);
+            //border-bottom: 1px solid var(--sl-color-gray-200);
+            padding: 10px;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            max-width: 50%;
+        }
+        table.cluebox td {
+            justify-content: left;
+        }
+        table.cluebox button {
+            width: auto;
+            height: auto;
+        }
+
+        td:focus {
+            background-color: white;
+        }
+
         div.grid {
             display: grid;
+            flex-basis: content;
             grid-template-columns: auto;
             grid-template-rows: auto;
             justify-content: center;
@@ -64,6 +120,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             border: 2px solid black;
         }
         div.cell {
+            display: grid;
             aspect-ratio: 1;
             height: 100%;
             width: 100%;
@@ -86,33 +143,27 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         `
     }
 
-
-    initializeCrosswordModel() {
-        if (
-            this.width === undefined ||
-            this.width === null ||
-            this.width < 0 ||
-            this.height === undefined ||
-            this.height === null ||
-            this.height < 0
-        ) {
-            throw new Error('The crossword dimensions are invalid.');
-        }
+    // Registering custom elements
+    static get scopedElements() {
+        return {
+        "sl-button": SlButton,
+        "sl-icon": SlIcon,
+        };
     }
 
     /**
-     * Build a crossword grid _cell_ DOM element with child elements.
+     * Create the crossword grid and clue panel.
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-     * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-     * @returns {HTMLDivElement} the DOM element for the _cell_
+     * @returns {HTMLDivElement} the DOM wrapper element for the crossword puzzle element
      * Source: crosswords-js
      */
     newCrossword(document) {
         let wrapper = document.createElement('div')
-        let gridWrapper = this.newCrosswordGrid(document)
-        wrapper.appendChild(gridWrapper)
+        wrapper.classList.add('wrapper')
+        this.grid = this.newCrosswordGrid(document)
+        wrapper.appendChild(this.grid)
         //wrapper.appendChild(this.clueBox)
-        gridWrapper.appendChild(this.newClueBox(document))
+        this.clueBox = wrapper.appendChild(this.newClueBox(document))
         return wrapper
     }
 
@@ -124,13 +175,10 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * Source: crosswords-js
      */
     newCrosswordGrid(document) {
-        this.width = 5
-        this.height = 5
+        this.width = 9
+        this.height = 9
         let grid = document.createElement('div');
         grid.classList.add('grid')
-        let gridWrapper = document.createElement('div');
-        gridWrapper.appendChild(grid);
-        gridWrapper.classList.add('wrapper')
         for (let y = 1; y <= this.height; y += 1) {
             for (let x = 1; x <= this.width; x += 1) {
                 //  Build the cell element and place cell in grid element
@@ -138,7 +186,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 DEV: console.log("added a cell, hopefully")
             }
         }
-        return gridWrapper
+        return grid
     }
 
     protected newCell(document: Document, x: number, y: number) {
@@ -169,10 +217,42 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         return cellDOM
     }
 
+    // TODO Maybe make this a popup eventually idk
     protected newClueBox(document) {
-        const clueBox: HTMLElement = document.createElement('div');
-        clueBox.setAttribute("innerText", "clues here ig")
-        clueBox.classList.add('clueBox')
+        // Create table and header
+        const clueBox: HTMLTableElement = document.createElement('table')
+        clueBox.classList.add('clueBox', 'author-only')
+        const headerTable: HTMLTableSectionElement = clueBox.createTHead()
+        const headerRow: HTMLTableRowElement = headerTable.insertRow()
+
+        // Add headers
+        const headers = ["Words", "Clues"]
+        for (const element of headers) {
+            const th: HTMLTableCellElement = document.createElement('th');
+            th.textContent = element;
+            headerRow.appendChild(th)
+        }
+
+        // Create body
+        const bodyTable: HTMLTableSectionElement = clueBox.createTBody()
+        const tableRow: HTMLTableRowElement = bodyTable.insertRow()
+        const tableCell1: HTMLTableCellElement = tableRow.insertCell()
+        tableCell1.setAttribute('contentEditable', 'true')
+        tableCell1.setAttribute("tabindex", "0")
+        const tableCell2: HTMLTableCellElement = tableRow.insertCell()
+        tableCell2.setAttribute('contentEditable', 'true')
+        tableCell2.setAttribute("tabindex", "0")
+        const addCell: HTMLTableCellElement = (bodyTable.insertRow()).insertCell()
+        // TODO Left off here
+        addCell.colSpan = 2
+        const button: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
+        button.setAttribute('variant', 'default')
+        button.setAttribute('size', 'medium')
+        button.setAttribute('circle', '')
+        const icon = button.appendChild(document.createElement('sl-icon'))
+        icon.setAttribute('slot', 'prefix')
+        icon.setAttribute('name', 'plus')
+
         return clueBox
     }
 
@@ -180,7 +260,8 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         return (html`<div>
                 ${this.newCrossword(this.shadowRoot)}
             </div>
-            <p>WE LOVE YOU GOLDEN MOLE</p>`)
+            `)
+            //<p>WE LOVE YOU GOLDEN MOLE</p>
     }
 
 }
