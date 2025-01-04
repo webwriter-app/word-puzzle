@@ -3,10 +3,14 @@ import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import SlButton from '@shoelace-style/shoelace/dist/react/button/index.js'
-import SlIcon from '@shoelace-style/shoelace/dist/react/icon/index.js'
+//import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+//setBasePath('./node_modules/@shoelace-style/shoelace/dist');
+import plus from 'bootstrap-icons/icons/plus-lg.svg';
+import minus from 'bootstrap-icons/icons/dash.svg';
 
-// TODO add 
+import { SlButton, SlIcon } from '@shoelace-style/shoelace';
+import { getRows } from 'mermaid/dist/diagrams/common/common.js';
+
 // NOTE Almost all methods within this class are from the crosswords-js module
 
 // Interface for cell objects
@@ -98,6 +102,10 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         }
         table.cluebox td {
             justify-content: left;
+        }
+        table.cluebox td[addRow] {
+            justify-content: center;
+            align-content: center;
         }
         table.cluebox button {
             width: auto;
@@ -242,16 +250,41 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         const tableCell2: HTMLTableCellElement = tableRow.insertCell()
         tableCell2.setAttribute('contentEditable', 'true')
         tableCell2.setAttribute("tabindex", "0")
-        const addCell: HTMLTableCellElement = (bodyTable.insertRow()).insertCell()
+
+        const buttonRow = bodyTable.insertRow()
+        const addCell: HTMLTableCellElement = buttonRow.insertCell(0)
         // TODO Left off here
-        addCell.colSpan = 2
-        const button: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
-        button.setAttribute('variant', 'default')
-        button.setAttribute('size', 'medium')
-        button.setAttribute('circle', '')
-        const icon = button.appendChild(document.createElement('sl-icon'))
-        icon.setAttribute('slot', 'prefix')
-        icon.setAttribute('name', 'plus')
+        addCell.setAttribute('addRow', '')
+        const removeCell: HTMLTableCellElement = buttonRow.insertCell(1)
+        removeCell.setAttribute('removeRow', '')
+
+        const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
+        addButton.setAttribute('variant', 'default')
+        addButton.setAttribute('size', 'medium')
+        addButton.setAttribute('circle', '')
+        addButton.addEventListener('click', () => {
+            DEV: console.log("blicked");
+            const newRow = bodyTable.insertRow(buttonRow.rowIndex-1);
+            newRow.insertCell(0).setAttribute("contentEditable", "true");
+            newRow.insertCell(1).setAttribute("contentEditable", "true");
+        })
+        const addIcon = addButton.appendChild(document.createElement('sl-icon'))
+        addIcon.setAttribute('src', plus)
+
+        const removeButton: HTMLButtonElement = removeCell.appendChild(document.createElement('sl-button'))
+        removeButton.setAttribute('variant', 'default')
+        removeButton.setAttribute('size', 'medium')
+        removeButton.setAttribute('circle', '')
+        removeButton.addEventListener('click', () => {
+            DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
+            if(buttonRow.rowIndex != 1)
+                bodyTable.deleteRow(buttonRow.rowIndex-2)
+        })
+        const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
+        removeIcon.setAttribute('src', minus)
+ 
+
+        //icon.setAttribute('name', 'plus-circle')
 
         return clueBox
     }
