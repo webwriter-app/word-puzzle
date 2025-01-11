@@ -1394,12 +1394,6 @@ function r8(r11) {
   } });
 }
 
-// node_modules/bootstrap-icons/icons/plus-lg.svg
-var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">%0A  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>%0A</svg>';
-
-// node_modules/bootstrap-icons/icons/dash.svg
-var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
-
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.KAW7D32O.js
 var __defProp3 = Object.defineProperty;
 var __defProps = Object.defineProperties;
@@ -23249,6 +23243,15 @@ __decorateClass2([
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.RJUO2BMU.js
 SlAnimatedImage.define("sl-animated-image");
 
+// node_modules/bootstrap-icons/icons/plus-lg.svg
+var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">%0A  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>%0A</svg>';
+
+// node_modules/bootstrap-icons/icons/dash.svg
+var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
+
+// node_modules/bootstrap-icons/icons/eye-fill.svg
+var eye_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">%0A  <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>%0A  <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>%0A</svg>';
+
 // src/widgets/crossword.ts
 var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   oldgrid;
@@ -23256,16 +23259,28 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   height;
   grid;
   clueBox;
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   */
   constructor(width, height) {
     super();
     this.width = width;
     this.height = height;
   }
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   */
   static get styles() {
     return i`
         div.wrapper {
             width: 100%;
-            //align-content: left;
+            align-content: left;
             justify-content: space-around;
             display: flex;
         }
@@ -23274,9 +23289,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
             min-width: 200px;
             min-height: 200px;
             height: fit-content;
-            border: 1px solid var(--sl-color-gray-400);
-            //border-bottom: 1px solid var(--sl-color-gray-200);
-            border-collapse: collapse;
+            border: 2px solid var(--sl-color-gray-300);
             font-family: var(--sl-font-sans);
             color: var(--sl-color-gray-700);
             background-color: var(--sl-color-gray-100);
@@ -23286,25 +23299,60 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
             font-family: var(--sl-font-sans);
             color: var(--sl-color-gray-700);
             background-color: var(--sl-color-gray-300);
-            padding: 10px;
+        }
+        table.cluebox > thead > tr {
+            padding: 0px;
+            margin: 0px;
         }
         table.cluebox > thead > tr > th {
             font-family: var(--sl-font-sans);
             color: var(--sl-color-gray-700);
-            border-bottom: 1px solid var(--sl-color-gray-200);
+            border-collapse: collapse;
             background-color: var(--sl-color-gray-300);
             padding: 10px;
         }
+        th.preview {
+            text-align: right;
+            padding: 1px;
+            margin: 1px;
+            height: auto;
+        }
+        sl-button.previewButton::part(base) {
+    /* Set design tokens for height and border width */
+        --sl-input-height-small: 12px;
+        --sl-input-width-small: 20px;
+        border-radius: 0;
+        color: var(--sl-color-gray-500);
+        font-size: 0.75rem;
+        transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
+        }
+        .previewButton::part(label) {
+            word-wrap: normal;
+        }
         table.cluebox > tbody {
+            max-width: 50%;
+            border: 3px solid var(--sl-color-gray-200);
+        }
+        table.cluebox > tbody > tr {
+            font-family: var(--sl-font-sans);
+            color: var(--sl-color-gray-900);
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
             max-width: 50%;
         }
         table.cluebox > tbody > tr > td {
             font-family: var(--sl-font-sans);
             color: var(--sl-color-gray-900);
-            //border-bottom: 1px solid var(--sl-color-gray-200);
+            border-right: 1px solid var(--sl-color-gray-200);
+            border-left: 1px solid var(--sl-color-gray-200);
+            border-bottom: 2px solid var(--sl-color-gray-200);
+            border-collapse: collapse;
             padding: 10px;
+            align-content: center;
+            justify-content: center;
             word-wrap: break-word;
             overflow-wrap: anywhere;
+            height: fit-content;
             max-width: 50%;
         }
         table.cluebox td {
@@ -23313,10 +23361,34 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
         table.cluebox td[addRow] {
             justify-content: center;
             align-content: center;
+            height: fit-content;
+            padding: 0px;
+            margin: 0px;
+            text-align: center;
         }
-        table.cluebox button {
+        table.cluebox td[removeRow] {
+            justify-content: center;
+            align-content: center;
+            text-align: center;
+            padding: 5px;
+        }
+        table.cluebox sl-button {
             width: auto;
             height: auto;
+            text-align: center;
+            justify-content: center;
+            align-content: center;
+            vertical-align: middle;
+        }
+        table.cluebox sl-icon {
+            size: 100px;
+            font-size: 20px;
+            text-align: center;
+            padding: 10px;
+            justify-content: center;
+            color: var(--sl-color-gray-400);
+            align-content: center;
+            vertical-align: middle;
         }
 
         td:focus {
@@ -23332,6 +23404,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
             align-content: center;
             box-sizing: border-box;
             width: max-content;
+            height: max-content;
             border: 2px solid black;
         }
         div.cell {
@@ -23365,8 +23438,11 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     };
   }
   /**
-   * Create the crossword grid and clue panel.
+   * @constructor
+   * Create the crossword {@link grid} and {@link clueBox |clue panel}.
+   * 
    * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * Crossword element for word puzzle widget. Includes grid and clue panel elements.
    * @returns {HTMLDivElement} the DOM wrapper element for the crossword puzzle element
    * Source: crosswords-js
    */
@@ -23379,10 +23455,13 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     return wrapper;
   }
   /**
-   * Build a crossword grid _cell_ DOM element with child elements.
+   * @constructor
+   * Build / construct the {@link WebwriterWordPuzzlesCrossword.grid | grid} DOM element that will contain the words and clues
+   * 
+   * Dimensions are currently based on {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height}.
+   * 
    * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-   * @returns {HTMLDivElement} the DOM element for the _cell_
+   * @returns {HTMLDivElement} the DOM element for the grid.
    * Source: crosswords-js
    */
   newCrosswordGrid(document2) {
@@ -23398,9 +23477,20 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     }
     return grid;
   }
+  /**
+   * @constructor
+   * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.grid | grid} DOM element.
+   * 
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * @param {number} x the row of the cell.
+   * @param {number} y the column of the cell.
+   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
+   * @returns {HTMLDivElement} the DOM element for the _cell_
+   * Source: crosswords-js
+   */
   newCell(document2, x3, y4) {
     const cellDOM = document2.createElement("div");
-    cellDOM.classList.add("cell");
+    cellDOM.className = "cell";
     cellDOM.style.display = "grid";
     cellDOM.style.gridColumnStart = x3.toString();
     cellDOM.style.gridRowStart = y4.toString();
@@ -23421,7 +23511,14 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     });
     return cellDOM;
   }
-  // TODO Maybe make this a popup eventually idk
+  /**
+   * @constructor
+   * Build / construct the {@link WebwriterWordPuzzlesCrossword.clueBox | clue panel} DOM element that will contain the words and clues
+   * input by a crossword creator (i.e. teacher).
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * @returns {HTMLTableElement} the DOM element for the clue panel
+   * Source: crosswords-js
+   */
   newClueBox(document2) {
     const clueBox = document2.createElement("table");
     clueBox.classList.add("clueBox", "author-only");
@@ -23433,6 +23530,21 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
       th.textContent = element;
       headerRow.appendChild(th);
     }
+    headerTable.insertRow(0);
+    const previewCell = document2.createElement("th");
+    headerTable.rows.item(0).appendChild(previewCell);
+    previewCell.className = "preview";
+    previewCell.colSpan = 2;
+    const previewButton = previewCell.appendChild(document2.createElement("sl-button"));
+    previewButton.className = "previewButton";
+    previewButton.setAttribute("variant", "default");
+    previewButton.setAttribute("size", "small");
+    previewButton.innerText = "preview";
+    previewButton.addEventListener("click", () => {
+      DEV: console.log("activate preview");
+    });
+    const previewIcon = previewButton.appendChild(document2.createElement("sl-icon"));
+    previewIcon.setAttribute("src", eye_fill_default);
     const bodyTable = clueBox.createTBody();
     const tableRow = bodyTable.insertRow();
     const tableCell1 = tableRow.insertCell();
@@ -23452,20 +23564,21 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     addButton.setAttribute("circle", "");
     addButton.addEventListener("click", () => {
       DEV: console.log("blicked");
-      const newRow = bodyTable.insertRow(buttonRow.rowIndex - 1);
+      const newRow = bodyTable.insertRow(buttonRow.rowIndex - 2);
       newRow.insertCell(0).setAttribute("contentEditable", "true");
       newRow.insertCell(1).setAttribute("contentEditable", "true");
     });
     const addIcon = addButton.appendChild(document2.createElement("sl-icon"));
     addIcon.setAttribute("src", plus_lg_default);
+    addIcon.setAttribute("font-size", "20px");
     const removeButton = removeCell.appendChild(document2.createElement("sl-button"));
     removeButton.setAttribute("variant", "default");
     removeButton.setAttribute("size", "medium");
     removeButton.setAttribute("circle", "");
     removeButton.addEventListener("click", () => {
       DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
-      if (buttonRow.rowIndex != 1)
-        bodyTable.deleteRow(buttonRow.rowIndex - 2);
+      if (buttonRow.rowIndex > 3)
+        bodyTable.deleteRow(buttonRow.rowIndex - 3);
     });
     const removeIcon = removeButton.appendChild(document2.createElement("sl-icon"));
     removeIcon.setAttribute("src", dash_default);
@@ -23474,6 +23587,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   render() {
     return x`<div>
                 ${this.newCrossword(this.shadowRoot)}
+                <sl-button><sl-icon library="icons" name="zoom-in"></sl-icon></sl-button>
             </div>
             `;
   }

@@ -1,6 +1,18 @@
+/**
+ * Main WebWriter Word Puzzles Widget.
+ * 
+ * @packageDocumentation
+ * @module webwriter-word-puzzles
+ */
 import {html, css} from 'lit';
 import {LitElementWw, option} from '@webwriter/lit';
 import {customElement, property, query, queryAssignedElements} from 'lit/decorators.js';
+
+/**
+ * Imports module for generating crossword.
+ * 
+ * @module crossword
+ */
 import { WebwriterWordPuzzlesCrossword } from './crossword';
 //import {customElement, property, query, queryAssignedElements} from 'lit/decorators.js';
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
@@ -11,6 +23,15 @@ declare global {interface HTMLElementTagNameMap {
   }
 }
 
+
+/**
+ * Crossword element for word puzzle widget. Includes grid and clue panel elements.
+ * @extends {LitElementWw}
+ * 
+ * Includes {@link WebWriterWordPuzzlesCrossword }
+ * 
+ * @returns {void} Nothing, but renders the DOM element for the crossword puzzle
+ */
 @customElement("webwriter-word-puzzles")
 export class WebwriterWordPuzzles extends LitElementWw {
 //  contentEditable = 'false';
@@ -21,6 +42,11 @@ export class WebwriterWordPuzzles extends LitElementWw {
     };
   }
 
+  /**
+   * @property {WebWriterWordPuzzlesCrossword} crossword 
+   * Probably unused, tbh
+   * @see {@link /src/widgets/crossword.ts | other file}
+   */
   @property({attribute: false})
   accessor crossword: WebwriterWordPuzzlesCrossword
 

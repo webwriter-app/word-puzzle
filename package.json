@@ -22,7 +22,8 @@
     "@webwriter/lit": "^2.0.0",
     "bootstrap-icons": "^1.11.3",
     "less": "^4.2.1",
-    "lit": "^3.2.0"
+    "lit": "^3.2.0",
+    "typedoc": "^0.27.6"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
