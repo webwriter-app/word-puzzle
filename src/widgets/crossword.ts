@@ -81,6 +81,8 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         this.height = height
     }
 
+
+
     /**
      * @constructor
      * Some constructor I apparently thought was a good idea.
@@ -88,6 +90,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      */
     static get styles() {
+        // TODO Make preview row smaller in clue box
         return css`
         div.wrapper {
             width: 100%;
@@ -115,30 +118,57 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             padding: 0px;
             margin: 0px;
         }
-        table.cluebox > thead > tr > th {
+        table.cluebox th {
             font-family: var(--sl-font-sans);
             color: var(--sl-color-gray-700);
             border-collapse: collapse;
             background-color: var(--sl-color-gray-300);
             padding: 10px;
+        } 
+        table.cluebox tr.preview {
+            text-align: right;
+            margin: 1px;
+            height: 20px;
         }
-        th.preview {
+        table.cluebox th.preview {
             text-align: right;
             padding: 1px;
+            padding-right: 8px;
             margin: 1px;
             height: auto;
+            height: 30px;
         }
-        sl-button.previewButton::part(base) {
-    /* Set design tokens for height and border width */
-        --sl-input-height-small: 12px;
-        --sl-input-width-small: 20px;
-        border-radius: 0;
-        color: var(--sl-color-gray-500);
-        font-size: 0.75rem;
-        transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
+        .previewButton::part(base) {
+        /* Set design tokens for height and border width */
+            padding: 0px;
+            margin: 0px;
+            --sl-input-height-small: 12px;
+            --sl-input-width-small: 20px;
+            border-radius: 0;
+            color: var(--sl-color-gray-500);
+            transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
         }
         .previewButton::part(label) {
+            --sl-input-height-small: 12px;
+            --sl-input-width-small: 20px;
+            padding: 2px;
+            margin: 0px;
             word-wrap: normal;
+            vertical-align: top;
+            text-align: center;
+            justify-content: center;
+            color: var(--sl-color-gray-400);
+            align-content: center;
+
+        }
+        table.cluebox sl-icon.previewIcon {
+            font-size: 20px;
+            text-align: center;
+            padding: 0px;
+            justify-content: center;
+            color: var(--sl-color-gray-400);
+            align-content: center;
+            vertical-align: middle;
         }
         table.cluebox > tbody {
             max-width: 50%;
@@ -363,6 +393,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         headerTable.insertRow(0)
         const previewCell: HTMLTableCellElement = document.createElement('th');
         headerTable.rows.item(0).appendChild(previewCell)
+        headerTable.rows.item(0).className = "preview"
         previewCell.className = "preview"
         previewCell.colSpan = 2
 
@@ -370,12 +401,12 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         previewButton.className = "previewButton"
         previewButton.setAttribute('variant', 'default')
         previewButton.setAttribute('size', 'small')
-        previewButton.innerText = "preview"
         previewButton.addEventListener('click', () => {
             DEV: console.log("activate preview")
         })
         const previewIcon = previewButton.appendChild(document.createElement('sl-icon'))
         previewIcon.setAttribute('src', eye)
+        previewIcon.setAttribute('class', "previewIcon")
 
 
         // Create body
@@ -426,10 +457,17 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         return clueBox
     }
 
+    /**
+     * 
+     */
+    protected preview(document) {
+
+    }
+
+
     render() {
         return (html`<div>
                 ${this.newCrossword(this.shadowRoot)}
-                <sl-button><sl-icon library="icons" name="zoom-in"></sl-icon></sl-button>
             </div>
             `)
             //<p>WE LOVE YOU GOLDEN MOLE</p>
