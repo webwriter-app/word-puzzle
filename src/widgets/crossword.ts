@@ -44,8 +44,10 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
     // TODO Add a skeleton for the grid while the crossword is being created?
 
+    preview = false
+
     @property({ type: Array, state: true })
-    protected oldgrid: Cell[][]
+    protected grid: Cell[][]
 
     @property({ type: Number, state: true })
     width: number
@@ -59,7 +61,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
     @property({ type: HTMLDivElement, state: true })
-    grid: HTMLDivElement
+    gridEl: HTMLDivElement
 
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
@@ -81,8 +83,6 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         this.height = height
     }
 
-
-
     /**
      * @constructor
      * Some constructor I apparently thought was a good idea.
@@ -92,184 +92,187 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     static get styles() {
         // TODO Make preview row smaller in clue box
         return css`
-        div.wrapper {
-            width: 100%;
-            align-content: left;
-            justify-content: space-around;
-            display: flex;
-        }
-        table.clueBox {
-            // Temporary width and height
-            min-width: 200px;
-            min-height: 200px;
-            height: fit-content;
-            border: 2px solid var(--sl-color-gray-300);
-            font-family: var(--sl-font-sans);
-            color: var(--sl-color-gray-700);
-            background-color: var(--sl-color-gray-100);
-            //flex-basis: content;
-        }
-        table.cluebox > thead {
-            font-family: var(--sl-font-sans);
-            color: var(--sl-color-gray-700);
-            background-color: var(--sl-color-gray-300);
-        }
-        table.cluebox > thead > tr {
-            padding: 0px;
-            margin: 0px;
-        }
-        table.cluebox th {
-            font-family: var(--sl-font-sans);
-            color: var(--sl-color-gray-700);
-            border-collapse: collapse;
-            background-color: var(--sl-color-gray-300);
-            padding: 10px;
-        } 
-        table.cluebox tr.preview {
-            text-align: right;
-            margin: 1px;
-            height: 20px;
-        }
-        table.cluebox th.preview {
-            text-align: right;
-            padding: 1px;
-            padding-right: 8px;
-            margin: 1px;
-            height: auto;
-            height: 30px;
-        }
-        .previewButton::part(base) {
-        /* Set design tokens for height and border width */
-            padding: 0px;
-            margin: 0px;
-            --sl-input-height-small: 12px;
-            --sl-input-width-small: 20px;
-            border-radius: 0;
-            color: var(--sl-color-gray-500);
-            transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
-        }
-        .previewButton::part(label) {
-            --sl-input-height-small: 12px;
-            --sl-input-width-small: 20px;
-            padding: 2px;
-            margin: 0px;
-            word-wrap: normal;
-            vertical-align: top;
-            text-align: center;
-            justify-content: center;
-            color: var(--sl-color-gray-400);
-            align-content: center;
+            :host(table.clueBox[preview]) .author-only {
+                display: none;
+            }
+            div.wrapper {
+                width: 100%;
+                align-content: left;
+                justify-content: space-around;
+                display: flex;
+            }
+            table.clueBox {
+                // Temporary width and height
+                min-width: 200px;
+                min-height: 200px;
+                height: fit-content;
+                border: 2px solid var(--sl-color-gray-300);
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                background-color: var(--sl-color-gray-100);
+                //flex-basis: content;
+            }
+            table.cluebox > thead {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                background-color: var(--sl-color-gray-300);
+            }
+            table.cluebox > thead > tr {
+                padding: 0px;
+                margin: 0px;
+            }
+            table.cluebox th {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                border-collapse: collapse;
+                background-color: var(--sl-color-gray-300);
+                padding: 10px;
+            } 
+            table.cluebox tr.preview {
+                text-align: right;
+                margin: 1px;
+                height: 20px;
+            }
+            table.cluebox th.preview {
+                text-align: right;
+                padding: 1px;
+                padding-right: 8px;
+                margin: 1px;
+                height: auto;
+                height: 30px;
+            }
+            .previewButton::part(base) {
+            /* Set design tokens for height and border width */
+                padding: 0px;
+                margin: 0px;
+                --sl-input-height-small: 12px;
+                --sl-input-width-small: 20px;
+                border-radius: 0;
+                color: var(--sl-color-gray-500);
+                transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
+            }
+            .previewButton::part(label) {
+                --sl-input-height-small: 12px;
+                --sl-input-width-small: 20px;
+                padding: 2px;
+                margin: 0px;
+                word-wrap: normal;
+                vertical-align: top;
+                text-align: center;
+                justify-content: center;
+                color: var(--sl-color-gray-400);
+                align-content: center;
 
-        }
-        table.cluebox sl-icon.previewIcon {
-            font-size: 20px;
-            text-align: center;
-            padding: 0px;
-            justify-content: center;
-            color: var(--sl-color-gray-400);
-            align-content: center;
-            vertical-align: middle;
-        }
-        table.cluebox > tbody {
-            max-width: 50%;
-            border: 3px solid var(--sl-color-gray-200);
-        }
-        table.cluebox > tbody > tr {
-            font-family: var(--sl-font-sans);
-            color: var(--sl-color-gray-900);
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-            max-width: 50%;
-        }
-        table.cluebox > tbody > tr > td {
-            font-family: var(--sl-font-sans);
-            color: var(--sl-color-gray-900);
-            border-right: 1px solid var(--sl-color-gray-200);
-            border-left: 1px solid var(--sl-color-gray-200);
-            border-bottom: 2px solid var(--sl-color-gray-200);
-            border-collapse: collapse;
-            padding: 10px;
-            align-content: center;
-            justify-content: center;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-            height: fit-content;
-            max-width: 50%;
-        }
-        table.cluebox td {
-            justify-content: left;
-        }
-        table.cluebox td[addRow] {
-            justify-content: center;
-            align-content: center;
-            height: fit-content;
-            padding: 0px;
-            margin: 0px;
-            text-align: center;
-        }
-        table.cluebox td[removeRow] {
-            justify-content: center;
-            align-content: center;
-            text-align: center;
-            padding: 5px;
-        }
-        table.cluebox sl-button {
-            width: auto;
-            height: auto;
-            text-align: center;
-            justify-content: center;
-            align-content: center;
-            vertical-align: middle;
-        }
-        table.cluebox sl-icon {
-            size: 100px;
-            font-size: 20px;
-            text-align: center;
-            padding: 10px;
-            justify-content: center;
-            color: var(--sl-color-gray-400);
-            align-content: center;
-            vertical-align: middle;
-        }
+            }
+            table.cluebox sl-icon.previewIcon {
+                font-size: 20px;
+                text-align: center;
+                padding: 0px;
+                justify-content: center;
+                color: var(--sl-color-gray-400);
+                align-content: center;
+                vertical-align: middle;
+            }
+            table.cluebox > tbody {
+                max-width: 50%;
+                border: 3px solid var(--sl-color-gray-200);
+            }
+            table.cluebox > tbody > tr {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-900);
+                word-wrap: break-word;
+                overflow-wrap: anywhere;
+                max-width: 50%;
+            }
+            table.cluebox > tbody > tr > td {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-900);
+                border-right: 1px solid var(--sl-color-gray-200);
+                border-left: 1px solid var(--sl-color-gray-200);
+                border-bottom: 2px solid var(--sl-color-gray-200);
+                border-collapse: collapse;
+                padding: 10px;
+                align-content: center;
+                justify-content: center;
+                word-wrap: break-word;
+                overflow-wrap: anywhere;
+                height: fit-content;
+                max-width: 50%;
+            }
+            table.cluebox td {
+                justify-content: left;
+            }
+            table.cluebox td[addRow] {
+                justify-content: center;
+                align-content: center;
+                height: fit-content;
+                padding: 0px;
+                margin: 0px;
+                text-align: center;
+            }
+            table.cluebox td[removeRow] {
+                justify-content: center;
+                align-content: center;
+                text-align: center;
+                padding: 5px;
+            }
+            table.cluebox sl-button {
+                width: auto;
+                height: auto;
+                text-align: center;
+                justify-content: center;
+                align-content: center;
+                vertical-align: middle;
+            }
+            table.cluebox sl-icon {
+                size: 100px;
+                font-size: 20px;
+                text-align: center;
+                padding: 10px;
+                justify-content: center;
+                color: var(--sl-color-gray-400);
+                align-content: center;
+                vertical-align: middle;
+            }
 
-        td:focus {
-            background-color: white;
-        }
+            td:focus {
+                background-color: white;
+            }
 
-        div.grid {
-            display: grid;
-            flex-basis: content;
-            grid-template-columns: auto;
-            grid-template-rows: auto;
-            justify-content: center;
-            align-content: center;
-            box-sizing: border-box;
-            width: max-content;
-            height: max-content;
-            border: 2px solid black;
-        }
-        div.cell {
-            display: grid;
-            aspect-ratio: 1;
-            height: 100%;
-            width: 100%;
-            min-width: 40px;
-            min-height: 40px;
-            border: 1px solid black;
-            max-width: 40px;
-            max-height: 40px;
-            position: relative;
-            align-items: center;
-            text-align: center;
-            font-size: 18pt;
-        }
-        div.cell[black] {
-            background-color: black;
-        }
-        div.cell:focus {
-            background-color: pink;
-        }
-        `
+            div.grid {
+                display: grid;
+                flex-basis: content;
+                grid-template-columns: auto;
+                grid-template-rows: auto;
+                justify-content: center;
+                align-content: center;
+                box-sizing: border-box;
+                width: max-content;
+                height: max-content;
+                border: 2px solid black;
+            }
+            div.cell {
+                display: grid;
+                aspect-ratio: 1;
+                height: 100%;
+                width: 100%;
+                min-width: 40px;
+                min-height: 40px;
+                border: 1px solid black;
+                max-width: 40px;
+                max-height: 40px;
+                position: relative;
+                align-items: center;
+                text-align: center;
+                font-size: 18pt;
+            }
+            div.cell[black] {
+                background-color: black;
+            }
+            div.cell:focus {
+                background-color: pink;
+            }
+            `
     }
 
     // Registering custom elements
@@ -282,7 +285,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
     /**
      * @constructor
-     * Create the crossword {@link grid} and {@link clueBox |clue panel}.
+     * Create the crossword {@link gridEl} and {@link clueBox |clue panel}.
      * 
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
      * Crossword element for word puzzle widget. Includes grid and clue panel elements.
@@ -292,8 +295,8 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     newCrossword(document) {
         let wrapper = document.createElement('div')
         wrapper.classList.add('wrapper')
-        this.grid = this.newCrosswordGrid(document)
-        wrapper.appendChild(this.grid)
+        this.gridEl = this.newCrosswordGrid(document)
+        wrapper.appendChild(this.gridEl)
         //wrapper.appendChild(this.clueBox)
         this.clueBox = wrapper.appendChild(this.newClueBox(document))
         return wrapper
@@ -301,7 +304,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
     /**
      * @constructor
-     * Build / construct the {@link WebwriterWordPuzzlesCrossword.grid | grid} DOM element that will contain the words and clues
+     * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
      * 
      * Dimensions are currently based on {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height}.
      * 
@@ -326,7 +329,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
     /**
      * @constructor
-     * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.grid | grid} DOM element.
+     * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
      * 
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
      * @param {number} x the row of the cell.
@@ -378,8 +381,9 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      */
     protected newClueBox(document) {
         // Create table and header
+        DEV: console.log("rendering cluebox");
         const clueBox: HTMLTableElement = document.createElement('table')
-        clueBox.classList.add('clueBox', 'author-only')
+        clueBox.classList.add('clueBox')
         const headerTable: HTMLTableSectionElement = clueBox.createTHead()
         const headerRow: HTMLTableRowElement = headerTable.insertRow()
 
@@ -403,6 +407,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         previewButton.setAttribute('size', 'small')
         previewButton.addEventListener('click', () => {
             DEV: console.log("activate preview")
+            this.togglePreview()
         })
         const previewIcon = previewButton.appendChild(document.createElement('sl-icon'))
         previewIcon.setAttribute('src', eye)
@@ -419,49 +424,61 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         tableCell2.setAttribute('contentEditable', 'true')
         tableCell2.setAttribute("tabindex", "0")
 
-        // Create button for inserting and removing rows
-        const buttonRow = bodyTable.insertRow()
-        const addCell: HTMLTableCellElement = buttonRow.insertCell(0)
-        addCell.setAttribute('addRow', '')
-        const removeCell: HTMLTableCellElement = buttonRow.insertCell(1)
-        removeCell.setAttribute('removeRow', '')
+        if (!clueBox.getAttribute("preview")) {
+            // Create button for inserting and removing rows
+            const buttonRow = bodyTable.insertRow()
+            buttonRow.classList.add('author-only')
+            const addCell: HTMLTableCellElement = buttonRow.insertCell(0)
+            addCell.setAttribute('addRow', '')
+            addCell.classList.add('author-only')
+            const removeCell: HTMLTableCellElement = buttonRow.insertCell(1)
+            removeCell.setAttribute('removeRow', '')
+            removeCell.classList.add('author-only')
 
-        // Add button
-        const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
-        addButton.setAttribute('variant', 'default')
-        addButton.setAttribute('size', 'medium')
-        addButton.setAttribute('circle', '')
-        addButton.addEventListener('click', () => {
-            DEV: console.log("blicked");
-            const newRow = bodyTable.insertRow(buttonRow.rowIndex-2);
-            newRow.insertCell(0).setAttribute("contentEditable", "true");
-            newRow.insertCell(1).setAttribute("contentEditable", "true");
-        })
-        const addIcon = addButton.appendChild(document.createElement('sl-icon'))
-        addIcon.setAttribute('src', plus)
-        addIcon.setAttribute('font-size', '20px')
+            // Add button
+            const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
+            addButton.setAttribute('variant', 'default')
+            addButton.setAttribute('size', 'medium')
+            addButton.setAttribute('circle', '')
+            addButton.classList.add('author-only')
+            addButton.addEventListener('click', () => {
+                DEV: console.log("blicked");
+                const newRow = bodyTable.insertRow(buttonRow.rowIndex-2);
+                newRow.insertCell(0).setAttribute("contentEditable", "true");
+                newRow.insertCell(1).setAttribute("contentEditable", "true");
+            })
+            const addIcon = addButton.appendChild(document.createElement('sl-icon'))
+            addIcon.setAttribute('src', plus)
+            addIcon.setAttribute('font-size', '20px')
 
-        // Remove button
-        const removeButton: HTMLButtonElement = removeCell.appendChild(document.createElement('sl-button'))
-        removeButton.setAttribute('variant', 'default')
-        removeButton.setAttribute('size', 'medium')
-        removeButton.setAttribute('circle', '')
-        removeButton.addEventListener('click', () => {
-            DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
-            if(buttonRow.rowIndex > 3)
-                bodyTable.deleteRow(buttonRow.rowIndex-3)
-        })
-        const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
-        removeIcon.setAttribute('src', minus)
+            // Remove button
+            const removeButton: HTMLButtonElement = removeCell.appendChild(document.createElement('sl-button'))
+            removeButton.setAttribute('variant', 'default')
+            removeButton.setAttribute('size', 'medium')
+            removeButton.setAttribute('circle', '')
+            removeButton.classList.add('author-only')
+            removeButton.addEventListener('click', () => {
+                DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
+                if(buttonRow.rowIndex > 3)
+                    bodyTable.deleteRow(buttonRow.rowIndex-3)
+            })
+            const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
+            removeIcon.setAttribute('src', minus)
 
-        return clueBox
+
+        }
+                return clueBox
     }
 
     /**
-     * 
+     * Toggles preview for the cluebox and triggers crossword puzzle generation based off of words in the clue box
      */
-    protected preview(document) {
-
+    protected togglePreview() {
+        this.preview = !this.preview
+        // TODO Make clue box uneditable and hide button row
+        for (let i = 2; i < this.clueBox.rows.length; i++)
+            this.clueBox.rows.item(i).setAttribute("contentEditable", "false")
+        // TODO Trigger crossword puzzle generation based off of words in the table
     }
 
 
