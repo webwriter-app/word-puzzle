@@ -8,6 +8,8 @@
 import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
+import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
+ 
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -18,7 +20,8 @@ import { SlButton, SlIcon } from '@shoelace-style/shoelace';
 // Icons
 import plus from 'bootstrap-icons/icons/plus-lg.svg';
 import minus from 'bootstrap-icons/icons/dash.svg';
-import eye from 'bootstrap-icons/icons/eye-fill.svg';
+// TODO Add fontawesome icon
+let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
 
 
 // NOTE Almost all methods within this class are from / based on the crosswords-js module
@@ -39,12 +42,10 @@ type Cell = {
  * @returns {void} Nothing, but renders the DOM element for the crossword puzzle
  */
 @customElement("webwriter-word-puzzles-crossword")
-export class WebwriterWordPuzzlesCrossword extends LitElementWw {
+export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     // TODO Add a skeleton for the grid while the crossword is being created?
-
-    preview = false
 
     @property({ type: Array, state: true })
     protected grid: Cell[][]
@@ -90,11 +91,11 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      */
     static get styles() {
-        // TODO Make preview row smaller in clue box
         return css`
-            :host(table.clueBox[preview]) .author-only {
+            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
                 display: none;
             }
+
             div.wrapper {
                 width: 100%;
                 align-content: left;
@@ -128,12 +129,12 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 background-color: var(--sl-color-gray-300);
                 padding: 10px;
             } 
-            table.cluebox tr.preview {
+            table.cluebox tr.generateCw {
                 text-align: right;
                 margin: 1px;
                 height: 20px;
             }
-            table.cluebox th.preview {
+            table.cluebox th.generateCw {
                 text-align: right;
                 padding: 1px;
                 padding-right: 8px;
@@ -141,7 +142,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 height: auto;
                 height: 30px;
             }
-            .previewButton::part(base) {
+            .generateCwButton::part(base) {
             /* Set design tokens for height and border width */
                 padding: 0px;
                 margin: 0px;
@@ -151,7 +152,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 color: var(--sl-color-gray-500);
                 transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
             }
-            .previewButton::part(label) {
+            .generateCwButton::part(label) {
                 --sl-input-height-small: 12px;
                 --sl-input-width-small: 20px;
                 padding: 2px;
@@ -164,7 +165,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 align-content: center;
 
             }
-            table.cluebox sl-icon.previewIcon {
+            table.cluebox sl-icon.generateCwIcon {
                 font-size: 20px;
                 text-align: center;
                 padding: 0px;
@@ -279,7 +280,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     static get scopedElements() {
         return {
         "sl-button": SlButton,
-        "sl-icon": SlIcon,
+        "sl-icon": SlIcon
         };
     }
 
@@ -395,90 +396,87 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             headerRow.appendChild(th)
         }
         headerTable.insertRow(0)
-        const previewCell: HTMLTableCellElement = document.createElement('th');
-        headerTable.rows.item(0).appendChild(previewCell)
-        headerTable.rows.item(0).className = "preview"
-        previewCell.className = "preview"
-        previewCell.colSpan = 2
+        const generateCwCell: HTMLTableCellElement = document.createElement('th');
+        headerTable.rows.item(0).appendChild(generateCwCell)
+        headerTable.rows.item(0).className = "generateCw"
+        generateCwCell.className = "generateCw"
+        generateCwCell.colSpan = 2
 
-        const previewButton: SlButton = previewCell.appendChild(document.createElement('sl-button'))
-        previewButton.className = "previewButton"
-        previewButton.setAttribute('variant', 'default')
-        previewButton.setAttribute('size', 'small')
-        previewButton.addEventListener('click', () => {
-            DEV: console.log("activate preview")
-            this.togglePreview()
+        const generateCwButton: SlButton = generateCwCell.appendChild(document.createElement('sl-button'))
+        generateCwButton.className = "generateCwButton"
+        generateCwButton.setAttribute('variant', 'default')
+        generateCwButton.setAttribute('size', 'small')
+        generateCwButton.addEventListener('click', () => {
+            DEV: console.log("generate crossword")
+            this.generateCrossword()
         })
-        const previewIcon = previewButton.appendChild(document.createElement('sl-icon'))
-        previewIcon.setAttribute('src', eye)
-        previewIcon.setAttribute('class', "previewIcon")
+        const generateCwIcon = generateCwButton.appendChild(document.createElement('sl-icon'))
+        generateCwIcon.setAttribute('src', eye)
+        generateCwIcon.setAttribute('class', "generateCwIcon")
 
 
         // Create body
         const bodyTable: HTMLTableSectionElement = clueBox.createTBody()
         const tableRow: HTMLTableRowElement = bodyTable.insertRow()
         const tableCell1: HTMLTableCellElement = tableRow.insertCell()
-        tableCell1.setAttribute('contentEditable', 'true')
+        tableCell1.setAttribute('contenteditable', 'true')
         tableCell1.setAttribute("tabindex", "0")
         const tableCell2: HTMLTableCellElement = tableRow.insertCell()
-        tableCell2.setAttribute('contentEditable', 'true')
+        tableCell2.setAttribute('contenteditable', 'true')
         tableCell2.setAttribute("tabindex", "0")
 
-        if (!clueBox.getAttribute("preview")) {
-            // Create button for inserting and removing rows
-            const buttonRow = bodyTable.insertRow()
-            buttonRow.classList.add('author-only')
-            const addCell: HTMLTableCellElement = buttonRow.insertCell(0)
-            addCell.setAttribute('addRow', '')
-            addCell.classList.add('author-only')
-            const removeCell: HTMLTableCellElement = buttonRow.insertCell(1)
-            removeCell.setAttribute('removeRow', '')
-            removeCell.classList.add('author-only')
+        // Create button for inserting and removing rows
+        const buttonRow = bodyTable.insertRow()
+        //buttonRow.classList.add('author-only')
+        buttonRow.setAttribute('contenteditable', 'false')
+        buttonRow.classList.add('author-only')
+        const addCell: HTMLTableCellElement = buttonRow.insertCell(0)
+        addCell.setAttribute('addRow', '')
+        addCell.classList.add('author-only')
+        const removeCell: HTMLTableCellElement = buttonRow.insertCell(1)
+        removeCell.setAttribute('removeRow', '')
+        removeCell.classList.add('author-only')
 
-            // Add button
-            const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
-            addButton.setAttribute('variant', 'default')
-            addButton.setAttribute('size', 'medium')
-            addButton.setAttribute('circle', '')
-            addButton.classList.add('author-only')
-            addButton.addEventListener('click', () => {
-                DEV: console.log("blicked");
-                const newRow = bodyTable.insertRow(buttonRow.rowIndex-2);
-                newRow.insertCell(0).setAttribute("contentEditable", "true");
-                newRow.insertCell(1).setAttribute("contentEditable", "true");
-            })
-            const addIcon = addButton.appendChild(document.createElement('sl-icon'))
-            addIcon.setAttribute('src', plus)
-            addIcon.setAttribute('font-size', '20px')
+        // Add button
+        const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
+        addButton.setAttribute('variant', 'default')
+        addButton.setAttribute('size', 'medium')
+        addButton.setAttribute('circle', '')
+        addButton.classList.add('author-only')
+        addButton.addEventListener('click', () => {
+            DEV: console.log("blicked");
+            const newRow = bodyTable.insertRow(buttonRow.rowIndex-2);
+            newRow.insertCell(0).setAttribute("contenteditable", "true");
+            newRow.insertCell(1).setAttribute("contenteditable", "true");
+        })
+        const addIcon = addButton.appendChild(document.createElement('sl-icon'))
+        addIcon.setAttribute('src', plus)
+        addIcon.setAttribute('font-size', '20px')
 
-            // Remove button
-            const removeButton: HTMLButtonElement = removeCell.appendChild(document.createElement('sl-button'))
-            removeButton.setAttribute('variant', 'default')
-            removeButton.setAttribute('size', 'medium')
-            removeButton.setAttribute('circle', '')
-            removeButton.classList.add('author-only')
-            removeButton.addEventListener('click', () => {
-                DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
-                if(buttonRow.rowIndex > 3)
-                    bodyTable.deleteRow(buttonRow.rowIndex-3)
-            })
-            const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
-            removeIcon.setAttribute('src', minus)
+        // Remove button
+        const removeButton: HTMLButtonElement = removeCell.appendChild(document.createElement('sl-button'))
+        removeButton.setAttribute('variant', 'default')
+        removeButton.setAttribute('size', 'medium')
+        removeButton.setAttribute('circle', '')
+        removeButton.classList.add('author-only')
+        removeButton.addEventListener('click', () => {
+            DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
+            if(buttonRow.rowIndex > 3)
+                bodyTable.deleteRow(buttonRow.rowIndex-3)
+        })
+        const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
+        removeIcon.setAttribute('src', minus)
+        removeButton.classList.add('author-only')
 
-
-        }
-                return clueBox
+        return clueBox
     }
 
     /**
-     * Toggles preview for the cluebox and triggers crossword puzzle generation based off of words in the clue box
+     * Generates crossword puzzle based off of words in the clue box and 
+     * writes it to the DOM
      */
-    protected togglePreview() {
-        this.preview = !this.preview
-        // TODO Make clue box uneditable and hide button row
-        for (let i = 2; i < this.clueBox.rows.length; i++)
-            this.clueBox.rows.item(i).setAttribute("contentEditable", "false")
-        // TODO Trigger crossword puzzle generation based off of words in the table
+    protected generateCrossword() {
+        // TODO 
     }
 
 
@@ -487,7 +485,6 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 ${this.newCrossword(this.shadowRoot)}
             </div>
             `)
-            //<p>WE LOVE YOU GOLDEN MOLE</p>
     }
 
 }

@@ -36,12 +36,6 @@ declare global {interface HTMLElementTagNameMap {
 export class WebwriterWordPuzzles extends LitElementWw {
 //  contentEditable = 'false';
 
-  static get scopedElements() {
-    return {
-      "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword
-    };
-  }
-
   /**
    * @property {WebWriterWordPuzzlesCrossword} crossword 
    * Probably unused, tbh
@@ -52,17 +46,11 @@ export class WebwriterWordPuzzles extends LitElementWw {
 
   static get styles() {
     return css`
-      :host(
-        :not([contenteditable=true]):not([contenteditable=""]))
-        .author-only {
-        display: none;
-      }
     `
   }
-  
+
   render() {
     return html`
-    <webwriter-word-puzzles-crossword></webwriter-word-puzzles-crossword>
     `
   }
 }
