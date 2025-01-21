@@ -30,16 +30,29 @@ let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
  * Cell object for the crossword grid. 
  * Maybe use this for the logic eventually
  */
-type Cell = {
-    black: boolean;
-    char: string;
-    answer: string;
+interface Cell {
+    white: boolean;
+    answer: string; // Correct letter
+    number: number; // Clue number
+    direction: string; // Down, across, both, or null
+}
+
+/**
+ * Function to create a default cell object.
+ */
+function defaultCell(): Cell {
+    return {
+        white: false,
+        answer: null,
+        number: null,
+        direction: null
+    }
 }
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
- * @extends {LitElementWw}
- * @returns {void} Nothing, but renders the DOM element for the crossword puzzle
+ * @extends { WebwriterWordPuzzles  }
+ * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @customElement("webwriter-word-puzzles-crossword")
 export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
@@ -61,7 +74,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * 
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
-    @property({ type: HTMLDivElement, state: true })
+    @property({ type: HTMLDivElement, state: true, attribute: false})
     gridEl: HTMLDivElement
 
     /**
@@ -78,10 +91,11 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * 
      * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      */
-    constructor(width: number, height: number) {
+    constructor(width: number = 9, height: number = 9) {
         super()
         this.width = width
         this.height = height
+        this.grid = Array.from({ length: width}, () => Array(height).fill(defaultCell()))
     }
 
     /**
@@ -314,18 +328,17 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * Source: crosswords-js
      */
     newCrosswordGrid(document) {
-        this.width = 9
-        this.height = 9
-        let grid = document.createElement('div');
-        grid.classList.add('grid')
+        let gridEl = document.createElement('div');
+        gridEl.classList.add('grid')
         for (let y = 1; y <= this.height; y += 1) {
             for (let x = 1; x <= this.width; x += 1) {
                 //  Build the cell element and place cell in grid element
-                grid.appendChild(this.newCell(document, x, y));
+                gridEl.appendChild(this.newCell(document, x, y));
                 DEV: console.log("added a cell, hopefully")
             }
         }
-        return grid
+        this.gridEl = gridEl
+        return gridEl
     }
 
     /**
@@ -346,14 +359,15 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         cellDOM.style.gridColumnStart = (x).toString()
         cellDOM.style.gridRowStart = (y).toString()
         // This is just temporary for testing
-        if (x % 2 === 0)
+
+        if (!this.grid[x-1][y-1].white) {
             cellDOM.setAttribute("black", "")
-        if (cellDOM.hasAttribute("black")) {
             cellDOM.setAttribute("answer", "0");
             cellDOM.contentEditable = "false";
         }
         else {
             cellDOM.contentEditable = "true";
+            cellDOM.removeAttribute("black")
             // This is how you make divs focusable
             cellDOM.setAttribute("tabindex", "0")
         }
@@ -427,6 +441,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
         // Create button for inserting and removing rows
         const buttonRow = bodyTable.insertRow()
+        buttonRow.id = 'buttonRow'
         //buttonRow.classList.add('author-only')
         buttonRow.setAttribute('contenteditable', 'false')
         buttonRow.classList.add('author-only')
@@ -472,14 +487,98 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     }
 
     /**
-     * Generates crossword puzzle based off of words in the clue box and 
-     * writes it to the DOM
+     * Extracts the words from the cluebox
      */
-    protected generateCrossword() {
-        // TODO 
+    protected getWords() {
+        const rows = this.clueBox.querySelectorAll("tbody tr")
+
+        const words: string[] = Array.from(rows).map(row => 
+                row.querySelector("td")?.textContent?.trim() || null
+        )
+
+        return words.filter(x => x != null)
     }
 
+    /**
+     * Generates crossword puzzle based off of words in the clue box and 
+     * writes it to the DOM.
+     * 
+     * Based off of Agarwal and Joshi 2020
+     */
+    protected generateCrossword() {
+        // Initialization
 
+        let wordsOG = this.getWords()
+        DEV: console.log(wordsOG)
+
+        // Working word list
+        let wordsLeft = Object.assign([], wordsOG)
+
+        // Calculate minimum dimensions of crossword
+        const minDim = wordsOG.map(word => word.length).reduce((max, len) => Math.max(max, len), 0)
+
+        let width = minDim
+        let height = minDim
+
+        let currentGrid = Array.from({ length: width}, () => Array(height).fill(defaultCell()))
+//        let bestGrid: Cell[][]
+        let bestGrid = Array.from({ length: width}, () => Array(height).fill(defaultCell())) // Cell[][]
+
+        let rankings: Number[]
+        let rankedList: String[]
+        
+        let i = 0
+
+        // Add words to grid (simplified)
+        for(let word of wordsOG) {
+            addWord(word, i, 0, "across")
+            i += 1
+        }
+        
+        function addWord(word: String, inputX: number, inputY: number, direction: string) {
+            // I don't think this is iterating over chars 
+            // CURRENT TODO Left off here
+            let x = inputX
+            let y = inputY
+            for(let j = 0; j < word.length; j++) {
+                currentGrid[x][y].answer = word[j]
+                currentGrid[x][y].white = true
+                if (direction == "across") {
+                    if (currentGrid[x][y].direction == "" || currentGrid[x][y].direction == "across") {
+                        currentGrid[x][y].direction = "across"
+                    }
+                    else {
+                        currentGrid[x][y].direction = "both"
+                    }
+                    y += 1
+                }
+                else {
+                    if (currentGrid[x][y].direction == "" || currentGrid[x][y].direction == "down") {
+                        currentGrid[x][y].direction = "down"
+                    }
+                    else {
+                        currentGrid[x][y].direction = "both"
+                    }
+                    x += 1
+                }
+                DEV: console.log(currentGrid[x])
+            }
+        }
+
+        // TODO Crossword generation algorithm
+
+        this.grid = currentGrid
+        this.width = currentGrid.length
+        this.height = currentGrid[0].length
+        
+        DEV: console.log(currentGrid)
+
+        // TODO Add word numbers
+        this.newCrosswordGrid(document)
+        
+    }
+
+    
     render() {
         return (html`<div>
                 ${this.newCrossword(this.shadowRoot)}
