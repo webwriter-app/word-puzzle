@@ -58,8 +58,6 @@ function defaultCell(): Cell {
 export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
-    // TODO Add a skeleton for the grid while the crossword is being created?
-
     @property({ type: Array, state: true })
     protected grid: Cell[][]
 
@@ -330,8 +328,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     newCrosswordGrid(document) {
         let gridEl = document.createElement('div');
         gridEl.classList.add('grid')
-        for (let y = 1; y <= this.height; y += 1) {
-            for (let x = 1; x <= this.width; x += 1) {
+        for (let x = 1; x <= this.height; x += 1) {
+            for (let y = 1; y <= this.width; y += 1) {
                 //  Build the cell element and place cell in grid element
                 gridEl.appendChild(this.newCell(document, x, y));
                 DEV: console.log("added a cell, hopefully")
@@ -339,6 +337,41 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         }
         this.gridEl = gridEl
         return gridEl
+    }
+
+    updateCrosswordGrid(document) {
+        DEV: console.log("updating crossword grid")
+        let gridElLocal = null
+        console.log("gridElLocal is supposed to be null:")
+        console.log(gridElLocal)
+        gridElLocal = document.createElement('div').cloneNode(true);
+        console.log("gridElLocal is supposed to be an empty div:")
+        console.log(gridElLocal)
+        gridElLocal.classList.add('grid')
+        for (let x = 1; x <= this.height; x += 1) {
+            for (let y = 1; y <= this.width; y += 1) {
+                //  Build the cell element and place cell in grid element
+                gridElLocal.appendChild(this.newCell(document, x, y));
+                DEV: console.log("added a cell, hopefully")
+            }
+        }
+        // gridEl is correctly calculated
+        console.log("gridElLocal is supposed to be a filled grid now:")
+        console.log(gridElLocal)
+        this.gridEl.setHTMLUnsafe(gridElLocal.getHTML())
+
+        // Add event listener again
+        for(let child of this.gridEl.querySelectorAll(".cell")) {
+            child.addEventListener('keypress', (e) => {
+                        e.preventDefault(); // Prevent default character insertion
+                        const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
+                        if (isAlphaChar(e.key))
+                            child.textContent = e.key.toUpperCase(); // Replace content with pressed key
+                    });
+        }
+        //this.gridEl.replaceWith(gridElLocal.cloneNode(true))
+        DEV: console.log("Grid should have been replaced")
+        return this.gridEl
     }
 
     /**
@@ -356,10 +389,12 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         const cellDOM: HTMLDivElement = document.createElement('div');
         cellDOM.className = 'cell'
         cellDOM.style.display = 'grid'
-        cellDOM.style.gridColumnStart = (x).toString()
-        cellDOM.style.gridRowStart = (y).toString()
+        cellDOM.style.gridColumnStart = (y).toString()
+        cellDOM.style.gridRowStart = (x).toString()
         // This is just temporary for testing
 
+        DEV: console.log("Making cell ("+ (x-1) + ", " + (y-1) + ")")
+        console.log(this.grid[x-1][y-1])
         if (!this.grid[x-1][y-1].white) {
             cellDOM.setAttribute("black", "")
             cellDOM.setAttribute("answer", "0");
@@ -540,7 +575,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
         // Add words to grid (simplified)
         for(let word of wordsOG) {
-            addWord(word, i, 0, "down")
+            addWord(word, i, 0, "across")
             i += 1
 
             DEV: console.log(currentGrid)
@@ -552,13 +587,9 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             let x = inputX
             let y = inputY
 
-
             for(let j = 0; j < word.length; j++) {
                 currentGrid[x][y].answer = word[j]
                 currentGrid[x][y].white = true
-                DEV: console.log("("+ x +", " + y + "): " + word[j])
-
-                DEV: console.log("Before setting direction: answer = " + currentGrid[x][y].answer)
                 if (direction == "across") {
                     if (currentGrid[x][y].direction == "" || !currentGrid[x][y].direction || currentGrid[x][y].direction == "across") {
                         currentGrid[x][y].direction = "across"
@@ -567,7 +598,6 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
                         currentGrid[x][y].direction = "both"
                     }
                     y += 1
-                    DEV: console.log("increased y")
                 }
                 else {
                     if (currentGrid[x][y].direction == "" || !currentGrid[x][y].direction || currentGrid[x][y].direction == "down") {
@@ -577,12 +607,11 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
                         currentGrid[x][y].direction = "both"
                     }
                     x += 1
-                    DEV: console.log("increased x")
                 }
-                DEV: console.log("First row" + currentGrid[0])
-                for(let h = 0; h < word.length; h++) {
-                    console.log(currentGrid[0][h].answer)
-                }
+//                DEV: console.log("First row" + currentGrid[0])
+//                for(let h = 0; h < word.length; h++) {
+//                    console.log(currentGrid[0][h].answer)
+//                }
             }
         }
 
@@ -592,11 +621,12 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.width = currentGrid.length
         this.height = currentGrid[0].length
         
-        DEV: console.log(currentGrid)
+        DEV: console.log("This is the currently saved grid for the whole file:")
+        DEV: console.log(this.grid)
 
         // TODO Add word numbers
-        this.newCrosswordGrid(document)
-        
+
+        this.updateCrosswordGrid(document)
     }
 
     

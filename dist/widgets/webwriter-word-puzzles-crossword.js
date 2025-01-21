@@ -23531,14 +23531,43 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   newCrosswordGrid(document2) {
     let gridEl = document2.createElement("div");
     gridEl.classList.add("grid");
-    for (let y4 = 1; y4 <= this.height; y4 += 1) {
-      for (let x3 = 1; x3 <= this.width; x3 += 1) {
+    for (let x3 = 1; x3 <= this.height; x3 += 1) {
+      for (let y4 = 1; y4 <= this.width; y4 += 1) {
         gridEl.appendChild(this.newCell(document2, x3, y4));
         DEV: console.log("added a cell, hopefully");
       }
     }
     this.gridEl = gridEl;
     return gridEl;
+  }
+  updateCrosswordGrid(document2) {
+    DEV: console.log("updating crossword grid");
+    let gridElLocal = null;
+    console.log("gridElLocal is supposed to be null:");
+    console.log(gridElLocal);
+    gridElLocal = document2.createElement("div").cloneNode(true);
+    console.log("gridElLocal is supposed to be an empty div:");
+    console.log(gridElLocal);
+    gridElLocal.classList.add("grid");
+    for (let x3 = 1; x3 <= this.height; x3 += 1) {
+      for (let y4 = 1; y4 <= this.width; y4 += 1) {
+        gridElLocal.appendChild(this.newCell(document2, x3, y4));
+        DEV: console.log("added a cell, hopefully");
+      }
+    }
+    console.log("gridElLocal is supposed to be a filled grid now:");
+    console.log(gridElLocal);
+    this.gridEl.setHTMLUnsafe(gridElLocal.getHTML());
+    for (let child of this.gridEl.querySelectorAll(".cell")) {
+      child.addEventListener("keypress", (e13) => {
+        e13.preventDefault();
+        const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
+        if (isAlphaChar(e13.key))
+          child.textContent = e13.key.toUpperCase();
+      });
+    }
+    DEV: console.log("Grid should have been replaced");
+    return this.gridEl;
   }
   /**
    * @constructor
@@ -23555,8 +23584,10 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     const cellDOM = document2.createElement("div");
     cellDOM.className = "cell";
     cellDOM.style.display = "grid";
-    cellDOM.style.gridColumnStart = x3.toString();
-    cellDOM.style.gridRowStart = y4.toString();
+    cellDOM.style.gridColumnStart = y4.toString();
+    cellDOM.style.gridRowStart = x3.toString();
+    DEV: console.log("Making cell (" + (x3 - 1) + ", " + (y4 - 1) + ")");
+    console.log(this.grid[x3 - 1][y4 - 1]);
     if (!this.grid[x3 - 1][y4 - 1].white) {
       cellDOM.setAttribute("black", "");
       cellDOM.setAttribute("answer", "0");
@@ -23694,7 +23725,7 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     let rankedList;
     let i9 = 0;
     for (let word of wordsOG) {
-      addWord(word, i9, 0, "down");
+      addWord(word, i9, 0, "across");
       i9 += 1;
       DEV: console.log(currentGrid);
     }
@@ -23704,8 +23735,6 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       for (let j3 = 0; j3 < word.length; j3++) {
         currentGrid[x3][y4].answer = word[j3];
         currentGrid[x3][y4].white = true;
-        DEV: console.log("(" + x3 + ", " + y4 + "): " + word[j3]);
-        DEV: console.log("Before setting direction: answer = " + currentGrid[x3][y4].answer);
         if (direction == "across") {
           if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "across") {
             currentGrid[x3][y4].direction = "across";
@@ -23713,7 +23742,6 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
             currentGrid[x3][y4].direction = "both";
           }
           y4 += 1;
-          DEV: console.log("increased y");
         } else {
           if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "down") {
             currentGrid[x3][y4].direction = "down";
@@ -23721,19 +23749,15 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
             currentGrid[x3][y4].direction = "both";
           }
           x3 += 1;
-          DEV: console.log("increased x");
-        }
-        DEV: console.log("First row" + currentGrid[0]);
-        for (let h6 = 0; h6 < word.length; h6++) {
-          console.log(currentGrid[0][h6].answer);
         }
       }
     }
     this.grid = currentGrid;
     this.width = currentGrid.length;
     this.height = currentGrid[0].length;
-    DEV: console.log(currentGrid);
-    this.newCrosswordGrid(document);
+    DEV: console.log("This is the currently saved grid for the whole file:");
+    DEV: console.log(this.grid);
+    this.updateCrosswordGrid(document);
   }
   render() {
     return x`<div>
