@@ -23681,14 +23681,22 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     const minDim = wordsOG.map((word) => word.length).reduce((max2, len) => Math.max(max2, len), 0);
     let width = minDim;
     let height = minDim;
-    let currentGrid = Array.from({ length: width }, () => Array(height).fill(defaultCell()));
-    let bestGrid = Array.from({ length: width }, () => Array(height).fill(defaultCell()));
+    let currentGrid = [];
+    for (let i10 = 0; i10 < height; i10++) {
+      currentGrid[i10] = [];
+      for (let j3 = 0; j3 < width; j3++) {
+        currentGrid[i10][j3] = defaultCell();
+      }
+    }
+    DEV: console.log(currentGrid);
+    let bestGrid;
     let rankings;
     let rankedList;
     let i9 = 0;
     for (let word of wordsOG) {
-      addWord(word, i9, 0, "across");
+      addWord(word, i9, 0, "down");
       i9 += 1;
+      DEV: console.log(currentGrid);
     }
     function addWord(word, inputX, inputY, direction) {
       let x3 = inputX;
@@ -23696,22 +23704,29 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       for (let j3 = 0; j3 < word.length; j3++) {
         currentGrid[x3][y4].answer = word[j3];
         currentGrid[x3][y4].white = true;
+        DEV: console.log("(" + x3 + ", " + y4 + "): " + word[j3]);
+        DEV: console.log("Before setting direction: answer = " + currentGrid[x3][y4].answer);
         if (direction == "across") {
-          if (currentGrid[x3][y4].direction == "" || currentGrid[x3][y4].direction == "across") {
+          if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "across") {
             currentGrid[x3][y4].direction = "across";
           } else {
             currentGrid[x3][y4].direction = "both";
           }
           y4 += 1;
+          DEV: console.log("increased y");
         } else {
-          if (currentGrid[x3][y4].direction == "" || currentGrid[x3][y4].direction == "down") {
+          if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "down") {
             currentGrid[x3][y4].direction = "down";
           } else {
             currentGrid[x3][y4].direction = "both";
           }
           x3 += 1;
+          DEV: console.log("increased x");
         }
-        DEV: console.log(currentGrid[x3]);
+        DEV: console.log("First row" + currentGrid[0]);
+        for (let h6 = 0; h6 < word.length; h6++) {
+          console.log(currentGrid[0][h6].answer);
+        }
       }
     }
     this.grid = currentGrid;

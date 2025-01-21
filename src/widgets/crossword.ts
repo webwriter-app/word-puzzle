@@ -520,9 +520,18 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         let width = minDim
         let height = minDim
 
-        let currentGrid = Array.from({ length: width}, () => Array(height).fill(defaultCell()))
-//        let bestGrid: Cell[][]
-        let bestGrid = Array.from({ length: width}, () => Array(height).fill(defaultCell())) // Cell[][]
+        let currentGrid: Cell[][] = []
+
+        for(let i = 0; i < height; i++) {
+            currentGrid[i] = []
+            for (let j = 0; j < width; j++) {
+                currentGrid[i][j] = defaultCell()
+            }
+        }
+
+        DEV: console.log(currentGrid)
+
+        let bestGrid: Cell[][]
 
         let rankings: Number[]
         let rankedList: String[]
@@ -531,8 +540,10 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
         // Add words to grid (simplified)
         for(let word of wordsOG) {
-            addWord(word, i, 0, "across")
+            addWord(word, i, 0, "down")
             i += 1
+
+            DEV: console.log(currentGrid)
         }
         
         function addWord(word: String, inputX: number, inputY: number, direction: string) {
@@ -540,28 +551,38 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             // CURRENT TODO Left off here
             let x = inputX
             let y = inputY
+
+
             for(let j = 0; j < word.length; j++) {
                 currentGrid[x][y].answer = word[j]
                 currentGrid[x][y].white = true
+                DEV: console.log("("+ x +", " + y + "): " + word[j])
+
+                DEV: console.log("Before setting direction: answer = " + currentGrid[x][y].answer)
                 if (direction == "across") {
-                    if (currentGrid[x][y].direction == "" || currentGrid[x][y].direction == "across") {
+                    if (currentGrid[x][y].direction == "" || !currentGrid[x][y].direction || currentGrid[x][y].direction == "across") {
                         currentGrid[x][y].direction = "across"
                     }
                     else {
                         currentGrid[x][y].direction = "both"
                     }
                     y += 1
+                    DEV: console.log("increased y")
                 }
                 else {
-                    if (currentGrid[x][y].direction == "" || currentGrid[x][y].direction == "down") {
+                    if (currentGrid[x][y].direction == "" || !currentGrid[x][y].direction || currentGrid[x][y].direction == "down") {
                         currentGrid[x][y].direction = "down"
                     }
                     else {
                         currentGrid[x][y].direction = "both"
                     }
                     x += 1
+                    DEV: console.log("increased x")
                 }
-                DEV: console.log(currentGrid[x])
+                DEV: console.log("First row" + currentGrid[0])
+                for(let h = 0; h < word.length; h++) {
+                    console.log(currentGrid[0][h].answer)
+                }
             }
         }
 
