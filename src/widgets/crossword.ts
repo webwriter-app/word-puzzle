@@ -73,7 +73,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
     @property({ type: HTMLDivElement, state: true, attribute: false})
-    gridEl: HTMLDivElement
+    private gridEl: HTMLDivElement
 
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
@@ -81,7 +81,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
     @property({ type: HTMLTableElement, state: true })
-    clueBox: HTMLTableElement
+    private clueBox: HTMLTableElement
 
     /**
      * @constructor
@@ -94,6 +94,9 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.width = width
         this.height = height
         this.grid = Array.from({ length: width}, () => Array(height).fill(defaultCell()))
+        this.gridEl = this.newCrosswordGrid(document)
+        this.clueBox = this.newClueBox(document)
+
     }
 
     /**
@@ -296,24 +299,6 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         };
     }
 
-    /**
-     * @constructor
-     * Create the crossword {@link gridEl} and {@link clueBox |clue panel}.
-     * 
-     * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-     * Crossword element for word puzzle widget. Includes grid and clue panel elements.
-     * @returns {HTMLDivElement} the DOM wrapper element for the crossword puzzle element
-     * Source: crosswords-js
-     */
-    newCrossword(document) {
-        let wrapper = document.createElement('div')
-        wrapper.classList.add('wrapper')
-        this.gridEl = this.newCrosswordGrid(document)
-        wrapper.appendChild(this.gridEl)
-        //wrapper.appendChild(this.clueBox)
-        this.clueBox = wrapper.appendChild(this.newClueBox(document))
-        return wrapper
-    }
 
     /**
      * @constructor
@@ -356,8 +341,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             }
         }
         // gridEl is correctly calculated
-        console.log("gridElLocal is supposed to be a filled grid now:")
-        console.log(gridElLocal)
+        // console.log("gridElLocal is supposed to be a filled grid now:")
+        // console.log(gridElLocal)
         this.gridEl.setHTMLUnsafe(gridElLocal.getHTML())
 
         // Add event listener again
@@ -370,8 +355,11 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
                     });
         }
         //this.gridEl.replaceWith(gridElLocal.cloneNode(true))
+        // The below code replaces one element with another so you lose the reference to what was originally in the DOM
+        //this.gridEl = gridElLocal
         DEV: console.log("Grid should have been replaced")
-        return this.gridEl
+        this.renderGrid()
+        return 
     }
 
     /**
@@ -629,13 +617,17 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.updateCrosswordGrid(document)
     }
 
-    
+    renderGrid() {
+        return html`${this.gridEl}`
+    }
+
     render() {
-        return (html`<div>
-                ${this.newCrossword(this.shadowRoot)}
+//       return (html`<div>
+//               ${this.newCrossword(this.shadowRoot)}
+       return (html`<div class="wrapper">
+               ${this.renderGrid()} ${this.clueBox}
             </div>
             `)
     }
-
 }
 

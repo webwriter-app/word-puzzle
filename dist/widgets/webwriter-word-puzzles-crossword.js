@@ -23302,6 +23302,8 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.width = width;
     this.height = height;
     this.grid = Array.from({ length: width }, () => Array(height).fill(defaultCell()));
+    this.gridEl = this.newCrosswordGrid(document);
+    this.clueBox = this.newClueBox(document);
   }
   /**
    * @constructor
@@ -23503,23 +23505,6 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   }
   /**
    * @constructor
-   * Create the crossword {@link gridEl} and {@link clueBox |clue panel}.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * Crossword element for word puzzle widget. Includes grid and clue panel elements.
-   * @returns {HTMLDivElement} the DOM wrapper element for the crossword puzzle element
-   * Source: crosswords-js
-   */
-  newCrossword(document2) {
-    let wrapper = document2.createElement("div");
-    wrapper.classList.add("wrapper");
-    this.gridEl = this.newCrosswordGrid(document2);
-    wrapper.appendChild(this.gridEl);
-    this.clueBox = wrapper.appendChild(this.newClueBox(document2));
-    return wrapper;
-  }
-  /**
-   * @constructor
    * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
    * 
    * Dimensions are currently based on {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height}.
@@ -23555,8 +23540,6 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
         DEV: console.log("added a cell, hopefully");
       }
     }
-    console.log("gridElLocal is supposed to be a filled grid now:");
-    console.log(gridElLocal);
     this.gridEl.setHTMLUnsafe(gridElLocal.getHTML());
     for (let child of this.gridEl.querySelectorAll(".cell")) {
       child.addEventListener("keypress", (e13) => {
@@ -23567,7 +23550,8 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       });
     }
     DEV: console.log("Grid should have been replaced");
-    return this.gridEl;
+    this.renderGrid();
+    return;
   }
   /**
    * @constructor
@@ -23759,9 +23743,12 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     DEV: console.log(this.grid);
     this.updateCrosswordGrid(document);
   }
+  renderGrid() {
+    return x`${this.gridEl}`;
+  }
   render() {
-    return x`<div>
-                ${this.newCrossword(this.shadowRoot)}
+    return x`<div class="wrapper">
+               ${this.renderGrid()} ${this.clueBox}
             </div>
             `;
   }
