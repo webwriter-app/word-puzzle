@@ -14,12 +14,17 @@ import {customElement, property, query, queryAssignedElements} from 'lit/decorat
  * @module crossword
  */
 import { WebwriterWordPuzzlesCrossword } from './crossword';
+import { WebwriterWordPuzzlesCrosswordGrid } from './crossword-grid';
+import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
 //import {customElement, property, query, queryAssignedElements} from 'lit/decorators.js';
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 setBasePath('./node_modules/@shoelace-style/shoelace/dist');
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
+    "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword;
+    "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
+    "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
   }
 }
 

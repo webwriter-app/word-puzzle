@@ -1515,6 +1515,226 @@ WebwriterWordPuzzles = __decorateClass([
   t3("webwriter-word-puzzles")
 ], WebwriterWordPuzzles);
 
+// src/widgets/crossword-grid.ts
+function defaultCell() {
+  return {
+    white: false,
+    answer: null,
+    number: null,
+    direction: null
+  };
+}
+var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
+  grid;
+  width;
+  height;
+  gridEl;
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   */
+  constructor(width = 9, height = 9) {
+    super();
+    this.width = width;
+    this.height = height;
+    this.grid = Array.from({ length: width }, () => Array(height).fill(defaultCell()));
+  }
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   */
+  static get styles() {
+    return i`
+            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+                display: none;
+            }
+            td:focus {
+                background-color: white;
+            }
+            div.grid {
+                display: grid;
+                flex-basis: content;
+                grid-template-columns: auto;
+                grid-template-rows: auto;
+                justify-content: center;
+                align-content: center;
+                box-sizing: border-box;
+                width: max-content;
+                height: max-content;
+                border: 2px solid black;
+            }
+            div.cell {
+                display: grid;
+                aspect-ratio: 1;
+                height: 100%;
+                width: 100%;
+                min-width: 40px;
+                min-height: 40px;
+                border: 1px solid black;
+                max-width: 40px;
+                max-height: 40px;
+                position: relative;
+                align-items: center;
+                text-align: center;
+                font-size: 18pt;
+            }
+            div.cell[black] {
+                background-color: black;
+            }
+            div.cell:focus {
+                background-color: pink;
+            }
+            `;
+  }
+  /**
+   * @constructor
+   * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
+   * 
+   * Dimensions are currently based on {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height}.
+   * 
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * @returns {HTMLDivElement} the DOM element for the grid.
+   * Source: crosswords-js
+   */
+  newCrosswordGrid(document2) {
+    let gridEl = document2.createElement("div");
+    gridEl.classList.add("grid");
+    for (let y4 = 1; y4 <= this.height; y4 += 1) {
+      for (let x3 = 1; x3 <= this.width; x3 += 1) {
+        gridEl.appendChild(this.newCell(document2, x3, y4));
+        DEV: console.log("added a cell, hopefully");
+      }
+    }
+    this.gridEl = gridEl;
+    return gridEl;
+  }
+  /**
+   * @constructor
+   * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
+   * 
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * @param {number} x the row of the cell.
+   * @param {number} y the column of the cell.
+   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
+   * @returns {HTMLDivElement} the DOM element for the _cell_
+   * Source: crosswords-js
+   */
+  newCell(document2, x3, y4) {
+    const cellDOM = document2.createElement("div");
+    cellDOM.className = "cell";
+    cellDOM.style.display = "grid";
+    cellDOM.style.gridColumnStart = x3.toString();
+    cellDOM.style.gridRowStart = y4.toString();
+    if (!this.grid[x3 - 1][y4 - 1].white) {
+      cellDOM.setAttribute("black", "");
+      cellDOM.setAttribute("answer", "0");
+      cellDOM.contentEditable = "false";
+    } else {
+      cellDOM.contentEditable = "true";
+      cellDOM.removeAttribute("black");
+      cellDOM.setAttribute("tabindex", "0");
+    }
+    cellDOM.addEventListener("keypress", (e13) => {
+      e13.preventDefault();
+      const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
+      if (isAlphaChar(e13.key))
+        cellDOM.textContent = e13.key.toUpperCase();
+    });
+    return cellDOM;
+  }
+  /**
+   * Generates crossword puzzle based off of words in the clue box.
+   * 
+   * Based off of Agarwal and Joshi 2020
+   */
+  generateCrossword(words) {
+    let wordsOG = words;
+    DEV: console.log(wordsOG);
+    let wordsLeft = Object.assign([], wordsOG);
+    const minDim = wordsOG.map((word) => word.length).reduce((max2, len) => Math.max(max2, len), 0);
+    let width = minDim;
+    let height = minDim;
+    let currentGrid = [];
+    for (let i10 = 0; i10 < height; i10++) {
+      currentGrid[i10] = [];
+      for (let j3 = 0; j3 < width; j3++) {
+        currentGrid[i10][j3] = defaultCell();
+      }
+    }
+    DEV: console.log(currentGrid);
+    let bestGrid;
+    let rankings;
+    let rankedList;
+    let i9 = 0;
+    for (let word of wordsOG) {
+      addWord(word, i9, 0, "down");
+      i9 += 1;
+      DEV: console.log(currentGrid);
+    }
+    function addWord(word, inputX, inputY, direction) {
+      let x3 = inputX;
+      let y4 = inputY;
+      for (let j3 = 0; j3 < word.length; j3++) {
+        currentGrid[x3][y4].answer = word[j3];
+        currentGrid[x3][y4].white = true;
+        DEV: console.log("(" + x3 + ", " + y4 + "): " + word[j3]);
+        DEV: console.log("Before setting direction: answer = " + currentGrid[x3][y4].answer);
+        if (direction == "across") {
+          if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "across") {
+            currentGrid[x3][y4].direction = "across";
+          } else {
+            currentGrid[x3][y4].direction = "both";
+          }
+          y4 += 1;
+          DEV: console.log("increased y");
+        } else {
+          if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "down") {
+            currentGrid[x3][y4].direction = "down";
+          } else {
+            currentGrid[x3][y4].direction = "both";
+          }
+          x3 += 1;
+          DEV: console.log("increased x");
+        }
+        DEV: console.log("First row" + currentGrid[0]);
+        for (let h6 = 0; h6 < word.length; h6++) {
+          console.log(currentGrid[0][h6].answer);
+        }
+      }
+    }
+    this.grid = currentGrid;
+    this.width = currentGrid.length;
+    this.height = currentGrid[0].length;
+    DEV: console.log(currentGrid);
+    this.newCrosswordGrid(document);
+  }
+  render() {
+    return x`<div>
+                ${this.newCrosswordGrid(this.shadowRoot)}
+            </div>
+            `;
+  }
+};
+__decorateClass([
+  n4({ type: Array, state: true })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "grid", 2);
+__decorateClass([
+  n4({ type: Number, state: true })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "width", 2);
+__decorateClass([
+  n4({ type: Number, state: true })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "height", 2);
+__decorateClass([
+  n4({ type: HTMLDivElement, state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "gridEl", 2);
+WebwriterWordPuzzlesCrosswordGrid = __decorateClass([
+  t3("webwriter-word-puzzles-crossword-grid")
+], WebwriterWordPuzzlesCrosswordGrid);
+
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.3RPBFEDE.js
 var formCollections = /* @__PURE__ */ new WeakMap();
 var reportValidityOverloads = /* @__PURE__ */ new WeakMap();
@@ -4158,8 +4378,8 @@ function parseDuration(delay) {
   return parseFloat(delay);
 }
 function prefersReducedMotion() {
-  const query3 = window.matchMedia("(prefers-reduced-motion: reduce)");
-  return query3.matches;
+  const query4 = window.matchMedia("(prefers-reduced-motion: reduce)");
+  return query4.matches;
 }
 function stopAnimations(el) {
   return Promise.all(
@@ -4186,8 +4406,8 @@ function watch(propertyName, options) {
     const { update: update2 } = proto;
     const watchedProperties = Array.isArray(propertyName) ? propertyName : [propertyName];
     proto.update = function(changedProps) {
-      watchedProperties.forEach((property) => {
-        const key = property;
+      watchedProperties.forEach((property2) => {
+        const key = property2;
         if (changedProps.has(key)) {
           const oldValue = changedProps.get(key);
           const newValue = this[key];
@@ -23275,21 +23495,9 @@ var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
 
-// src/widgets/crossword.ts
+// src/widgets/crossword-cluebox.ts
 var eye = "assets/fontawesome-icons/wand-magic-sparkles-solid.svg";
-function defaultCell() {
-  return {
-    white: false,
-    answer: null,
-    number: null,
-    direction: null
-  };
-}
-var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
-  grid;
-  width;
-  height;
-  gridEl;
+var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   clueBox;
   /**
    * @constructor
@@ -23297,32 +23505,12 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * 
    * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
    */
-  constructor(width = 9, height = 9) {
+  constructor() {
     super();
-    this.width = width;
-    this.height = height;
-    this.grid = Array.from({ length: width }, () => Array(height).fill(defaultCell()));
-    this.gridEl = this.newCrosswordGrid(document);
     this.clueBox = this.newClueBox(document);
   }
-  /**
-   * @constructor
-   * Some constructor I apparently thought was a good idea.
-   * 
-   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
-   */
   static get styles() {
     return i`
-            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-                display: none;
-            }
-
-            div.wrapper {
-                width: 100%;
-                align-content: left;
-                justify-content: space-around;
-                display: flex;
-            }
             table.clueBox {
                 // Temporary width and height
                 min-width: 200px;
@@ -23456,138 +23644,15 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
                 align-content: center;
                 vertical-align: middle;
             }
-
-            td:focus {
-                background-color: white;
-            }
-
-            div.grid {
-                display: grid;
-                flex-basis: content;
-                grid-template-columns: auto;
-                grid-template-rows: auto;
-                justify-content: center;
-                align-content: center;
-                box-sizing: border-box;
-                width: max-content;
-                height: max-content;
-                border: 2px solid black;
-            }
-            div.cell {
-                display: grid;
-                aspect-ratio: 1;
-                height: 100%;
-                width: 100%;
-                min-width: 40px;
-                min-height: 40px;
-                border: 1px solid black;
-                max-width: 40px;
-                max-height: 40px;
-                position: relative;
-                align-items: center;
-                text-align: center;
-                font-size: 18pt;
-            }
-            div.cell[black] {
-                background-color: black;
-            }
-            div.cell:focus {
-                background-color: pink;
-            }
             `;
   }
   // Registering custom elements
   static get scopedElements() {
     return {
       "sl-button": button_default,
-      "sl-icon": icon_default
+      "sl-icon": icon_default,
+      "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
     };
-  }
-  /**
-   * @constructor
-   * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
-   * 
-   * Dimensions are currently based on {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height}.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @returns {HTMLDivElement} the DOM element for the grid.
-   * Source: crosswords-js
-   */
-  newCrosswordGrid(document2) {
-    let gridEl = document2.createElement("div");
-    gridEl.classList.add("grid");
-    for (let x3 = 1; x3 <= this.height; x3 += 1) {
-      for (let y4 = 1; y4 <= this.width; y4 += 1) {
-        gridEl.appendChild(this.newCell(document2, x3, y4));
-        DEV: console.log("added a cell, hopefully");
-      }
-    }
-    this.gridEl = gridEl;
-    return gridEl;
-  }
-  updateCrosswordGrid(document2) {
-    DEV: console.log("updating crossword grid");
-    let gridElLocal = null;
-    console.log("gridElLocal is supposed to be null:");
-    console.log(gridElLocal);
-    gridElLocal = document2.createElement("div").cloneNode(true);
-    console.log("gridElLocal is supposed to be an empty div:");
-    console.log(gridElLocal);
-    gridElLocal.classList.add("grid");
-    for (let x3 = 1; x3 <= this.height; x3 += 1) {
-      for (let y4 = 1; y4 <= this.width; y4 += 1) {
-        gridElLocal.appendChild(this.newCell(document2, x3, y4));
-        DEV: console.log("added a cell, hopefully");
-      }
-    }
-    this.gridEl.setHTMLUnsafe(gridElLocal.getHTML());
-    for (let child of this.gridEl.querySelectorAll(".cell")) {
-      child.addEventListener("keypress", (e13) => {
-        e13.preventDefault();
-        const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
-        if (isAlphaChar(e13.key))
-          child.textContent = e13.key.toUpperCase();
-      });
-    }
-    DEV: console.log("Grid should have been replaced");
-    this.renderGrid();
-    return;
-  }
-  /**
-   * @constructor
-   * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @param {number} x the row of the cell.
-   * @param {number} y the column of the cell.
-   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-   * @returns {HTMLDivElement} the DOM element for the _cell_
-   * Source: crosswords-js
-   */
-  newCell(document2, x3, y4) {
-    const cellDOM = document2.createElement("div");
-    cellDOM.className = "cell";
-    cellDOM.style.display = "grid";
-    cellDOM.style.gridColumnStart = y4.toString();
-    cellDOM.style.gridRowStart = x3.toString();
-    DEV: console.log("Making cell (" + (x3 - 1) + ", " + (y4 - 1) + ")");
-    console.log(this.grid[x3 - 1][y4 - 1]);
-    if (!this.grid[x3 - 1][y4 - 1].white) {
-      cellDOM.setAttribute("black", "");
-      cellDOM.setAttribute("answer", "0");
-      cellDOM.contentEditable = "false";
-    } else {
-      cellDOM.contentEditable = "true";
-      cellDOM.removeAttribute("black");
-      cellDOM.setAttribute("tabindex", "0");
-    }
-    cellDOM.addEventListener("keypress", (e13) => {
-      e13.preventDefault();
-      const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
-      if (isAlphaChar(e13.key))
-        cellDOM.textContent = e13.key.toUpperCase();
-    });
-    return cellDOM;
   }
   /**
    * @constructor
@@ -23617,15 +23682,17 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     generateCwCell.colSpan = 2;
     const generateCwButton = generateCwCell.appendChild(document2.createElement("sl-button"));
     generateCwButton.className = "generateCwButton";
+    generateCwButton.id = "generateCwButton";
     generateCwButton.setAttribute("variant", "default");
     generateCwButton.setAttribute("size", "small");
     generateCwButton.addEventListener("click", () => {
       DEV: console.log("generate crossword");
-      this.generateCrossword();
+      DEV: console.log("TODO: add event listener");
     });
     const generateCwIcon = generateCwButton.appendChild(document2.createElement("sl-icon"));
     generateCwIcon.setAttribute("src", eye);
     generateCwIcon.setAttribute("class", "generateCwIcon");
+    DEV: console.log("rendering table body");
     const bodyTable = clueBox.createTBody();
     const tableRow = bodyTable.insertRow();
     const tableCell1 = tableRow.insertCell();
@@ -23634,6 +23701,7 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     const tableCell2 = tableRow.insertCell();
     tableCell2.setAttribute("contenteditable", "true");
     tableCell2.setAttribute("tabindex", "0");
+    DEV: console.log("create button for inserting and removing rows");
     const buttonRow = bodyTable.insertRow();
     buttonRow.id = "buttonRow";
     buttonRow.setAttribute("contenteditable", "false");
@@ -23683,6 +23751,76 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     );
     return words.filter((x3) => x3 != null);
   }
+  render() {
+    return x`<div>
+                ${this.clueBox}
+            </div>
+            `;
+  }
+};
+__decorateClass([
+  n4({ type: HTMLTableElement, state: true })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
+WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
+  t3("webwriter-word-puzzles-crossword-cluebox")
+], WebwriterWordPuzzlesCrosswordCluebox);
+
+// src/widgets/crossword.ts
+function defaultCell2() {
+  return {
+    white: false,
+    answer: null,
+    number: null,
+    direction: null
+  };
+}
+var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
+  gridWidget;
+  clueWidget;
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   */
+  constructor(width = 9, height = 9) {
+    super();
+    this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid();
+    this.gridWidget.width = width;
+    this.gridWidget.height = height;
+    this.gridWidget.grid = Array.from({ length: width }, () => Array(height).fill(defaultCell2()));
+    this.gridWidget.newCrosswordGrid(document);
+    this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
+    this.clueWidget.newClueBox(document);
+  }
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   */
+  static get styles() {
+    return i`
+            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+                display: none;
+            }
+            div.wrapper {
+                width: 100%;
+                align-content: left;
+                justify-content: space-around;
+                display: flex;
+            }
+            `;
+  }
+  // Registering custom elements
+  static get scopedElements() {
+    return {
+      "sl-button": button_default,
+      "sl-icon": icon_default,
+      "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
+      "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
+    };
+  }
   /**
    * Generates crossword puzzle based off of words in the clue box and 
    * writes it to the DOM.
@@ -23690,84 +23828,24 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword() {
-    let wordsOG = this.getWords();
+    let wordsOG = this.clueWidget.getWords();
+    this.gridWidget.generateCrossword(wordsOG);
     DEV: console.log(wordsOG);
-    let wordsLeft = Object.assign([], wordsOG);
-    const minDim = wordsOG.map((word) => word.length).reduce((max2, len) => Math.max(max2, len), 0);
-    let width = minDim;
-    let height = minDim;
-    let currentGrid = [];
-    for (let i10 = 0; i10 < height; i10++) {
-      currentGrid[i10] = [];
-      for (let j3 = 0; j3 < width; j3++) {
-        currentGrid[i10][j3] = defaultCell();
-      }
-    }
-    DEV: console.log(currentGrid);
-    let bestGrid;
-    let rankings;
-    let rankedList;
-    let i9 = 0;
-    for (let word of wordsOG) {
-      addWord(word, i9, 0, "across");
-      i9 += 1;
-      DEV: console.log(currentGrid);
-    }
-    function addWord(word, inputX, inputY, direction) {
-      let x3 = inputX;
-      let y4 = inputY;
-      for (let j3 = 0; j3 < word.length; j3++) {
-        currentGrid[x3][y4].answer = word[j3];
-        currentGrid[x3][y4].white = true;
-        if (direction == "across") {
-          if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "across") {
-            currentGrid[x3][y4].direction = "across";
-          } else {
-            currentGrid[x3][y4].direction = "both";
-          }
-          y4 += 1;
-        } else {
-          if (currentGrid[x3][y4].direction == "" || !currentGrid[x3][y4].direction || currentGrid[x3][y4].direction == "down") {
-            currentGrid[x3][y4].direction = "down";
-          } else {
-            currentGrid[x3][y4].direction = "both";
-          }
-          x3 += 1;
-        }
-      }
-    }
-    this.grid = currentGrid;
-    this.width = currentGrid.length;
-    this.height = currentGrid[0].length;
-    DEV: console.log("This is the currently saved grid for the whole file:");
-    DEV: console.log(this.grid);
-    this.updateCrosswordGrid(document);
-  }
-  renderGrid() {
-    return x`${this.gridEl}`;
   }
   render() {
     return x`<div class="wrapper">
-               ${this.renderGrid()} ${this.clueBox}
+               <webwriter-word-puzzles-crossword-grid></webwriter-word-puzzles-crossword-grid> 
+               <webwriter-word-puzzles-crossword-cluebox></webwriter-word-puzzles-crossword-cluebox> 
             </div>
             `;
   }
 };
 __decorateClass([
-  n4({ type: Array, state: true })
-], WebwriterWordPuzzlesCrossword.prototype, "grid", 2);
+  e5("webwriter-word-puzzles-crossword-grid")
+], WebwriterWordPuzzlesCrossword.prototype, "gridWidget", 2);
 __decorateClass([
-  n4({ type: Number, state: true })
-], WebwriterWordPuzzlesCrossword.prototype, "width", 2);
-__decorateClass([
-  n4({ type: Number, state: true })
-], WebwriterWordPuzzlesCrossword.prototype, "height", 2);
-__decorateClass([
-  n4({ type: HTMLDivElement, state: true, attribute: false })
-], WebwriterWordPuzzlesCrossword.prototype, "gridEl", 2);
-__decorateClass([
-  n4({ type: HTMLTableElement, state: true })
-], WebwriterWordPuzzlesCrossword.prototype, "clueBox", 2);
+  e5("webwriter-word-puzzles-crossword-cluebox")
+], WebwriterWordPuzzlesCrossword.prototype, "clueWidget", 2);
 WebwriterWordPuzzlesCrossword = __decorateClass([
   t3("webwriter-word-puzzles-crossword")
 ], WebwriterWordPuzzlesCrossword);
