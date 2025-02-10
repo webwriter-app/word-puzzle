@@ -9,6 +9,7 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
+import { WebwriterWordPuzzlesCrossword } from './crossword';
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -25,7 +26,7 @@ let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
     "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
-  }
+    }
 }
 
 
@@ -159,14 +160,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     newCrosswordGrid(document) {
         let gridEl = document.createElement('div');
         gridEl.classList.add('grid')
-        for (let y = 1; y <= this.height; y += 1) {
-            for (let x = 1; x <= this.width; x += 1) {
+        for (let x = 1; x <= this.width; x += 1) {
+            for (let y = 1; y <= this.height; y += 1) {
                 //  Build the cell element and place cell in grid element
                 gridEl.appendChild(this.newCell(document, x, y));
                 DEV: console.log("added a cell, hopefully")
             }
         }
         this.gridEl = gridEl
+        this.requestUpdate()
         return gridEl
     }
 
@@ -181,12 +183,13 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * @returns {HTMLDivElement} the DOM element for the _cell_
      * Source: crosswords-js
      */
+    // TODO This (or the newCrosswordGrid function) seems to render the grid wrong
     protected newCell(document: Document, x: number, y: number) {
         const cellDOM: HTMLDivElement = document.createElement('div');
         cellDOM.className = 'cell'
         cellDOM.style.display = 'grid'
-        cellDOM.style.gridColumnStart = (x).toString()
-        cellDOM.style.gridRowStart = (y).toString()
+        cellDOM.style.gridRowStart = (x).toString()
+        cellDOM.style.gridColumnStart = (y).toString()
         // This is just temporary for testing
 
         if (!this.grid[x-1][y-1].white) {
@@ -223,9 +226,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     generateCrossword(words: Array<String>) {
         // Initialization
 
-        // TODO make this react to the button clicking event in cluebox
+        DEV: console.log("generation triggered")
         let wordsOG = words
-        DEV: console.log(wordsOG)
 
         // Working word list
         let wordsLeft = Object.assign([], wordsOG)
@@ -245,8 +247,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
         }
 
-        DEV: console.log(currentGrid)
-
         let bestGrid: Cell[][]
 
         let rankings: Number[]
@@ -256,9 +256,11 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         // Add words to grid (simplified)
         for(let word of wordsOG) {
-            addWord(word, i, 0, "down")
+            addWord(word, i, 0, "across")
             i += 1
 
+            //addWord(word, 0, i, "down")
+            //i += 1
             DEV: console.log(currentGrid)
         }
         
@@ -295,10 +297,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     x += 1
                     DEV: console.log("increased x")
                 }
-                DEV: console.log("First row" + currentGrid[0])
-                for(let h = 0; h < word.length; h++) {
-                    console.log(currentGrid[0][h].answer)
-                }
             }
         }
 
@@ -308,7 +306,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         this.width = currentGrid.length
         this.height = currentGrid[0].length
         
-        DEV: console.log(currentGrid)
+        DEV: console.log(this.grid)
 
         // TODO Add word numbers
         this.newCrosswordGrid(document)
@@ -318,7 +316,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     
     render() {
         return (html`<div>
-                ${this.newCrosswordGrid(this.shadowRoot)}
+                ${this.gridEl}
             </div>
             `)
     }

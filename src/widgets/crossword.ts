@@ -85,9 +85,10 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
     /**
      * @constructor
-     * Some constructor I apparently thought was a good idea.
+     * Constructor for the crossword puzzle
      * 
-     * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+     * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+     * Dispatches an event to generate the crossword grid
      */
     constructor(width: number = 9, height: number = 9) {
         super()
@@ -98,7 +99,12 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.gridWidget.newCrosswordGrid(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
         this.clueWidget.newClueBox(document)
-        // TODO use event dispatching
+        this.addEventListener("generateCw", () => {
+            DEV: console.log("generateCw received with ")
+            for(let word of this.clueWidget.wordList) {
+                DEV: console.log(word)
+            }
+            this.gridWidget.generateCrossword(this.clueWidget.wordList)})
         //this.querySelector('#generateCwButton').addEventListener('click', () => {
         //     this.gridWidget.generateCrossword(this.clueWidget.getWords())
         //}
@@ -106,10 +112,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     }
 
     /**
-     * @constructor
-     * Some constructor I apparently thought was a good idea.
+     * Styles
      * 
-     * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      */
     static get styles() {
         return css`
@@ -142,9 +146,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * Based off of Agarwal and Joshi 2020
      */
     protected generateCrossword() {
-
         // Initialization
-        let wordsOG = this.clueWidget.getWords()
+        let wordsOG = this.clueWidget.getNewWords()
         this.gridWidget.generateCrossword(wordsOG)
         DEV: console.log(wordsOG)
     }
@@ -154,8 +157,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 //       return (html`<div>
 //               ${this.newCrossword(this.shadowRoot)}
        return (html`<div class="wrapper">
-               <webwriter-word-puzzles-crossword-grid></webwriter-word-puzzles-crossword-grid> 
-               <webwriter-word-puzzles-crossword-cluebox></webwriter-word-puzzles-crossword-cluebox> 
+               ${this.gridWidget}
+                ${this.clueWidget}
             </div>
             `)
     }

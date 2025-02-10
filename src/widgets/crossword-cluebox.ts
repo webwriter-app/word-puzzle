@@ -50,6 +50,15 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     clueBox: HTMLTableElement
 
     /**
+     * 
+     * The panel element of the crossword puzzle, containing the words and clues. (WIP)
+     * 
+     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+     */
+    wordList: Array<String>
+
+
+    /**
      * @constructor
      * Some constructor I apparently thought was a good idea.
      * 
@@ -58,6 +67,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     constructor() {
         super()
         this.clueBox = this.newClueBox(document)
+        this.wordList = []
     }
 
     static get styles() {
@@ -247,8 +257,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         generateCwButton.setAttribute('size', 'small')
         // TODO Add custom event
         generateCwButton.addEventListener('click', () => {
-            DEV: console.log("generate crossword")
-            DEV: console.log("TODO: add event listener")
+            this.wordList = this.getNewWords()
+            const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true, detail: {
+                wordList: this.wordList
+            }})
+            this.dispatchEvent(genClicked)
         })
         const generateCwIcon = generateCwButton.appendChild(document.createElement('sl-icon'))
         generateCwIcon.setAttribute('src', eye)
@@ -316,8 +329,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     /**
      * Extracts the words from the cluebox
+     * This works
+     * 
      */
-    getWords() {
+    getNewWords() {
         const rows = this.clueBox.querySelectorAll("tbody tr")
 
         const words: string[] = Array.from(rows).map(row => 
@@ -336,4 +351,3 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     }
 
 }
-

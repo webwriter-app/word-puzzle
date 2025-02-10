@@ -1603,13 +1603,14 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   newCrosswordGrid(document2) {
     let gridEl = document2.createElement("div");
     gridEl.classList.add("grid");
-    for (let y4 = 1; y4 <= this.height; y4 += 1) {
-      for (let x3 = 1; x3 <= this.width; x3 += 1) {
+    for (let x3 = 1; x3 <= this.width; x3 += 1) {
+      for (let y4 = 1; y4 <= this.height; y4 += 1) {
         gridEl.appendChild(this.newCell(document2, x3, y4));
         DEV: console.log("added a cell, hopefully");
       }
     }
     this.gridEl = gridEl;
+    this.requestUpdate();
     return gridEl;
   }
   /**
@@ -1623,12 +1624,13 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * @returns {HTMLDivElement} the DOM element for the _cell_
    * Source: crosswords-js
    */
+  // TODO This (or the newCrosswordGrid function) seems to render the grid wrong
   newCell(document2, x3, y4) {
     const cellDOM = document2.createElement("div");
     cellDOM.className = "cell";
     cellDOM.style.display = "grid";
-    cellDOM.style.gridColumnStart = x3.toString();
-    cellDOM.style.gridRowStart = y4.toString();
+    cellDOM.style.gridRowStart = x3.toString();
+    cellDOM.style.gridColumnStart = y4.toString();
     if (!this.grid[x3 - 1][y4 - 1].white) {
       cellDOM.setAttribute("black", "");
       cellDOM.setAttribute("answer", "0");
@@ -1652,8 +1654,8 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword(words) {
+    DEV: console.log("generation triggered");
     let wordsOG = words;
-    DEV: console.log(wordsOG);
     let wordsLeft = Object.assign([], wordsOG);
     const minDim = wordsOG.map((word) => word.length).reduce((max2, len) => Math.max(max2, len), 0);
     let width = minDim;
@@ -1665,13 +1667,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         currentGrid[i10][j3] = defaultCell();
       }
     }
-    DEV: console.log(currentGrid);
     let bestGrid;
     let rankings;
     let rankedList;
     let i9 = 0;
     for (let word of wordsOG) {
-      addWord(word, i9, 0, "down");
+      addWord(word, i9, 0, "across");
       i9 += 1;
       DEV: console.log(currentGrid);
     }
@@ -1700,21 +1701,17 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           x3 += 1;
           DEV: console.log("increased x");
         }
-        DEV: console.log("First row" + currentGrid[0]);
-        for (let h6 = 0; h6 < word.length; h6++) {
-          console.log(currentGrid[0][h6].answer);
-        }
       }
     }
     this.grid = currentGrid;
     this.width = currentGrid.length;
     this.height = currentGrid[0].length;
-    DEV: console.log(currentGrid);
+    DEV: console.log(this.grid);
     this.newCrosswordGrid(document);
   }
   render() {
     return x`<div>
-                ${this.newCrosswordGrid(this.shadowRoot)}
+                ${this.gridEl}
             </div>
             `;
   }
@@ -23500,6 +23497,13 @@ var eye = "assets/fontawesome-icons/wand-magic-sparkles-solid.svg";
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   clueBox;
   /**
+   * 
+   * The panel element of the crossword puzzle, containing the words and clues. (WIP)
+   * 
+   * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+   */
+  wordList;
+  /**
    * @constructor
    * Some constructor I apparently thought was a good idea.
    * 
@@ -23508,6 +23512,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.clueBox = this.newClueBox(document);
+    this.wordList = [];
   }
   static get styles() {
     return i`
@@ -23686,8 +23691,11 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     generateCwButton.setAttribute("variant", "default");
     generateCwButton.setAttribute("size", "small");
     generateCwButton.addEventListener("click", () => {
-      DEV: console.log("generate crossword");
-      DEV: console.log("TODO: add event listener");
+      this.wordList = this.getNewWords();
+      const genClicked = new CustomEvent("generateCw", { bubbles: true, composed: true, detail: {
+        wordList: this.wordList
+      } });
+      this.dispatchEvent(genClicked);
     });
     const generateCwIcon = generateCwButton.appendChild(document2.createElement("sl-icon"));
     generateCwIcon.setAttribute("src", eye);
@@ -23743,8 +23751,10 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   /**
    * Extracts the words from the cluebox
+   * This works
+   * 
    */
-  getWords() {
+  getNewWords() {
     const rows = this.clueBox.querySelectorAll("tbody tr");
     const words = Array.from(rows).map(
       (row) => row.querySelector("td")?.textContent?.trim() || null
@@ -23779,9 +23789,10 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   clueWidget;
   /**
    * @constructor
-   * Some constructor I apparently thought was a good idea.
+   * Constructor for the crossword puzzle
    * 
-   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   * Dispatches an event to generate the crossword grid
    */
   constructor(width = 9, height = 9) {
     super();
@@ -23792,12 +23803,17 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.gridWidget.newCrosswordGrid(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
     this.clueWidget.newClueBox(document);
+    this.addEventListener("generateCw", () => {
+      DEV: console.log("generateCw received with ");
+      for (let word of this.clueWidget.wordList) {
+        DEV: console.log(word);
+      }
+      this.gridWidget.generateCrossword(this.clueWidget.wordList);
+    });
   }
   /**
-   * @constructor
-   * Some constructor I apparently thought was a good idea.
+   * Styles
    * 
-   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
    */
   static get styles() {
     return i`
@@ -23828,14 +23844,14 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword() {
-    let wordsOG = this.clueWidget.getWords();
+    let wordsOG = this.clueWidget.getNewWords();
     this.gridWidget.generateCrossword(wordsOG);
     DEV: console.log(wordsOG);
   }
   render() {
     return x`<div class="wrapper">
-               <webwriter-word-puzzles-crossword-grid></webwriter-word-puzzles-crossword-grid> 
-               <webwriter-word-puzzles-crossword-cluebox></webwriter-word-puzzles-crossword-cluebox> 
+               ${this.gridWidget}
+                ${this.clueWidget}
             </div>
             `;
   }
