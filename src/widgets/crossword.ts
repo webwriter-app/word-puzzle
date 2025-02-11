@@ -26,11 +26,11 @@ import minus from 'bootstrap-icons/icons/dash.svg';
 let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
 
 declare global {interface HTMLElementTagNameMap {
-    "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword;
-    "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
-    "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
-  }
+        "webwriter-word-puzzles": WebwriterWordPuzzles;
+        "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword;
+        "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
+        "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
+    }
 }
 
 
@@ -154,10 +154,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
 
     render() {
-//       return (html`<div>
-//               ${this.newCrossword(this.shadowRoot)}
-       return (html`<div class="wrapper">
-               ${this.gridWidget}
+        return (html`<div class="wrapper">
+                ${this.gridWidget}
                 ${this.clueWidget}
             </div>
             `)

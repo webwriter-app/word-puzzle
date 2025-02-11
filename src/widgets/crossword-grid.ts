@@ -99,10 +99,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     }
 
     /**
-     * @constructor
-     * Some constructor I apparently thought was a good idea.
-     * 
-     * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+     * Styles for the crossword grid.
+     * clue-label based off of crossword-js
      */
     static get styles() {
         return css`
@@ -126,6 +124,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             div.cell {
                 display: grid;
+                grid-template-columns: repeat(3, 25%, [col-start]);
+                grid-template-rows: [row1-start] 25% [row1-end row2-start] 75% [row2-end];
                 aspect-ratio: 1;
                 height: 100%;
                 width: 100%;
@@ -134,7 +134,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 border: 1px solid black;
                 max-width: 40px;
                 max-height: 40px;
-                position: relative;
+                position: center;
                 align-items: center;
                 text-align: center;
                 font-size: 18pt;
@@ -144,6 +144,27 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             div.cell:focus {
                 background-color: pink;
+            }
+            .cell-letter {
+                grid-column-start: 1;
+                grid-column-end: span 100%;
+                grid-row-start: row1-start;
+                grid-row-end: span 100%;
+                height: 100%;
+                width: 100%;
+                position: center;
+                font-size: 18pt;
+            }
+            .clue-label {
+                grid-column-start: 1;
+                grid-column-end: span 25%;
+                grid-row-start: row1-start;
+                grid-row-end: span row1-end;
+                position: absolute;
+                margin: 1px 0px 0px 1px;
+                font-size: 8pt;
+                place-self: start;
+                pointer-events: none;
             }
             `
     }
@@ -183,7 +204,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * @returns {HTMLDivElement} the DOM element for the _cell_
      * Source: crosswords-js
      */
-    // TODO This (or the newCrosswordGrid function) seems to render the grid wrong
     protected newCell(document: Document, x: number, y: number) {
         const cellDOM: HTMLDivElement = document.createElement('div');
         cellDOM.className = 'cell'
@@ -202,6 +222,19 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             cellDOM.removeAttribute("black")
             // This is how you make divs focusable
             cellDOM.setAttribute("tabindex", "0")
+            // TODO clue label disappears if you type something in the cell
+            const cellLetter = document.createElement('div');
+            cellLetter.classList.add('cell-letter')
+            cellDOM.appendChild(cellLetter)
+            if (this.grid[x-1][y-1].number) {
+                const numberText = document.createElement('div');
+                numberText.classList.add('clue-label');
+                numberText.contentEditable = "false";
+                numberText.innerHTML = this.grid[x-1][y-1].number.toString();
+                cellDOM.appendChild(numberText);
+            }
+
+
         }
 
         /**
@@ -213,7 +246,11 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             e.preventDefault(); // Prevent default character insertion
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
             if (isAlphaChar(e.key))
-                cellDOM.textContent = e.key.toUpperCase(); // Replace content with pressed key
+                if (cellDOM.querySelector('.cell-letter')) {
+                    cellDOM.querySelector('.cell-letter').textContent = e.key.toUpperCase()
+                }
+                else
+                    cellDOM.textContent = e.key.toUpperCase(); // Replace content with pressed key
         });
         return cellDOM
     }
@@ -251,6 +288,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         let rankings: Number[]
         let rankedList: String[]
+        let clueCount: number
+
+        clueCount = 0
         
         let i = 0
 
@@ -270,13 +310,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             let x = inputX
             let y = inputY
 
+            // Add clue number to the cell
+            if (!currentGrid[x][y].number) {
+                currentGrid[x][y].number = clueCount + 1
+                clueCount += 1
+            }
 
             for(let j = 0; j < word.length; j++) {
                 currentGrid[x][y].answer = word[j]
                 currentGrid[x][y].white = true
-                DEV: console.log("("+ x +", " + y + "): " + word[j])
-
-                DEV: console.log("Before setting direction: answer = " + currentGrid[x][y].answer)
                 if (direction == "across") {
                     if (currentGrid[x][y].direction == "" || !currentGrid[x][y].direction || currentGrid[x][y].direction == "across") {
                         currentGrid[x][y].direction = "across"
