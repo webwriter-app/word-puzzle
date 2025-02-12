@@ -84,6 +84,13 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     private clueWidget: WebwriterWordPuzzlesCrosswordCluebox
 
     /**
+     * Current context; true = across, false = down.
+     */
+    @property({ type: Boolean, state: true })
+    across: true // @type {boolean}
+
+
+    /**
      * @constructor
      * Constructor for the crossword puzzle
      * 
@@ -93,7 +100,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     constructor(width: number = 9, height: number = 9) {
         super()
         this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
-        this.gridWidget.width = width
+        this.gridWidget.dimensions = width
         this.gridWidget.height = height
         this.gridWidget.grid = Array.from({ length: width}, () => Array(height).fill(defaultCell()))
         this.gridWidget.newCrosswordGrid(document)
