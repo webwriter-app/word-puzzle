@@ -97,12 +97,11 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      * Dispatches an event to generate the crossword grid
      */
-    constructor(width: number = 9, height: number = 9) {
+    constructor(dimension: number = 9) {
         super()
         this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
-        this.gridWidget.dimensions = width
-        this.gridWidget.height = height
-        this.gridWidget.grid = Array.from({ length: width}, () => Array(height).fill(defaultCell()))
+        this.gridWidget.dimensions = dimension
+        this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGrid(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
         this.clueWidget.newClueBox(document)

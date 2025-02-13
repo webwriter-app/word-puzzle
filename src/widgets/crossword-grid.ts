@@ -287,7 +287,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             word: string;
             x: number; // x coordinate
             y: number; // y coordinate
-            across: boolean; // true if across, false if down
+            direction: string; // true if across, false if down
         }
 
         /** The words that have been placed into the current grid */
@@ -339,78 +339,101 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
         */
         function placeable(wordNew: string): PlacedWord[] {
-            if (wordsPlaced = []) {
-                // TODO Calculate the approximate middle of the grid and place it horizontally
-
+            if (wordsPlaced.length == 0) {
                 let possiblePlacementX = Math.floor(currentGrid.length/2 - 1);
                 let possiblePlacementY = Math.floor(currentGrid.length/2) - Math.floor(wordNew.length/2);
 
-                let possiblePlacement: PlacedWord = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, across: true}
+                let possiblePlacement: PlacedWord = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
 
-                DEV: console.log([possiblePlacement])
                 return [possiblePlacement]
             }
 
             /** Function for determining whether a word is placeable in the grid. */
-            let possiblePlacements: PlacedWord[] 
+            let possiblePlacements: PlacedWord[]  = []
 
            // For every word already placed in the grid,
            // Go through all of its possible intersections with the new word
             for (let placedWord of wordsPlaced) {
                 let intersections = intersecting(wordNew, placedWord.word)
-
-                let possiblePlacement: PlacedWord
-
-                possiblePlacement.across = placedWord.across ? false : true
-                let possibleX, possibleY: number
+                let possibleDirection: string
+                if (placedWord.direction == "across") {
+                    possibleDirection = "down"
+                }
+                else {
+                    possibleDirection = "across"
+                }
 
                 // Calculate coordinates of a possible placement
                 for (let intersection of intersections) {
                     // New word should be vertical
-                    if (placedWord.across) {
-                        possiblePlacement.x = placedWord.x - intersection[0]
-                        possiblePlacement.y = placedWord.y + intersection[1]
+                    let possibleX, possibleY: number
+                    if (possibleDirection == "down") {
+                        possibleX = placedWord.x - intersection[0]
+                        possibleY = placedWord.y + intersection[1]
                     }
                     // New word should be horizontal
                     else {
-                        possiblePlacement.x =  placedWord.x + intersection[1]
-                        possiblePlacement.y = placedWord.y - intersection[0]
+                        possibleX =  placedWord.x + intersection[1]
+                        possibleY = placedWord.y - intersection[0]
                     }
 
-                    // NOTE Include indices that are not on the grid anymore for the new word
-
-                    // Test for collisions with existing words
+                    // Test for collisions with existing words and whether adjacent squares would be white
                     let noClash = true
+                    let notAdjacent = true
+                    let withinGrid = true
 
-                    if (possiblePlacement.across) {
+                    // Currently doesn't support the word being added if the grid is too small for it
+                    if (possibleDirection == "across") {
                         for (let i = 0; i < wordNew.length; i++) {
                             if (i != intersection[0]) {
-                                if(i + possibleY >= 0)
-                                    noClash = currentGrid[possibleX][possibleY + i].white ? false : true
-                                
+                                if(i + possibleY >= 0 && i + possibleY < dimension)
+                                    noClash = noClash && !currentGrid[possibleX][possibleY + i].white
+                                try {
+                                    notAdjacent = notAdjacent && !currentGrid[possibleX + 1][possibleY + i].white
+                                } catch(error) {
+                                    DEV: console.log("Adjacency check: No cells below")
+                                }
+                                try {
+                                    notAdjacent = notAdjacent && !currentGrid[possibleX - 1][possibleY + i].white
+                                } catch(error) {
+                                    DEV: console.log("Adjacency check: No cells above")
+                                }
                             }
                         }
                     }
                     else {
                         for (let i = 0; i < wordNew.length; i++) {
                             if (i != intersection[0]) {
-                                if(i + possibleX >= 0)
-                                    noClash = currentGrid[possibleX + i][possibleY].white ? false : true
+                                if(i + possibleX >= 0 && i + possibleX < dimension)
+                                    noClash = noClash && !currentGrid[possibleX + i][possibleY].white
+                                // Test for adjacent squares
+                                try {
+                                    notAdjacent = notAdjacent && !currentGrid[possibleX + i][possibleY + 1].white
+                                } catch(error) {
+                                    DEV: console.log("Adjacency check: No cells to the right")
+                                }
+                                try {
+                                    notAdjacent = notAdjacent && !currentGrid[possibleX + i][possibleY - 1].white
+                                } catch(error) {
+                                    DEV: console.log("Adjacency check: No cells to the left")
+                                }
                             }
                         }
                     }
 
-                    possiblePlacements.push({...possiblePlacement})
+                    let possiblePlacement: PlacedWord = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
+
+                    if(noClash && notAdjacent && withinGrid){
+                        possiblePlacements.push({...possiblePlacement})
+                    }
 
                 }
 
             }
 
-            // TODO test all the placements to make sure they don't cross over already assigned squares, 
+            // test all the placements to make sure they don't cross over already assigned squares, 
                 // or have adjacent squares that don't belong to that word
-
-            // TODO Prioritize word placement that doesn't require resizing the grid
-            
+            DEV: console.log(possiblePlacements)
             return possiblePlacements
         }
 
@@ -418,10 +441,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
             let possiblePlacementsNoResize: PlacedWord[] = []
 
+            // Prioritize word placement that doesn't require resizing the grid
+            try {
             for (let placementOption of possiblePlacementOptions) {
                 if (placementOption.x >= 0 && placementOption.y >= 0) {
                     possiblePlacementsNoResize.push({...placementOption})
                 }
+            }
+            } catch (error) {
+                DEV: console.log("Apparently possiblePlacementOptions is undefined")
             }
 
             // Just arbitrarily choose the first option
@@ -507,6 +535,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 clueCount += 1
             }
 
+            DEV: console.log("Placing " + word + " " + direction)
             for(let j = 0; j < word.length; j++) {
                 currentGrid[x][y].answer = word[j]
                 currentGrid[x][y].white = true
@@ -531,12 +560,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     DEV: console.log("increased x")
                 }
             }
-            let acrossBool = direction == "across" ? true : false
-            wordsPlaced.push({ word, x, y, across: acrossBool })
-            DEV: console.log("words before splicing")
-            DEV: console.log(wordsLeft)
-            wordsLeft.splice(wordsLeft.indexOf(word))
-            DEV: console.log("words after splicing")
+            wordsPlaced.push({ word: word, x: inputX, y: inputY, direction: direction })
+            try {
+                wordsLeft.splice(wordsLeft.indexOf(word), 1)
+            } catch(error) {
+                DEV: console.log("No words left")
+            }
             DEV: console.log(wordsLeft)
         }
 
@@ -564,7 +593,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 }
             }
             return rank
-        }
+        } 
 
         /** Local helper function for sorting the list of words based off of their ranking,
          * in ascending order.
@@ -585,21 +614,24 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             DEV: console.log("sorted indices: " + indices)
 
             for (let i = 0; i < wordsOG.length; i++) {
-                DEV: console.log("wordsOG[" + i + "]: " + indices[i])
                 rankedList[i] = wordsOG[indices[i]]
-                DEV: console.log("rankedList[" + i + "]: " + rankedList[i])
             }
 
             return rankedList;
         }
 
-
         // Add words to grid (WIP)
         for(let word of wordsOG) {
             let placement = selectPlacement(placeable(word))
-            addWord(placement.word,placement.x, placement.y, placement.across ? "across" : "down")
-
-            DEV: console.log(currentGrid)
+            try {
+            DEV: console.log("Placement for " + word + ": " + placement.x + ", " + placement.y)
+            DEV: console.log("Placing " + word)
+            addWord(placement.word,placement.x, placement.y, placement.direction)
+            }
+            catch (error) {
+                DEV: console.log("No placement for " + word + " could be found")
+            }
+            DEV: console.log("Current grid: " + currentGrid)
         }
 
         this.grid = currentGrid

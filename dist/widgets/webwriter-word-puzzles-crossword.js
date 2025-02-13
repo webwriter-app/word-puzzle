@@ -1713,54 +1713,87 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       i9++;
     }
     function placeable(wordNew) {
-      if (wordsPlaced = []) {
+      if (wordsPlaced.length == 0) {
         let possiblePlacementX = Math.floor(currentGrid.length / 2 - 1);
         let possiblePlacementY = Math.floor(currentGrid.length / 2) - Math.floor(wordNew.length / 2);
-        let possiblePlacement = { word: wordNew, x: possiblePlacementX, y: possiblePlacementY, across: true };
-        DEV: console.log([possiblePlacement]);
+        let possiblePlacement = { word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across" };
         return [possiblePlacement];
       }
-      let possiblePlacements;
+      let possiblePlacements = [];
       for (let placedWord of wordsPlaced) {
         let intersections = intersecting(wordNew, placedWord.word);
-        let possiblePlacement;
-        possiblePlacement.across = placedWord.across ? false : true;
-        let possibleX, possibleY;
+        let possibleDirection;
+        if (placedWord.direction == "across") {
+          possibleDirection = "down";
+        } else {
+          possibleDirection = "across";
+        }
         for (let intersection of intersections) {
-          if (placedWord.across) {
-            possiblePlacement.x = placedWord.x - intersection[0];
-            possiblePlacement.y = placedWord.y + intersection[1];
+          let possibleX, possibleY;
+          if (possibleDirection == "down") {
+            possibleX = placedWord.x - intersection[0];
+            possibleY = placedWord.y + intersection[1];
           } else {
-            possiblePlacement.x = placedWord.x + intersection[1];
-            possiblePlacement.y = placedWord.y - intersection[0];
+            possibleX = placedWord.x + intersection[1];
+            possibleY = placedWord.y - intersection[0];
           }
           let noClash = true;
-          if (possiblePlacement.across) {
+          let notAdjacent = true;
+          let withinGrid = true;
+          if (possibleDirection == "across") {
             for (let i9 = 0; i9 < wordNew.length; i9++) {
               if (i9 != intersection[0]) {
-                if (i9 + possibleY >= 0)
-                  noClash = currentGrid[possibleX][possibleY + i9].white ? false : true;
+                if (i9 + possibleY >= 0 && i9 + possibleY < dimension)
+                  noClash = noClash && !currentGrid[possibleX][possibleY + i9].white;
+                try {
+                  notAdjacent = notAdjacent && !currentGrid[possibleX + 1][possibleY + i9].white;
+                } catch (error) {
+                  DEV: console.log("Adjacency check: No cells below");
+                }
+                try {
+                  notAdjacent = notAdjacent && !currentGrid[possibleX - 1][possibleY + i9].white;
+                } catch (error) {
+                  DEV: console.log("Adjacency check: No cells above");
+                }
               }
             }
           } else {
             for (let i9 = 0; i9 < wordNew.length; i9++) {
               if (i9 != intersection[0]) {
-                if (i9 + possibleX >= 0)
-                  noClash = currentGrid[possibleX + i9][possibleY].white ? false : true;
+                if (i9 + possibleX >= 0 && i9 + possibleX < dimension)
+                  noClash = noClash && !currentGrid[possibleX + i9][possibleY].white;
+                try {
+                  notAdjacent = notAdjacent && !currentGrid[possibleX + i9][possibleY + 1].white;
+                } catch (error) {
+                  DEV: console.log("Adjacency check: No cells to the right");
+                }
+                try {
+                  notAdjacent = notAdjacent && !currentGrid[possibleX + i9][possibleY - 1].white;
+                } catch (error) {
+                  DEV: console.log("Adjacency check: No cells to the left");
+                }
               }
             }
           }
-          possiblePlacements.push({ ...possiblePlacement });
+          let possiblePlacement = { word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection };
+          if (noClash && notAdjacent && withinGrid) {
+            possiblePlacements.push({ ...possiblePlacement });
+          }
         }
       }
+      DEV: console.log(possiblePlacements);
       return possiblePlacements;
     }
     function selectPlacement(possiblePlacementOptions) {
       let possiblePlacementsNoResize = [];
-      for (let placementOption of possiblePlacementOptions) {
-        if (placementOption.x >= 0 && placementOption.y >= 0) {
-          possiblePlacementsNoResize.push({ ...placementOption });
+      try {
+        for (let placementOption of possiblePlacementOptions) {
+          if (placementOption.x >= 0 && placementOption.y >= 0) {
+            possiblePlacementsNoResize.push({ ...placementOption });
+          }
         }
+      } catch (error) {
+        DEV: console.log("Apparently possiblePlacementOptions is undefined");
       }
       let placement = possiblePlacementsNoResize[0];
       return placement;
@@ -1797,6 +1830,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         currentGrid[x3][y4].number = clueCount + 1;
         clueCount += 1;
       }
+      DEV: console.log("Placing " + word + " " + direction);
       for (let j3 = 0; j3 < word.length; j3++) {
         currentGrid[x3][y4].answer = word[j3];
         currentGrid[x3][y4].white = true;
@@ -1818,12 +1852,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           DEV: console.log("increased x");
         }
       }
-      let acrossBool = direction == "across" ? true : false;
-      wordsPlaced.push({ word, x: x3, y: y4, across: acrossBool });
-      DEV: console.log("words before splicing");
-      DEV: console.log(wordsLeft);
-      wordsLeft.splice(wordsLeft.indexOf(word));
-      DEV: console.log("words after splicing");
+      wordsPlaced.push({ word, x: inputX, y: inputY, direction });
+      try {
+        wordsLeft.splice(wordsLeft.indexOf(word), 1);
+      } catch (error) {
+        DEV: console.log("No words left");
+      }
       DEV: console.log(wordsLeft);
     }
     function rankWord(wordIndex) {
@@ -1852,16 +1886,20 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       });
       DEV: console.log("sorted indices: " + indices);
       for (let i9 = 0; i9 < wordsOG.length; i9++) {
-        DEV: console.log("wordsOG[" + i9 + "]: " + indices[i9]);
         rankedList[i9] = wordsOG[indices[i9]];
-        DEV: console.log("rankedList[" + i9 + "]: " + rankedList[i9]);
       }
       return rankedList;
     }
     for (let word of wordsOG) {
       let placement = selectPlacement(placeable(word));
-      addWord(placement.word, placement.x, placement.y, placement.across ? "across" : "down");
-      DEV: console.log(currentGrid);
+      try {
+        DEV: console.log("Placement for " + word + ": " + placement.x + ", " + placement.y);
+        DEV: console.log("Placing " + word);
+        addWord(placement.word, placement.x, placement.y, placement.direction);
+      } catch (error) {
+        DEV: console.log("No placement for " + word + " could be found");
+      }
+      DEV: console.log("Current grid: " + currentGrid);
     }
     this.grid = currentGrid;
     this.dimensions = currentGrid.length;
@@ -23954,12 +23992,11 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
    * Dispatches an event to generate the crossword grid
    */
-  constructor(width = 9, height = 9) {
+  constructor(dimension = 9) {
     super();
     this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid();
-    this.gridWidget.dimensions = width;
-    this.gridWidget.height = height;
-    this.gridWidget.grid = Array.from({ length: width }, () => Array(height).fill(defaultCell2()));
+    this.gridWidget.dimensions = dimension;
+    this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell2()));
     this.gridWidget.newCrosswordGrid(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
     this.clueWidget.newClueBox(document);

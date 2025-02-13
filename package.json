@@ -8,7 +8,8 @@
   "license": "MIT",
   "author": "Alexia Weiss",
   "scripts": {
-    "prepublishOnly": "npx @webwriter/build"
+    "prepublishOnly": "npx @webwriter/build",
+    "debug": "npx @webwriter/build dev"
   },
   "exports": {
     "./widgets/webwriter-word-puzzles-crossword.*": {
