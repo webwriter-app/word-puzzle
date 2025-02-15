@@ -102,7 +102,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
         this.gridWidget.dimensions = dimension
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
-        this.gridWidget.newCrosswordGrid(document)
+        this.gridWidget.newCrosswordGridDOM(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
         this.clueWidget.newClueBox(document)
         this.addEventListener("generateCw", () => {
