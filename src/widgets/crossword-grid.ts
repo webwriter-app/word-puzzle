@@ -260,6 +260,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * Based off of Agarwal and Joshi 2020
      */
     generateCrossword(words: string[]) {
+
+        // TODO Figure out generation / backtracking recursively
+
         // Initialization
         DEV: console.log("generation triggered")
 
@@ -286,9 +289,21 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         /** The grid currently being worked withfound so far */
         let currentGrid: Partial<Cell>[][] = []
 
-
         /** The words that have been placed into the current grid */
-        let wordsPlaced: PlacedWord[] = []  // @type {string[]}
+        let currentWordsPlaced: PlacedWord[] = []  // @type {string[]}
+
+        /** The best grid found so far.
+         * Smallest grid with the largest amount of words placed
+         */
+        let bestGrid: Partial<Cell>[][] // @type {Cell[][]}
+        let bestWordsPlaced: PlacedWord[] = []  // @type {string[]}
+
+        /** Grid for testing adding / removing words */
+        let scratchpadGrid: Partial<Cell>[][] // @type {Cell[][]}
+        let scratchWordsPlaced: PlacedWord[] = []  // @type {string[]}
+
+        /** The number of words in the best grid */
+        let bestWordNr = 0 // @type{number}
 
         for(let i = 0; i < dimension; i++) {
             currentGrid[i] = []
@@ -296,23 +311,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 currentGrid[i][j] = defaultCell()
             }
         }
-
-
-        // TODO Save the smallest grid with the most placed words
-        /** The best grid found so far */
-        let bestGrid: Cell[][] // @type {Cell[][]}
-
-        // TODO Create scratchpad grid that's the size of the length of all of the words
-        // This way you can do operation stuff
-        // TODO Reimplement resize grid as enlarge grid, to double it and stuff
-        // TODO Add a resizing grid (shrink grid) at the end
-
-        // TODO Figure out backtracking recursively
-
-        /** The number of words in the best grid */
-        let bestWordNr = 0 // @type{number}
-
         DEV: console.log("basic stuff initialized")
+
+        // Initialize scratchpadGrid
+        for(let i = 0; i < wordsOG.reduce((accumulator, currentValue) => accumulator + currentValue.length, 0); i++) {
+            scratchpadGrid[i] = []
+            for (let j = 0; j < dimension; j++) {
+                scratchpadGrid[i][j] = defaultCell()
+            }
+        }
 
         /** The rankings of the words; indices correspond to original word list */
         let rankings: number[] = Array(wordsOG.length).fill(-1) // @type{number[]}
@@ -345,7 +352,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
         */
         function placeable(inputGrid: Partial<Cell>[][], wordNew: string): PlacedWord[] {
-            if (wordsPlaced.length == 0) {
+            if (currentWordsPlaced.length == 0) {
                 let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
                 let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(wordNew.length/2);
 
@@ -359,7 +366,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
            // For every word already placed in the grid,
            // Go through all of its possible intersections with the new word
-            for (let placedWord of wordsPlaced) {
+            for (let placedWord of currentWordsPlaced) {
                 let intersections = intersecting(wordNew, placedWord.word)
                 let possibleDirection: string
                 if (placedWord.direction == "across") {
@@ -499,8 +506,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             // Get copy of added words
                 // wordsPlaced but only the words
             let wordList: string[] = []
+
             // TODO make it not depend on wordsPlaced, I guess? Just do it manually with the grid :/
-            for(let wordPlaced of wordsPlaced) {
+            // Maybe just use the scratchpad thing
+            for(let wordPlaced of currentWordsPlaced) {
                 if(wordPlaced.word != word)
                     wordList.push(wordPlaced.word)
             }
@@ -512,8 +521,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             generateCrosswordGrid(inputGrid, wordList)
 
             // Identify whether other words could be added after that
-                // placeable()
-            
+            // placeable()
 
             return
         }
@@ -539,7 +547,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             // TODO
 
             wordsLeft.push(word)
-            wordsPlaced.splice(wordsPlaced.findIndex(wordR => wordR.word === word), 1)
+            currentWordsPlaced.splice(currentWordsPlaced.findIndex(wordR => wordR.word === word), 1)
             return
         }
 
@@ -609,7 +617,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     DEV: console.log("increased x")
                 }
             }
-            wordsPlaced.push({ word: word, x: inputX, y: inputY, direction: direction })
+            currentWordsPlaced.push({ word: word, x: inputX, y: inputY, direction: direction })
             try {
                 wordsLeft.splice(wordsLeft.indexOf(word), 1)
             } catch(error) {
@@ -677,11 +685,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          */
         function resizeGrid(inputGrid: Partial<Cell>[][], addDim: number, shift: number, wordToPlace: PlacedWord): number {
 
+            // TODO Reimplement resize grid as enlarge grid, to double it and stuff
+            // TODO Add a resizing grid (shrink grid) at the end
             let biggerGrid: Partial<Cell>[][] = []
             DEV: console.log("Increasing grid size")
 
             try {
-                // TODO Fix this part, it's problematic
                 for(let i = 0; i < dimension + addDim; i++) {
                     biggerGrid[i] = []
                     for (let j = 0; j < dimension + addDim; j++) {
@@ -701,7 +710,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             
 
-            shiftPlacedWords(wordsPlaced)
+            shiftPlacedWords(currentWordsPlaced)
             inputGrid = biggerGrid
             dimension += addDim
             wordToPlace.x += shift

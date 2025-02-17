@@ -1693,16 +1693,25 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     const minDim = wordsOG.map((word) => word.length).reduce((max2, len) => Math.max(max2, len), 0);
     let dimension = minDim;
     let currentGrid = [];
-    let wordsPlaced = [];
+    let currentWordsPlaced = [];
+    let bestGrid;
+    let bestWordsPlaced = [];
+    let scratchpadGrid;
+    let scratchWordsPlaced = [];
+    let bestWordNr = 0;
     for (let i9 = 0; i9 < dimension; i9++) {
       currentGrid[i9] = [];
       for (let j3 = 0; j3 < dimension; j3++) {
         currentGrid[i9][j3] = defaultCell();
       }
     }
-    let bestGrid;
-    let bestWordNr = 0;
     DEV: console.log("basic stuff initialized");
+    for (let i9 = 0; i9 < wordsOG.reduce((accumulator, currentValue) => accumulator + currentValue.length, 0); i9++) {
+      scratchpadGrid[i9] = [];
+      for (let j3 = 0; j3 < dimension; j3++) {
+        scratchpadGrid[i9][j3] = defaultCell();
+      }
+    }
     let rankings = Array(wordsOG.length).fill(-1);
     let rankedList = Array(wordsOG.length).fill("");
     rankedList = sortWords();
@@ -1713,14 +1722,14 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       i9++;
     }
     function placeable(inputGrid, wordNew) {
-      if (wordsPlaced.length == 0) {
+      if (currentWordsPlaced.length == 0) {
         let possiblePlacementX = Math.floor(inputGrid.length / 2 - 1);
         let possiblePlacementY = Math.floor(inputGrid.length / 2) - Math.floor(wordNew.length / 2);
         let possiblePlacement = { word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across" };
         return [possiblePlacement];
       }
       let possiblePlacements = [];
-      for (let placedWord of wordsPlaced) {
+      for (let placedWord of currentWordsPlaced) {
         let intersections = intersecting(wordNew, placedWord.word);
         let possibleDirection;
         if (placedWord.direction == "across") {
@@ -1815,7 +1824,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     }
     function blockingWord(inputGrid, word) {
       let wordList = [];
-      for (let wordPlaced of wordsPlaced) {
+      for (let wordPlaced of currentWordsPlaced) {
         if (wordPlaced.word != word)
           wordList.push(wordPlaced.word);
       }
@@ -1831,7 +1840,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     }
     function remove(grid, word) {
       wordsLeft.push(word);
-      wordsPlaced.splice(wordsPlaced.findIndex((wordR) => wordR.word === word), 1);
+      currentWordsPlaced.splice(currentWordsPlaced.findIndex((wordR) => wordR.word === word), 1);
       return;
     }
     function addWord(inputGrid, word, inputX, inputY, direction) {
@@ -1881,7 +1890,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           DEV: console.log("increased x");
         }
       }
-      wordsPlaced.push({ word, x: inputX, y: inputY, direction });
+      currentWordsPlaced.push({ word, x: inputX, y: inputY, direction });
       try {
         wordsLeft.splice(wordsLeft.indexOf(word), 1);
       } catch (error) {
@@ -1937,7 +1946,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         DEV: console.log("Some cells are out of bounds. Increasing size further");
         return resizeGrid(inputGrid, addDim + 1, shift3, wordToPlace);
       }
-      shiftPlacedWords(wordsPlaced);
+      shiftPlacedWords(currentWordsPlaced);
       inputGrid = biggerGrid;
       dimension += addDim;
       wordToPlace.x += shift3;
