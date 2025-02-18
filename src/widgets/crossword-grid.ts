@@ -207,7 +207,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         cellDOM.style.gridRowStart = (x).toString()
         cellDOM.style.gridColumnStart = (y).toString()
         // This is just temporary for testing
-
+        try {
         if (!this.grid[x-1][y-1].white) {
             cellDOM.setAttribute("black", "")
             cellDOM.setAttribute("answer", "false");
@@ -231,6 +231,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 numberText.innerHTML = this.grid[x-1][y-1].number.toString();
                 cellDOM.appendChild(numberText);
             }
+        }
+        }
+        catch(error) {
+            DEV: console.log("Error at (" + x + "," + y + ")")
         }
 
         /**
@@ -396,34 +400,48 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     if (possibleDirection == "across") {
                         for (let i = 0; i < wordNew.length; i++) {
                             if (i != intersection[0]) {
-                                if(i + possibleY >= 0 && i + possibleY < dimension)
-                                    noClash = noClash && !currentGrid[possibleX][possibleY + i].white
-                                try {
-                                    notAdjacent = notAdjacent && !currentGrid[possibleX + 1][possibleY + i].white
-                                } catch(error) {
-                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells below")
+                                if(i + possibleY >= 0 && i + possibleY < dimension) {
+                                    try {
+                                        noClash = noClash && !inputGrid[possibleX][possibleY + i].white
+                                    }
+                                    catch(error) {
+                                        DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").")
+                                        DEV: console.log("The grid dimensions are " + inputGrid.length)
+                                    }
                                 }
-                                try {
-                                    notAdjacent = notAdjacent && !currentGrid[possibleX - 1][possibleY + i].white
-                                } catch(error) {
-                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells above")
-                                }
+                                    try {
+                                        notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i].white
+                                    } catch(error) {
+                                        DEV: console.log("Adjacency check (" + wordNew + "): No cells below")
+                                    }
+                                    try {
+                                        notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i].white
+                                    } catch(error) {
+                                        DEV: console.log("Adjacency check (" + wordNew + "): No cells above")
+                                    }
                             }
                         }
                     }
                     else {
                         for (let i = 0; i < wordNew.length; i++) {
                             if (i != intersection[0]) {
-                                if(i + possibleX >= 0 && i + possibleX < dimension)
-                                    noClash = noClash && !currentGrid[possibleX + i][possibleY].white
+                                if(i + possibleX >= 0 && i + possibleX < dimension) {
+                                    try {
+                                    noClash = noClash && !inputGrid[possibleX + i][possibleY].white
+                                    }
+                                    catch(error) {
+                                        DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").")
+                                        DEV: console.log("The grid dimensions are " + inputGrid.length)
+                                    }
+                                }
                                 // Test for adjacent squares
                                 try {
-                                    notAdjacent = notAdjacent && !currentGrid[possibleX + i][possibleY + 1].white
+                                    notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY + 1].white
                                 } catch(error) {
                                     DEV: console.log("Adjacency check (" + wordNew + "): No cells to the right")
                                 }
                                 try {
-                                    notAdjacent = notAdjacent && !currentGrid[possibleX + i][possibleY - 1].white
+                                    notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY - 1].white
                                 } catch(error) {
                                     DEV: console.log("Adjacency check (" + wordNew + "): No cells to the left")
                                 }
@@ -588,7 +606,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                             inputGrid[x][y].direction = "both"
                         }
                         y += 1
-                        DEV: console.log("increased y")
                     }
                     else {
                         if (inputGrid[x][y].direction == "" || !inputGrid[x][y].direction || inputGrid[x][y].direction == "down") {
@@ -598,13 +615,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                             inputGrid[x][y].direction = "both"
                         }
                         x += 1
-                        DEV: console.log("increased x")
                     }
                 }
+                DEV: console.log(word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")")
                 success = true
             }
             catch(error) {
-                DEV: console.log("There was an error while adding " + word + " to the grid.")
+                DEV: console.log("There was an error while adding " + word + " to the grid, at (" + x + ", " + y + ").")
+                DEV: console.log("Grid size:" + inputGrid.length)
                 DEV: console.log("Message:" + error.message)
                 DEV: console.log("Stack:" + error.stack)
 
@@ -778,30 +796,40 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             DEV: console.log("Shrinking grid")
             let leftmost, rightmost, topmost, bottommost: number
 
+
             // Find the highest, lowest, leftmost, rightmost
                 for(let i = 0; i < inputGrid.length; i++) {
                     for (let j = 0; j < inputGrid.length; j++) {
                         if(inputGrid[i][j].white) {
-                                if(topmost == null) {
-                                    topmost = i
-                                }
+                            if(topmost == null) {
+                                topmost = i
+                            }
                             try {
-                                if(j < leftmost) 
+                                if(leftmost == null) 
                                     leftmost = j
-                                }
+                                else 
+                                    if(j < leftmost) 
+                                        leftmost = j
+                            }
                             catch(error) {
                                 leftmost = j
                             }
                             try {
-                                if(j > rightmost) 
+                                if(rightmost == null) 
                                     rightmost = j
-                                }
+                                else
+                                    if(j > rightmost) 
+                                        rightmost = j
+                            }
                             catch(error) {
                                 rightmost = j
                             }
                             try {
-                                if(i > bottommost) 
-                                    bottommost = i
+                                if(bottommost == null) 
+                                    bottommost = j
+                                else
+                                    if(i > bottommost) 
+                                        bottommost = i
                                 }
                             catch(error) {
                                 bottommost = i
@@ -810,18 +838,43 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     }
                 }
 
+            DEV: console.log("Leftmost: " + leftmost)
+            DEV: console.log("Rightmost: " + rightmost)
+            DEV: console.log("Topmost: " + topmost)
+            DEV: console.log("Bottommost: " + bottommost)
+
+            let newSize, horizontalPadding, verticalPadding: number
+
+            if(rightmost - leftmost >= bottommost - topmost) {
+                newSize = rightmost - leftmost
+                verticalPadding = Math.floor((newSize - (bottommost - topmost)) / 2)
+                horizontalPadding = 0
+            }
+            else {
+                newSize = bottommost - topmost
+                horizontalPadding = Math.floor((newSize - (rightmost - leftmost)) / 2)
+                verticalPadding = 0
+            }
+
+            
+            // TODO continue making the dimensions square
             // Initialize the grid and shift everything
             for(let i = 0; i < inputGrid.length; i++) {
+                newGrid[i] = []
                 for (let j = 0; j < inputGrid.length; j++) {
-                    if(i - topmost + bottommost <= bottommost 
-                        && j - leftmost + rightmost <= rightmost) {
-                        newGrid[i - topmost][j - leftmost] = inputGrid[i - topmost][j - leftmost]
+                    if(i >= topmost - verticalPadding && i <= bottommost + verticalPadding && j >= leftmost - horizontalPadding && j <= rightmost + horizontalPadding) {
+                        newGrid[i - topmost - verticalPadding][j - leftmost - horizontalPadding] = inputGrid[i][j]
                     }
+                    else if(i < topmost - verticalPadding 
+                        && i > bottommost + verticalPadding 
+                        && j < leftmost - horizontalPadding 
+                        && j > rightmost + horizontalPadding) {
                 }
             }
 
             return newGrid
         }
+    }
 
         function generateCrosswordGrid(inputGrid: Partial<Cell>[][], words: string[]): Partial<Cell>[][] {
             for(let word of words) {
@@ -844,7 +897,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         // Add words to grid (WIP)
 
         currentGrid = generateCrosswordGrid(currentGrid, wordsOG)
-        shrinkGrid(currentGrid)
+        // currentGrid = shrinkGrid(currentGrid)
         this.grid = currentGrid
         
         DEV: console.log(this.grid)

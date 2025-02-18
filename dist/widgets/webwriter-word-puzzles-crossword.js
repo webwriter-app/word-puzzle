@@ -1647,25 +1647,29 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     cellDOM.style.display = "grid";
     cellDOM.style.gridRowStart = x3.toString();
     cellDOM.style.gridColumnStart = y4.toString();
-    if (!this.grid[x3 - 1][y4 - 1].white) {
-      cellDOM.setAttribute("black", "");
-      cellDOM.setAttribute("answer", "false");
-      cellDOM.contentEditable = "false";
-    } else {
-      cellDOM.contentEditable = "true";
-      cellDOM.removeAttribute("black");
-      cellDOM.setAttribute("tabindex", "0");
-      cellDOM.setAttribute("answer", "true");
-      const cellLetter = document2.createElement("div");
-      cellLetter.classList.add("cell-letter");
-      cellDOM.appendChild(cellLetter);
-      if (this.grid[x3 - 1][y4 - 1].number) {
-        const numberText = document2.createElement("div");
-        numberText.classList.add("clue-label");
-        numberText.contentEditable = "false";
-        numberText.innerHTML = this.grid[x3 - 1][y4 - 1].number.toString();
-        cellDOM.appendChild(numberText);
+    try {
+      if (!this.grid[x3 - 1][y4 - 1].white) {
+        cellDOM.setAttribute("black", "");
+        cellDOM.setAttribute("answer", "false");
+        cellDOM.contentEditable = "false";
+      } else {
+        cellDOM.contentEditable = "true";
+        cellDOM.removeAttribute("black");
+        cellDOM.setAttribute("tabindex", "0");
+        cellDOM.setAttribute("answer", "true");
+        const cellLetter = document2.createElement("div");
+        cellLetter.classList.add("cell-letter");
+        cellDOM.appendChild(cellLetter);
+        if (this.grid[x3 - 1][y4 - 1].number) {
+          const numberText = document2.createElement("div");
+          numberText.classList.add("clue-label");
+          numberText.contentEditable = "false";
+          numberText.innerHTML = this.grid[x3 - 1][y4 - 1].number.toString();
+          cellDOM.appendChild(numberText);
+        }
       }
+    } catch (error) {
+      DEV: console.log("Error at (" + x3 + "," + y4 + ")");
     }
     cellDOM.addEventListener("keypress", (e13) => {
       e13.preventDefault();
@@ -1747,15 +1751,21 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           if (possibleDirection == "across") {
             for (let i9 = 0; i9 < wordNew.length; i9++) {
               if (i9 != intersection[0]) {
-                if (i9 + possibleY >= 0 && i9 + possibleY < dimension)
-                  noClash = noClash && !currentGrid[possibleX][possibleY + i9].white;
+                if (i9 + possibleY >= 0 && i9 + possibleY < dimension) {
+                  try {
+                    noClash = noClash && !inputGrid[possibleX][possibleY + i9].white;
+                  } catch (error) {
+                    DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").");
+                    DEV: console.log("The grid dimensions are " + inputGrid.length);
+                  }
+                }
                 try {
-                  notAdjacent = notAdjacent && !currentGrid[possibleX + 1][possibleY + i9].white;
+                  notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i9].white;
                 } catch (error) {
                   DEV: console.log("Adjacency check (" + wordNew + "): No cells below");
                 }
                 try {
-                  notAdjacent = notAdjacent && !currentGrid[possibleX - 1][possibleY + i9].white;
+                  notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i9].white;
                 } catch (error) {
                   DEV: console.log("Adjacency check (" + wordNew + "): No cells above");
                 }
@@ -1764,15 +1774,21 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           } else {
             for (let i9 = 0; i9 < wordNew.length; i9++) {
               if (i9 != intersection[0]) {
-                if (i9 + possibleX >= 0 && i9 + possibleX < dimension)
-                  noClash = noClash && !currentGrid[possibleX + i9][possibleY].white;
+                if (i9 + possibleX >= 0 && i9 + possibleX < dimension) {
+                  try {
+                    noClash = noClash && !inputGrid[possibleX + i9][possibleY].white;
+                  } catch (error) {
+                    DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").");
+                    DEV: console.log("The grid dimensions are " + inputGrid.length);
+                  }
+                }
                 try {
-                  notAdjacent = notAdjacent && !currentGrid[possibleX + i9][possibleY + 1].white;
+                  notAdjacent = notAdjacent && !inputGrid[possibleX + i9][possibleY + 1].white;
                 } catch (error) {
                   DEV: console.log("Adjacency check (" + wordNew + "): No cells to the right");
                 }
                 try {
-                  notAdjacent = notAdjacent && !currentGrid[possibleX + i9][possibleY - 1].white;
+                  notAdjacent = notAdjacent && !inputGrid[possibleX + i9][possibleY - 1].white;
                 } catch (error) {
                   DEV: console.log("Adjacency check (" + wordNew + "): No cells to the left");
                 }
@@ -1863,7 +1879,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 inputGrid[x3][y4].direction = "both";
               }
               y4 += 1;
-              DEV: console.log("increased y");
             } else {
               if (inputGrid[x3][y4].direction == "" || !inputGrid[x3][y4].direction || inputGrid[x3][y4].direction == "down") {
                 inputGrid[x3][y4].direction = "down";
@@ -1871,12 +1886,13 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 inputGrid[x3][y4].direction = "both";
               }
               x3 += 1;
-              DEV: console.log("increased x");
             }
           }
+          DEV: console.log(word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")");
           success = true;
         } catch (error) {
-          DEV: console.log("There was an error while adding " + word + " to the grid.");
+          DEV: console.log("There was an error while adding " + word + " to the grid, at (" + x3 + ", " + y4 + ").");
+          DEV: console.log("Grid size:" + inputGrid.length);
           DEV: console.log("Message:" + error.message);
           DEV: console.log("Stack:" + error.stack);
           if (direction == "across") {
@@ -1992,19 +2008,25 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
               topmost = i9;
             }
             try {
-              if (j3 < leftmost)
+              if (leftmost == null)
+                leftmost = j3;
+              else if (j3 < leftmost)
                 leftmost = j3;
             } catch (error) {
               leftmost = j3;
             }
             try {
-              if (j3 > rightmost)
+              if (rightmost == null)
+                rightmost = j3;
+              else if (j3 > rightmost)
                 rightmost = j3;
             } catch (error) {
               rightmost = j3;
             }
             try {
-              if (i9 > bottommost)
+              if (bottommost == null)
+                bottommost = j3;
+              else if (i9 > bottommost)
                 bottommost = i9;
             } catch (error) {
               bottommost = i9;
@@ -2012,14 +2034,30 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           }
         }
       }
+      DEV: console.log("Leftmost: " + leftmost);
+      DEV: console.log("Rightmost: " + rightmost);
+      DEV: console.log("Topmost: " + topmost);
+      DEV: console.log("Bottommost: " + bottommost);
+      let newSize, horizontalPadding, verticalPadding;
+      if (rightmost - leftmost >= bottommost - topmost) {
+        newSize = rightmost - leftmost;
+        verticalPadding = Math.floor((newSize - (bottommost - topmost)) / 2);
+        horizontalPadding = 0;
+      } else {
+        newSize = bottommost - topmost;
+        horizontalPadding = Math.floor((newSize - (rightmost - leftmost)) / 2);
+        verticalPadding = 0;
+      }
       for (let i9 = 0; i9 < inputGrid.length; i9++) {
+        newGrid[i9] = [];
         for (let j3 = 0; j3 < inputGrid.length; j3++) {
-          if (i9 - topmost + bottommost <= bottommost && j3 - leftmost + rightmost <= rightmost) {
-            newGrid[i9 - topmost][j3 - leftmost] = inputGrid[i9 - topmost][j3 - leftmost];
+          if (i9 >= topmost - verticalPadding && i9 <= bottommost + verticalPadding && j3 >= leftmost - horizontalPadding && j3 <= rightmost + horizontalPadding) {
+            newGrid[i9 - topmost - verticalPadding][j3 - leftmost - horizontalPadding] = inputGrid[i9][j3];
+          } else if (i9 < topmost - verticalPadding && i9 > bottommost + verticalPadding && j3 < leftmost - horizontalPadding && j3 > rightmost + horizontalPadding) {
           }
         }
+        return newGrid;
       }
-      return newGrid;
     }
     function generateCrosswordGrid(inputGrid, words2) {
       for (let word of words2) {
@@ -2037,7 +2075,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       return inputGrid;
     }
     currentGrid = generateCrosswordGrid(currentGrid, wordsOG);
-    shrinkGrid(currentGrid);
     this.grid = currentGrid;
     DEV: console.log(this.grid);
     this.newCrosswordGridDOM(document);
