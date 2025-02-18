@@ -1749,11 +1749,35 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           let noClash = true;
           let notAdjacent = true;
           if (possibleDirection == "across") {
-            for (let i9 = 0; i9 < wordNew.length; i9++) {
+            try {
+              notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY - 1].white;
+            } catch (error) {
+              DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left");
+            }
+            try {
+              notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY + wordNew.length].white;
+            } catch (error) {
+              DEV: console.log("Adjacency check (" + wordNew + "): No cell to the right");
+            }
+          } else {
+            try {
+              notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY].white;
+            } catch (error) {
+              DEV: console.log("Adjacency check (" + wordNew + "): No cell below");
+            }
+            try {
+              notAdjacent = notAdjacent && !inputGrid[possibleX + wordNew.length][possibleY].white;
+            } catch (error) {
+              DEV: console.log("Adjacency check (" + wordNew + "): No cell above");
+            }
+          }
+          for (let i9 = 0; i9 < wordNew.length; i9++) {
+            if (possibleDirection == "across") {
               if (i9 != intersection[0]) {
                 if (i9 + possibleY >= 0 && i9 + possibleY < dimension) {
                   try {
-                    noClash = noClash && !inputGrid[possibleX][possibleY + i9].white;
+                    if (wordNew[i9] != inputGrid[possibleX + i9][possibleY].answer)
+                      noClash = noClash && !inputGrid[possibleX][possibleY + i9].white;
                   } catch (error) {
                     DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").");
                     DEV: console.log("The grid dimensions are " + inputGrid.length);
@@ -1770,13 +1794,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                   DEV: console.log("Adjacency check (" + wordNew + "): No cells above");
                 }
               }
-            }
-          } else {
-            for (let i9 = 0; i9 < wordNew.length; i9++) {
+            } else {
               if (i9 != intersection[0]) {
                 if (i9 + possibleX >= 0 && i9 + possibleX < dimension) {
                   try {
-                    noClash = noClash && !inputGrid[possibleX + i9][possibleY].white;
+                    if (wordNew[i9] != inputGrid[possibleX + i9][possibleY].answer)
+                      noClash = noClash && !inputGrid[possibleX + i9][possibleY].white;
                   } catch (error) {
                     DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").");
                     DEV: console.log("The grid dimensions are " + inputGrid.length);

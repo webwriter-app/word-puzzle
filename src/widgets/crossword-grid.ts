@@ -396,38 +396,66 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     let noClash = true
                     let notAdjacent = true
 
-                    // Currently doesn't support the word being added if the grid is too small for it
-                    if (possibleDirection == "across") {
-                        for (let i = 0; i < wordNew.length; i++) {
+                    // Don't place a word if there is a white cell right before or after it starts
+                    if(possibleDirection == "across"){
+                        try {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY - 1].white
+                        } catch(error) {
+                            DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left")
+                        }
+                        try {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY + wordNew.length].white
+                        } catch(error) {
+                            DEV: console.log("Adjacency check (" + wordNew + "): No cell to the right")
+                        }
+                    }
+                    else {
+                        try {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY].white
+                        } catch(error) {
+                            DEV: console.log("Adjacency check (" + wordNew + "): No cell below")
+                        }
+                        try {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX + wordNew.length][possibleY].white
+                        } catch(error) {
+                            DEV: console.log("Adjacency check (" + wordNew + "): No cell above")
+                        }
+                    }
+
+                    for (let i = 0; i < wordNew.length; i++) {
+                        if (possibleDirection == "across") {
                             if (i != intersection[0]) {
                                 if(i + possibleY >= 0 && i + possibleY < dimension) {
                                     try {
-                                        noClash = noClash && !inputGrid[possibleX][possibleY + i].white
+                                        // Don't place a word if there is a collision where the char isn't the same
+                                        if(wordNew[i] != inputGrid[possibleX + i][possibleY].answer)
+                                            noClash = noClash && !inputGrid[possibleX][possibleY + i].white
                                     }
                                     catch(error) {
                                         DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").")
                                         DEV: console.log("The grid dimensions are " + inputGrid.length)
                                     }
                                 }
-                                    try {
-                                        notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i].white
-                                    } catch(error) {
-                                        DEV: console.log("Adjacency check (" + wordNew + "): No cells below")
-                                    }
-                                    try {
-                                        notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i].white
-                                    } catch(error) {
-                                        DEV: console.log("Adjacency check (" + wordNew + "): No cells above")
-                                    }
+                                
+                                try {
+                                    notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i].white
+                                } catch(error) {
+                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells below")
+                                }
+                                try {
+                                    notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i].white
+                                } catch(error) {
+                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells above")
+                                }
                             }
                         }
-                    }
-                    else {
-                        for (let i = 0; i < wordNew.length; i++) {
+                        else {
                             if (i != intersection[0]) {
                                 if(i + possibleX >= 0 && i + possibleX < dimension) {
                                     try {
-                                    noClash = noClash && !inputGrid[possibleX + i][possibleY].white
+                                        // Don't place a word if there is a collision where the char isn't the same
+                                        if(wordNew[i] != inputGrid[possibleX + i][possibleY].answer)
+                                            noClash = noClash && !inputGrid[possibleX + i][possibleY].white
                                     }
                                     catch(error) {
                                         DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").")
@@ -445,9 +473,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                                 } catch(error) {
                                     DEV: console.log("Adjacency check (" + wordNew + "): No cells to the left")
                                 }
-                            }
                         }
                     }
+                }
 
                     let possiblePlacement: PlacedWord = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
 
