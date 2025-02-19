@@ -35,7 +35,7 @@ declare global {interface HTMLElementTagNameMap {
  * 
  * Includes word itself, its associated clue, its direction on the grid, 
  * and the number of the word on the grid. */
-interface WordsClues {
+export interface WordClue {
     word: string,
     clue: string,
     direction: string,
@@ -82,7 +82,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
-    wordsAndClues: Partial<WordsClues>[]
+    wordsAndClues: Partial<WordClue>[]
 
 
     /**
@@ -112,7 +112,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             //     display: none;
             // }
         return css`
-            table.clueBox {
+            table.clueboxInput {
                 // Temporary width and height
                 min-width: 200px;
                 min-height: 200px;
@@ -123,28 +123,28 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 background-color: var(--sl-color-gray-100);
                 //flex-basis: content;
             }
-            table.cluebox > thead {
+            table.clueboxInput > thead {
                 font-family: var(--sl-font-sans);
                 color: var(--sl-color-gray-700);
                 background-color: var(--sl-color-gray-300);
             }
-            table.cluebox > thead > tr {
+            table.clueboxInput > thead > tr {
                 padding: 0px;
                 margin: 0px;
             }
-            table.cluebox th {
+            table.clueboxInput th {
                 font-family: var(--sl-font-sans);
                 color: var(--sl-color-gray-700);
                 border-collapse: collapse;
                 background-color: var(--sl-color-gray-300);
                 padding: 10px;
             } 
-            table.cluebox tr.generateCw {
+            table.clueboxInput tr.generateCw {
                 text-align: right;
                 margin: 1px;
                 height: 20px;
             }
-            table.cluebox th.generateCw {
+            table.clueboxInput th.generateCw {
                 text-align: right;
                 padding: 1px;
                 padding-right: 8px;
@@ -175,7 +175,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 align-content: center;
 
             }
-            table.cluebox sl-icon.generateCwIcon {
+            table.clueboxInput sl-icon.generateCwIcon {
                 font-size: 20px;
                 text-align: center;
                 padding: 0px;
@@ -184,18 +184,18 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 align-content: center;
                 vertical-align: middle;
             }
-            table.cluebox > tbody {
+            table.clueboxInput > tbody {
                 max-width: 50%;
                 border: 3px solid var(--sl-color-gray-200);
             }
-            table.cluebox > tbody > tr {
+            table.clueboxInput > tbody > tr {
                 font-family: var(--sl-font-sans);
                 color: var(--sl-color-gray-900);
                 word-wrap: break-word;
                 overflow-wrap: anywhere;
                 max-width: 50%;
             }
-            table.cluebox > tbody > tr > td {
+            table.clueboxInput > tbody > tr > td {
                 font-family: var(--sl-font-sans);
                 color: var(--sl-color-gray-900);
                 border-right: 1px solid var(--sl-color-gray-200);
@@ -210,10 +210,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 height: fit-content;
                 max-width: 50%;
             }
-            table.cluebox td {
+            table.clueboxInput td {
                 justify-content: left;
             }
-            table.cluebox td[addRow] {
+            table.clueboxInput td[addRow] {
                 justify-content: center;
                 align-content: center;
                 height: fit-content;
@@ -221,13 +221,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 margin: 0px;
                 text-align: center;
             }
-            table.cluebox td[removeRow] {
+            table.clueboxInput td[removeRow] {
                 justify-content: center;
                 align-content: center;
                 text-align: center;
                 padding: 5px;
             }
-            table.cluebox sl-button {
+            table.clueboxInput sl-button {
                 width: auto;
                 height: auto;
                 text-align: center;
@@ -235,7 +235,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 align-content: center;
                 vertical-align: middle;
             }
-            table.cluebox sl-icon {
+            table.clueboxInput sl-icon {
                 size: 100px;
                 font-size: 20px;
                 text-align: center;
@@ -259,8 +259,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     /**
      * @constructor
-     * Build / construct the {@link WebwriterWordPuzzlesCrossword.clueBox | clue panel} DOM element that will contain the words and clues
-     * input by a crossword creator (i.e. teacher).
+     * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBoxInput | clue panel} DOM element 
+     * that will be used by a crossword creator (i.e. teacher) to add words and clues.
+     * 
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
      * @returns {HTMLTableElement} the DOM element for the clue panel
      * Source: crosswords-js
@@ -269,7 +270,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         // Create table and header
         DEV: console.log("rendering cluebox");
         const clueBox: HTMLTableElement = document.createElement('table')
-        clueBox.classList.add('clueBox')
+        clueBox.classList.add('clueboxInput')
         const headerTable: HTMLTableSectionElement = clueBox.createTHead()
         const headerRow: HTMLTableRowElement = headerTable.insertRow()
 
@@ -400,9 +401,42 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * Relies on {@link placedWords}
      * 
      */
+    /**
+     * @constructor
+     * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element that will contain the words and clues
+     * input by a crossword creator (i.e. teacher).
+     * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+     * @returns {HTMLTableElement} the DOM element for the clue panel
+     * Source: crosswords-js
+     */
+ 
+    generateClueBox(wordsAndClues: WordClue[]) {
+        const clueBox: HTMLTableElement = document.createElement('table')
+        clueBox.classList.add('clueBox')
+        const headerTable: HTMLTableSectionElement = clueBox.createTHead()
+        const headerRow: HTMLTableRowElement = headerTable.insertRow()
+        // Add headers
+        const headers = ["Across", "Down"]
+        for (const element of headers) {
+            const th: HTMLTableCellElement = document.createElement('th');
+            th.textContent = element;
+            headerRow.appendChild(th)
+        }
 
-    generateClueBox() {
-        for (let wordAndClue of this.wordsAndClues) {
+        DEV: console.log("rendering table body");
+        // Create body
+        const bodyTable: HTMLTableSectionElement = clueBox.createTBody()
+        for(let wordAndClue of wordsAndClues) {
+            const tableRow: HTMLTableRowElement = bodyTable.insertRow()
+            const tableCell1: HTMLTableCellElement = tableRow.insertCell()
+            tableCell1.setAttribute('contenteditable', 'true')
+            tableCell1.setAttribute("tabindex", "0")
+            const tableCell2: HTMLTableCellElement = tableRow.insertCell()
+            tableCell2.setAttribute('contenteditable', 'true')
+            tableCell2.setAttribute("tabindex", "0")
+        }
+
+        for (let wordAndClue of wordsAndClues) {
             // TODO current, left off here
         }
 

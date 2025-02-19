@@ -10,6 +10,7 @@ import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrossword } from './crossword';
+import { WordClue } from './crossword-cluebox';
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -271,7 +272,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * 
      * Based off of Agarwal and Joshi 2020
      */
-    generateCrossword(words: string[]): PlacedWord[] {
+    generateCrossword(wordsClues: Partial<WordClue>[]): WordClue[] {
 
         // TODO Figure out generation / backtracking recursively
 
@@ -279,7 +280,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         DEV: console.log("generation triggered")
 
         /** The words in their original order. */
-        let wordsOG: string[] = words // @type{string[]}
+        let wordsOG: string[] = [] // @type{string[]}
+        for(let wordClue of wordsClues) {
+            wordsOG.push(wordClue.word)
+        }
 
         /** The amount of words that still must be put into the grid */
         let wordsLeft: string[] = Object.assign([], wordsOG) // @type {string[]}
@@ -961,7 +965,30 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         DEV: console.log(this.grid)
 
         this.newCrosswordGridDOM(document)
-        return bestWordsPlaced
+
+        // TODO Define WordsAndClues to return
+
+        // Use bestWordsPlaced to access coordinates of grid, read number
+        for(let wordObj of bestWordsPlaced) {
+            // NOTE This may cause issues
+            for(let wordClue of wordsClues) {
+                if(wordObj.word == wordClue.word) {
+                    wordClue.direction = wordObj.direction
+                    wordClue.number = this.grid[wordObj.x][wordObj.y].number
+                }
+            }
+        }
+        for(let wordClue of wordsClues) {
+            if(!wordClue.clue) {
+                wordClue.clue = "NO CLUE FOR THIS WORD"
+            }
+            if(!(wordClue.clue && wordClue.direction && wordClue.number && wordClue.word))
+                DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
+        }
+
+        // Afterwards, sort these by clue number
+
+        return wordsClues as WordClue[]
         
     }
 

@@ -10,7 +10,7 @@ import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrosswordGrid, PlacedWord } from './crossword-grid';
-import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
+import { WebwriterWordPuzzlesCrosswordCluebox, WordClue } from './crossword-cluebox';
 
 
 // Shoelace
@@ -105,12 +105,9 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
         this.clueWidget.newClueBoxInput(document)
         this.addEventListener("generateCw", () => {
-            DEV: console.log("generateCw received with ")
-            for(let word of this.clueWidget.wordList) {
-                DEV: console.log(word)
-            }
-            // TODO Pass the output of generated crossword to cluebox
-            this.gridWidget.generateCrossword(this.clueWidget.wordList)})
+            DEV: console.log("generateCw triggered")
+            this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)})
+            this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
     }
 
     /**
@@ -155,9 +152,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             wordsOG.push(wordAndClue.word)
         }
 
-        this.clueWidget.placedWords = this.gridWidget.generateCrossword(wordsOG)
-        this.clueWidget.generateClueBox()
-        DEV: console.log("wordsOG:" + wordsOG)
+        this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(wordsAndClues)
+        this.clueWidget.generateClueBox(wordsAndClues as WordClue[])
     }
 
 
