@@ -9,6 +9,7 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
+import { PlacedWord } from './crossword-grid';
 
 
 // Shoelace
@@ -30,6 +31,17 @@ declare global {interface HTMLElementTagNameMap {
 }
 
 
+/** Custom data type for words and clues.
+ * 
+ * Includes word itself, its associated clue, its direction on the grid, 
+ * and the number of the word on the grid. */
+interface WordsClues {
+    word: string,
+    clue: string,
+    direction: string,
+    number: number
+}
+
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
@@ -41,8 +53,19 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     /**
+     * The input element for the words and clues of the crossword puzzle. 
      * 
+     * It's intended exclusively for use by crossword creators (i.e. teachers).
+     * 
+     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+     */
+    @property({ type: HTMLTableElement, state: true })
+    clueBoxInput: HTMLTableElement
+
+    /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
+     * 
+     * This one is intended for the crossword solver (i.e. student).
      * 
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
@@ -50,12 +73,25 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     clueBox: HTMLTableElement
 
     /**
-     * 
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
-    wordList: Array<String>
+    wordList: string[]
+    
+    /**
+     * The list of words grouped with their clues, direction, and word number.
+     */
+    wordsAndClues: Partial<WordsClues>[]
+
+
+    /**
+     * The words placed. Returned by {@link WebwriterWordPuzzlesCrosswordGrid.generateCrossword}
+     * 
+     * Contains coordinate information
+     */
+    placedWords: PlacedWord[]
+
 
 
     /**
@@ -66,8 +102,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     constructor() {
         super()
-        this.clueBox = this.newClueBox(document)
+        this.clueBoxInput = this.newClueBoxInput(document)
         this.wordList = []
+        this.wordsAndClues = []
     }
 
     static get styles() {
@@ -228,7 +265,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @returns {HTMLTableElement} the DOM element for the clue panel
      * Source: crosswords-js
      */
-    newClueBox(document) {
+    newClueBoxInput(document) {
         // Create table and header
         DEV: console.log("rendering cluebox");
         const clueBox: HTMLTableElement = document.createElement('table')
@@ -255,9 +292,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         generateCwButton.id = "generateCwButton"
         generateCwButton.setAttribute('variant', 'default')
         generateCwButton.setAttribute('size', 'small')
-        // TODO Add custom event
         generateCwButton.addEventListener('click', () => {
             this.wordList = this.getNewWords()
+//            for (let word of (this.getNewWords())) {
+//                this.wordsAndClues.push({word: word, clue: null, number: null, direction: null})
+//            }
             const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true, detail: {
                 wordList: this.wordList
             }})
@@ -333,7 +372,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      */
     getNewWords() {
-        const rows = this.clueBox.querySelectorAll("tbody tr")
+        const rows = this.clueBoxInput.querySelectorAll("tbody tr")
 
         const words: string[] = Array.from(rows).map(row => 
                 row.querySelector("td")?.textContent?.trim() || null
@@ -342,10 +381,25 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         return words.filter(x => x != null)
     }
 
+    // TODO Implement function for generating a clue box for the preview
+    /**
+     * Generates the clue box for students.
+     * 
+     * Relies on {@link placedWords}
+     * 
+     */
+
+    generateClueBox() {
+        for (let word of this.placedWords) {
+            
+        }
+
+    }
+
     
     render() {
         return (html`<div>
-                ${this.clueBox}
+                ${this.clueBoxInput}
             </div>
             `)
     }

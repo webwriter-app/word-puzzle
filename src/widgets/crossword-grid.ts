@@ -47,6 +47,15 @@ interface Cell {
     direction: string; 
 }
 
+/** Custom data type for words placed on the grid. 
+ * Includes word itself and coordinates. */
+export interface PlacedWord {
+    word: string;
+    x: number; // x coordinate
+    y: number; // y coordinate
+    direction: string; // true if across, false if down
+}
+
 /**
  * Function to create a default cell object.
  */
@@ -262,7 +271,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * 
      * Based off of Agarwal and Joshi 2020
      */
-    generateCrossword(words: string[]) {
+    generateCrossword(words: string[]): PlacedWord[] {
 
         // TODO Figure out generation / backtracking recursively
 
@@ -274,15 +283,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         /** The amount of words that still must be put into the grid */
         let wordsLeft: string[] = Object.assign([], wordsOG) // @type {string[]}
-
-        /** Custom data type for words placed on the grid. 
-         * Includes word itself and coordinates. */
-        interface PlacedWord {
-            word: string;
-            x: number; // x coordinate
-            y: number; // y coordinate
-            direction: string; // true if across, false if down
-        }
 
         // Calculate minimum dimensions of crossword
         const minDim = wordsOG.map(word => word.length).reduce((max, len) => Math.max(max, len), 0)
@@ -781,8 +781,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          */
         function enlargeGrid(inputGrid: Partial<Cell>[][], shift: number, wordToPlace: PlacedWord): [Partial<Cell>[][], PlacedWord] {
 
-            // TODO Reimplement resize grid as enlarge grid, to double it and stuff
-            // TODO Add a resizing grid (shrink grid) at the end
             // TODO Should I shift everything towards the center?
             let biggerGrid: Partial<Cell>[][] = []
             DEV: console.log("Increasing grid size")
@@ -963,6 +961,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         DEV: console.log(this.grid)
 
         this.newCrosswordGridDOM(document)
+        return bestWordsPlaced
         
     }
 

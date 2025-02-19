@@ -9,7 +9,7 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterWordPuzzlesCrosswordGrid } from './crossword-grid';
+import { WebwriterWordPuzzlesCrosswordGrid, PlacedWord } from './crossword-grid';
 import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
 
 
@@ -97,24 +97,20 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      * Dispatches an event to generate the crossword grid
      */
-    constructor(dimension: number = 9) {
+    constructor(dimension: number = 8) {
         super()
         this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
-        this.gridWidget.dimensions = dimension
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGridDOM(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
-        this.clueWidget.newClueBox(document)
+        this.clueWidget.newClueBoxInput(document)
         this.addEventListener("generateCw", () => {
             DEV: console.log("generateCw received with ")
             for(let word of this.clueWidget.wordList) {
                 DEV: console.log(word)
             }
+            // TODO Pass the output of generated crossword to cluebox
             this.gridWidget.generateCrossword(this.clueWidget.wordList)})
-        //this.querySelector('#generateCwButton').addEventListener('click', () => {
-        //     this.gridWidget.generateCrossword(this.clueWidget.getWords())
-        //}
-        //)
     }
 
     /**
@@ -154,7 +150,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     protected generateCrossword() {
         // Initialization
         let wordsOG = this.clueWidget.getNewWords()
-        this.gridWidget.generateCrossword(wordsOG)
+        this.clueWidget.placedWords = this.gridWidget.generateCrossword(wordsOG)
+        this.clueWidget.generateClueBox()
         DEV: console.log(wordsOG)
     }
 

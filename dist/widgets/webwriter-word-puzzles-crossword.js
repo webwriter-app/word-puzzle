@@ -2128,6 +2128,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     this.grid = bestGrid;
     DEV: console.log(this.grid);
     this.newCrosswordGridDOM(document);
+    return bestWordsPlaced;
   }
   // TODO Implement answer checking
   // It should compare the text content of the cell with the answer in this.grid 
@@ -23911,14 +23912,24 @@ var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" w
 // src/widgets/crossword-cluebox.ts
 var eye = "assets/fontawesome-icons/wand-magic-sparkles-solid.svg";
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
+  clueBoxInput;
   clueBox;
   /**
-   * 
    * The panel element of the crossword puzzle, containing the words and clues. (WIP)
    * 
    * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
    */
   wordList;
+  /**
+   * The list of words grouped with their clues, direction, and word number.
+   */
+  wordsAndClues;
+  /**
+   * The words placed. Returned by {@link WebwriterWordPuzzlesCrosswordGrid.generateCrossword}
+   * 
+   * Contains coordinate information
+   */
+  placedWords;
   /**
    * @constructor
    * Some constructor I apparently thought was a good idea.
@@ -23927,8 +23938,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    */
   constructor() {
     super();
-    this.clueBox = this.newClueBox(document);
+    this.clueBoxInput = this.newClueBoxInput(document);
     this.wordList = [];
+    this.wordsAndClues = [];
   }
   static get styles() {
     return i`
@@ -24083,7 +24095,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * @returns {HTMLTableElement} the DOM element for the clue panel
    * Source: crosswords-js
    */
-  newClueBox(document2) {
+  newClueBoxInput(document2) {
     DEV: console.log("rendering cluebox");
     const clueBox = document2.createElement("table");
     clueBox.classList.add("clueBox");
@@ -24171,19 +24183,33 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    */
   getNewWords() {
-    const rows = this.clueBox.querySelectorAll("tbody tr");
+    const rows = this.clueBoxInput.querySelectorAll("tbody tr");
     const words = Array.from(rows).map(
       (row) => row.querySelector("td")?.textContent?.trim() || null
     );
     return words.filter((x3) => x3 != null);
   }
+  // TODO Implement function for generating a clue box for the preview
+  /**
+   * Generates the clue box for students.
+   * 
+   * Relies on {@link placedWords}
+   * 
+   */
+  generateClueBox() {
+    for (let word of this.placedWords) {
+    }
+  }
   render() {
     return x`<div>
-                ${this.clueBox}
+                ${this.clueBoxInput}
             </div>
             `;
   }
 };
+__decorateClass([
+  n4({ type: HTMLTableElement, state: true })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBoxInput", 2);
 __decorateClass([
   n4({ type: HTMLTableElement, state: true })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
@@ -24212,14 +24238,13 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
    * Dispatches an event to generate the crossword grid
    */
-  constructor(dimension = 9) {
+  constructor(dimension = 8) {
     super();
     this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid();
-    this.gridWidget.dimensions = dimension;
     this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell2()));
     this.gridWidget.newCrosswordGridDOM(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
-    this.clueWidget.newClueBox(document);
+    this.clueWidget.newClueBoxInput(document);
     this.addEventListener("generateCw", () => {
       DEV: console.log("generateCw received with ");
       for (let word of this.clueWidget.wordList) {
@@ -24262,7 +24287,8 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    */
   generateCrossword() {
     let wordsOG = this.clueWidget.getNewWords();
-    this.gridWidget.generateCrossword(wordsOG);
+    this.clueWidget.placedWords = this.gridWidget.generateCrossword(wordsOG);
+    this.clueWidget.generateClueBox();
     DEV: console.log(wordsOG);
   }
   render() {
