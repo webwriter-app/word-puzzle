@@ -24119,11 +24119,11 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     generateCwButton.setAttribute("variant", "default");
     generateCwButton.setAttribute("size", "small");
     generateCwButton.addEventListener("click", () => {
-      this.wordList = this.getNewWords();
-      const genClicked = new CustomEvent("generateCw", { bubbles: true, composed: true, detail: {
-        wordList: this.wordList
-      } });
-      this.dispatchEvent(genClicked);
+      this.wordsAndClues = this.getNewWords();
+      if (this.wordsAndClues.length != 0) {
+        const genClicked = new CustomEvent("generateCw", { bubbles: true, composed: true });
+        this.dispatchEvent(genClicked);
+      }
     });
     const generateCwIcon = generateCwButton.appendChild(document2.createElement("sl-icon"));
     generateCwIcon.setAttribute("src", eye);
@@ -24183,11 +24183,23 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    */
   getNewWords() {
+    this.wordsAndClues = [];
     const rows = this.clueBoxInput.querySelectorAll("tbody tr");
-    const words = Array.from(rows).map(
+    let words = Array.from(rows).map(
       (row) => row.querySelector("td")?.textContent?.trim() || null
     );
-    return words.filter((x3) => x3 != null);
+    let clues = Array.from(rows).map(
+      (row) => row.querySelectorAll("td")[1]?.textContent?.trim() || null
+    );
+    for (let i9 = 0; i9 < words.length; i9++) {
+      if (words[i9] != null) {
+        this.wordsAndClues.push({ word: words[i9], clue: clues[i9] });
+      }
+    }
+    DEV: console.log("Words and clues:");
+    DEV: console.log(this.wordsAndClues);
+    this.wordList = words.filter((x3) => x3 != null);
+    return this.wordsAndClues;
   }
   // TODO Implement function for generating a clue box for the preview
   /**
@@ -24197,7 +24209,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    */
   generateClueBox() {
-    for (let word of this.placedWords) {
+    for (let wordAndClue of this.wordsAndClues) {
     }
   }
   render() {
@@ -24286,10 +24298,14 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword() {
-    let wordsOG = this.clueWidget.getNewWords();
+    let wordsAndClues = this.clueWidget.getNewWords();
+    let wordsOG = [];
+    for (let wordAndClue of wordsAndClues) {
+      wordsOG.push(wordAndClue.word);
+    }
     this.clueWidget.placedWords = this.gridWidget.generateCrossword(wordsOG);
     this.clueWidget.generateClueBox();
-    DEV: console.log(wordsOG);
+    DEV: console.log("wordsOG:" + wordsOG);
   }
   render() {
     return x`<div class="wrapper">

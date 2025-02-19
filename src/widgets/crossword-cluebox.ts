@@ -293,14 +293,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         generateCwButton.setAttribute('variant', 'default')
         generateCwButton.setAttribute('size', 'small')
         generateCwButton.addEventListener('click', () => {
-            this.wordList = this.getNewWords()
-//            for (let word of (this.getNewWords())) {
-//                this.wordsAndClues.push({word: word, clue: null, number: null, direction: null})
-//            }
-            const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true, detail: {
-                wordList: this.wordList
-            }})
-            this.dispatchEvent(genClicked)
+            this.wordsAndClues = this.getNewWords()
+            if(this.wordsAndClues.length != 0) {
+                const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true})
+                this.dispatchEvent(genClicked)
+            }
         })
         const generateCwIcon = generateCwButton.appendChild(document.createElement('sl-icon'))
         generateCwIcon.setAttribute('src', eye)
@@ -372,13 +369,28 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      */
     getNewWords() {
+        this.wordsAndClues = []
         const rows = this.clueBoxInput.querySelectorAll("tbody tr")
 
-        const words: string[] = Array.from(rows).map(row => 
+        let words: string[] = Array.from(rows).map(row => 
                 row.querySelector("td")?.textContent?.trim() || null
         )
 
-        return words.filter(x => x != null)
+        let clues: string[] = Array.from(rows).map(row => 
+                row.querySelectorAll("td")[1]?.textContent?.trim() || null
+        )
+
+        for (let i = 0; i < words.length; i++) {
+            if(words[i] != null) {
+                this.wordsAndClues.push({word: words[i], clue: clues[i]})
+            }
+        }
+        DEV: console.log("Words and clues:")
+        DEV: console.log(this.wordsAndClues)
+
+        this.wordList = words.filter(x => x != null)
+
+        return this.wordsAndClues
     }
 
     // TODO Implement function for generating a clue box for the preview
@@ -390,8 +402,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
 
     generateClueBox() {
-        for (let word of this.placedWords) {
-            
+        for (let wordAndClue of this.wordsAndClues) {
+            // TODO current, left off here
         }
 
     }

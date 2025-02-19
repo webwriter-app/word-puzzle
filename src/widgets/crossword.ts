@@ -149,10 +149,15 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      */
     protected generateCrossword() {
         // Initialization
-        let wordsOG = this.clueWidget.getNewWords()
+        let wordsAndClues = this.clueWidget.getNewWords()
+        let wordsOG: string[] = []
+        for(let wordAndClue of wordsAndClues) {
+            wordsOG.push(wordAndClue.word)
+        }
+
         this.clueWidget.placedWords = this.gridWidget.generateCrossword(wordsOG)
         this.clueWidget.generateClueBox()
-        DEV: console.log(wordsOG)
+        DEV: console.log("wordsOG:" + wordsOG)
     }
 
 
