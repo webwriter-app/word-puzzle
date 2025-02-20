@@ -23957,6 +23957,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.clueBoxInput = this.newClueBoxInput(document);
+    this.clueBoxInput.addEventListener("keydown", stopCtrlPropagation);
     this.wordList = [];
     this.wordsAndClues = [];
   }
@@ -23964,7 +23965,30 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     return i`
             table.clueboxInput {
                 // Temporary width and height
-                min-width: 200px;
+               // min-width: 200px;
+                width: 100%;
+                min-height: 200px;
+                height: fit-content;
+                border: 2px solid var(--sl-color-gray-300);
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                background-color: var(--sl-color-gray-100);
+                //flex-basis: content;
+            }
+            .word-column {
+                // Temporary width and height
+                width: 100px;
+                min-height: 200px;
+                height: fit-content;
+                border: 2px solid var(--sl-color-gray-300);
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                background-color: var(--sl-color-gray-100);
+                //flex-basis: content;
+            }
+            .clue-column {
+                // Temporary width and height
+                width: 300px;
                 min-height: 200px;
                 height: fit-content;
                 border: 2px solid var(--sl-color-gray-300);
@@ -24035,7 +24059,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 vertical-align: middle;
             }
             table.clueboxInput > tbody {
-                max-width: 50%;
+//                max-width: 50%;
                 border: 3px solid var(--sl-color-gray-200);
             }
             table.clueboxInput > tbody > tr {
@@ -24043,7 +24067,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 color: var(--sl-color-gray-900);
                 word-wrap: break-word;
                 overflow-wrap: anywhere;
-                max-width: 50%;
+//                max-width: 50%;
             }
             table.clueboxInput > tbody > tr > td {
                 font-family: var(--sl-font-sans);
@@ -24058,7 +24082,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 word-wrap: break-word;
                 overflow-wrap: anywhere;
                 height: fit-content;
-                max-width: 50%;
+ //               max-width: 50%;
             }
             table.clueboxInput td {
                 justify-content: left;
@@ -24095,6 +24119,76 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 align-content: center;
                 vertical-align: middle;
             }
+            // ========================================================================
+            table.cluebox {
+                // Temporary width and height
+                width: 200px;
+                min-height: 200px;
+                height: fit-content;
+                border: 2px solid var(--sl-color-gray-300);
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                background-color: var(--sl-color-gray-100);
+                //flex-basis: content;
+            }
+            table.cluebox > thead {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                background-color: var(--sl-color-gray-300);
+            }
+            table.cluebox > thead > tr {
+                padding: 0px;
+                margin: 0px;
+            }
+            table.cluebox th {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-700);
+                border-collapse: collapse;
+                background-color: var(--sl-color-gray-300);
+                padding: 10px;
+            } 
+            table.cluebox tr.generateCw {
+                text-align: right;
+                margin: 1px;
+                height: 20px;
+            }
+            table.cluebox th.generateCw {
+                text-align: right;
+                padding: 1px;
+                padding-right: 8px;
+                margin: 1px;
+                height: auto;
+                height: 30px;
+            }
+            table.cluebox > tbody {
+//                max-width: 50%;
+                border: 3px solid var(--sl-color-gray-200);
+            }
+            table.cluebox > tbody > tr {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-900);
+                word-wrap: break-word;
+                overflow-wrap: anywhere;
+                //max-width: 50%;
+            }
+            table.cluebox > tbody > tr > td {
+                font-family: var(--sl-font-sans);
+                color: var(--sl-color-gray-900);
+                border-right: 1px solid var(--sl-color-gray-200);
+                border-left: 1px solid var(--sl-color-gray-200);
+                border-bottom: 2px solid var(--sl-color-gray-200);
+                border-collapse: collapse;
+                padding: 10px;
+                align-content: center;
+                justify-content: center;
+                word-wrap: break-word;
+                overflow-wrap: anywhere;
+                height: fit-content;
+                width: 50%;
+            }
+            table.cluebox td {
+                justify-content: left;
+            }
             `;
   }
   // Registering custom elements
@@ -24116,9 +24210,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    */
   newClueBoxInput(document2) {
     DEV: console.log("rendering cluebox");
-    const clueBox = document2.createElement("table");
-    clueBox.classList.add("clueboxInput");
-    const headerTable = clueBox.createTHead();
+    const clueBoxInput = document2.createElement("table");
+    clueBoxInput.classList.add("clueboxInput");
+    const headerTable = clueBoxInput.createTHead();
     const headerRow = headerTable.insertRow();
     const headers = ["Words", "Clues"];
     for (const element of headers) {
@@ -24148,13 +24242,15 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     generateCwIcon.setAttribute("src", eye);
     generateCwIcon.setAttribute("class", "generateCwIcon");
     DEV: console.log("rendering table body");
-    const bodyTable = clueBox.createTBody();
+    const bodyTable = clueBoxInput.createTBody();
     const tableRow = bodyTable.insertRow();
     const tableCell1 = tableRow.insertCell();
     tableCell1.setAttribute("contenteditable", "true");
+    tableCell1.classList.add("word-column");
     tableCell1.setAttribute("tabindex", "0");
     const tableCell2 = tableRow.insertCell();
     tableCell2.setAttribute("contenteditable", "true");
+    tableCell2.classList.add("clue-column");
     tableCell2.setAttribute("tabindex", "0");
     DEV: console.log("create button for inserting and removing rows");
     const buttonRow = bodyTable.insertRow();
@@ -24175,8 +24271,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     addButton.addEventListener("click", () => {
       DEV: console.log("blicked");
       const newRow = bodyTable.insertRow(buttonRow.rowIndex - 2);
-      newRow.insertCell(0).setAttribute("contenteditable", "true");
-      newRow.insertCell(1).setAttribute("contenteditable", "true");
+      const newCell1 = newRow.insertCell(0);
+      newCell1.setAttribute("contenteditable", "true");
+      newCell1.classList.add("word-column");
+      const newCell2 = newRow.insertCell(1);
+      newCell2.setAttribute("contenteditable", "true");
+      newCell2.classList.add("clue-column");
     });
     const addIcon = addButton.appendChild(document2.createElement("sl-icon"));
     addIcon.setAttribute("src", plus_lg_default);
@@ -24194,7 +24294,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     const removeIcon = removeButton.appendChild(document2.createElement("sl-icon"));
     removeIcon.setAttribute("src", dash_default);
     removeButton.classList.add("author-only");
-    return clueBox;
+    return clueBoxInput;
   }
   /**
    * Extracts the words from the cluebox
@@ -24222,62 +24322,83 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   // TODO Implement function for generating a clue box for the preview
   /**
-   * Generates the clue box for students.
-   * 
-   * Relies on {@link placedWords}
-   * 
-   */
-  /**
    * @constructor
-   * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element that will contain the words and clues
-   * input by a crossword creator (i.e. teacher).
+   * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element 
+   * that will contain the clues for a puzzle solver (i.e. student) to solve.
+   * 
    * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
    * @returns {HTMLTableElement} the DOM element for the clue panel
    * Source: crosswords-js
    */
   generateClueBox(wordsAndClues) {
-    const clueBox = document.createElement("table");
-    clueBox.classList.add("clueBox");
-    const headerTable = clueBox.createTHead();
-    const headerRow = headerTable.insertRow();
-    const headers = ["Across", "Down"];
-    for (const element of headers) {
-      const th = document.createElement("th");
+    DEV: console.log("Generating cluebox, in theory");
+    let clueBox = document.createElement("table");
+    clueBox.classList.add("cluebox");
+    let headerTable = clueBox.createTHead();
+    let headerRow = headerTable.insertRow();
+    let headers = ["Across", "Down"];
+    for (let element of headers) {
+      let th = document.createElement("th");
       th.textContent = element;
       headerRow.appendChild(th);
     }
     DEV: console.log("rendering table body");
-    const bodyTable = clueBox.createTBody();
+    let bodyTable = clueBox.createTBody();
+    bodyTable.insertRow();
+    bodyTable.rows[0].insertCell();
+    bodyTable.rows[0].insertCell();
+    bodyTable.rows[0].cells[0].setAttribute("contenteditable", "false");
+    bodyTable.rows[0].cells[1].setAttribute("contenteditable", "false");
+    let lastInsAcr, lastInsDown = -1;
     for (let wordAndClue of wordsAndClues) {
-      const tableRow = bodyTable.insertRow();
-      const tableCell1 = tableRow.insertCell();
-      tableCell1.setAttribute("contenteditable", "true");
-      tableCell1.setAttribute("tabindex", "0");
-      const tableCell2 = tableRow.insertCell();
-      tableCell2.setAttribute("contenteditable", "true");
-      tableCell2.setAttribute("tabindex", "0");
+      let tableRow = bodyTable.insertRow();
+      let tableCell1 = tableRow.insertCell();
+      tableCell1.setAttribute("contenteditable", "false");
+      let tableCell2 = tableRow.insertCell();
+      tableCell2.setAttribute("contenteditable", "false");
+      let chosenCell;
+      if (wordAndClue.direction == "across")
+        chosenCell = tableCell1;
+      else
+        chosenCell = tableCell2;
+      chosenCell.innerHTML = "<b>[" + wordAndClue.number + "]</b> " + wordAndClue.clue;
     }
-    for (let wordAndClue of wordsAndClues) {
-    }
+    this.clueBox = clueBox;
+    this.requestUpdate();
+    return clueBox;
   }
   render() {
-    return x`<div>
+    DEV: console.log("rendering cluebox");
+    if (this.wordsAndClues.length == 0) {
+      return x`<div>
                 ${this.clueBoxInput}
             </div>
             `;
+    } else {
+      return x`<div>
+                ${this.clueBoxInput} ${this.clueBox}
+            </div>
+            `;
+    }
   }
 };
 __decorateClass([
-  n4({ type: HTMLTableElement, state: true })
+  n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBoxInput", 2);
 __decorateClass([
-  n4({ type: HTMLTableElement, state: true })
+  n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
 WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
   t3("webwriter-word-puzzles-crossword-cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox);
 
 // src/widgets/crossword.ts
+function stopCtrlPropagation(event) {
+  if (event.ctrlKey) {
+    event.stopPropagation();
+    DEV: console.log("Prevented propagation of a single CTRL key sequence within widget");
+  }
+}
 function defaultCell2() {
   return {
     white: false,
@@ -24308,8 +24429,10 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.addEventListener("generateCw", () => {
       DEV: console.log("generateCw triggered");
       this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues);
+      this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
     });
-    this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
+    this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
+    document.addEventListener("keydown", stopCtrlPropagation);
   }
   /**
    * Styles
@@ -24325,6 +24448,7 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
                 align-content: left;
                 justify-content: space-around;
                 display: flex;
+                flex-wrap: wrap;
             }
             `;
   }
@@ -24373,7 +24497,8 @@ WebwriterWordPuzzlesCrossword = __decorateClass([
   t3("webwriter-word-puzzles-crossword")
 ], WebwriterWordPuzzlesCrossword);
 export {
-  WebwriterWordPuzzlesCrossword
+  WebwriterWordPuzzlesCrossword,
+  stopCtrlPropagation
 };
 /*! Bundled license information:
 

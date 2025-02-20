@@ -33,6 +33,12 @@ declare global {interface HTMLElementTagNameMap {
     }
 }
 
+export function stopCtrlPropagation(event: KeyboardEvent): void {
+        if (event.ctrlKey) {
+            event.stopPropagation()
+            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
+        }
+    }
 
 
 // NOTE Almost all methods within this class are from / based on the crosswords-js module
@@ -106,10 +112,12 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.clueWidget.newClueBoxInput(document)
         this.addEventListener("generateCw", () => {
             DEV: console.log("generateCw triggered")
-            this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)})
-            this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+            this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
+            this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+        })
+        this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+        document.addEventListener("keydown", stopCtrlPropagation)
     }
-
     /**
      * Styles
      * 
@@ -124,6 +132,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
                 align-content: left;
                 justify-content: space-around;
                 display: flex;
+                flex-wrap: wrap;
             }
             `
     }
@@ -154,6 +163,7 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
         this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(wordsAndClues)
         this.clueWidget.generateClueBox(wordsAndClues as WordClue[])
+        // TODO Left off here, trying to generate other clue box but it's not really working
     }
 
 
