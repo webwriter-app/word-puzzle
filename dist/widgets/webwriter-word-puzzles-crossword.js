@@ -1516,6 +1516,12 @@ WebwriterWordPuzzles = __decorateClass([
 ], WebwriterWordPuzzles);
 
 // src/widgets/crossword-grid.ts
+function stopCtrlPropagation(event) {
+  if (event.ctrlKey) {
+    event.stopPropagation();
+    DEV: console.log("Prevented propagation of a single CTRL key sequence within widget");
+  }
+}
 function defaultCell() {
   return {
     white: false,
@@ -1626,6 +1632,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         gridEl.appendChild(this.newCell(document2, x3, y4));
       }
     }
+    gridEl.addEventListener("keydown", stopCtrlPropagation);
     this.gridEl = gridEl;
     this.requestUpdate();
     return gridEl;
@@ -23957,7 +23964,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.clueBoxInput = this.newClueBoxInput(document);
-    this.clueBoxInput.addEventListener("keydown", stopCtrlPropagation);
+    this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this));
     this.wordList = [];
     this.wordsAndClues = [];
   }
@@ -24344,28 +24351,48 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     }
     DEV: console.log("rendering table body");
     let bodyTable = clueBox.createTBody();
+    let lastInsArray = [-1, -1];
     bodyTable.insertRow();
     bodyTable.rows[0].insertCell();
     bodyTable.rows[0].insertCell();
     bodyTable.rows[0].cells[0].setAttribute("contenteditable", "false");
     bodyTable.rows[0].cells[1].setAttribute("contenteditable", "false");
-    let lastInsAcr, lastInsDown = -1;
     for (let wordAndClue of wordsAndClues) {
-      let tableRow = bodyTable.insertRow();
-      let tableCell1 = tableRow.insertCell();
-      tableCell1.setAttribute("contenteditable", "false");
-      let tableCell2 = tableRow.insertCell();
-      tableCell2.setAttribute("contenteditable", "false");
-      let chosenCell;
+      let cellColumn = 0;
       if (wordAndClue.direction == "across")
-        chosenCell = tableCell1;
+        cellColumn = 0;
       else
-        chosenCell = tableCell2;
-      chosenCell.innerHTML = "<b>[" + wordAndClue.number + "]</b> " + wordAndClue.clue;
+        cellColumn = 1;
+      if (bodyTable.rows.length <= lastInsArray[cellColumn] + 1) {
+        bodyTable.insertRow();
+        bodyTable.rows[bodyTable.rows.length - 1].insertCell();
+        bodyTable.rows[bodyTable.rows.length - 1].insertCell();
+        bodyTable.rows[bodyTable.rows.length - 1].cells[0].setAttribute("contenteditable", "false");
+        bodyTable.rows[bodyTable.rows.length - 1].cells[1].setAttribute("contenteditable", "false");
+      }
+      if (bodyTable.rows[lastInsArray[cellColumn] + 1].cells[cellColumn].innerHTML == "") {
+        bodyTable.rows[lastInsArray[cellColumn] + 1].cells[cellColumn].innerHTML = "<b>[" + wordAndClue.number + "]</b> " + wordAndClue.clue;
+        lastInsArray[cellColumn] += 1;
+      }
     }
     this.clueBox = clueBox;
     this.requestUpdate();
     return clueBox;
+  }
+  /** Event handler for stopping control propagation and rendering
+   * 
+   */
+  ctrlHandler(event) {
+    if (event.ctrlKey && event.key === "Enter") {
+      event.stopPropagation();
+      DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)");
+      this.getNewWords();
+      if (this.wordsAndClues.length != 0) {
+        const genCw = new CustomEvent("generateCw", { bubbles: true, composed: true });
+        this.dispatchEvent(genCw);
+      }
+      DEV: console.log("This is supposed to generate the grid though");
+    }
   }
   render() {
     DEV: console.log("rendering cluebox");
@@ -24393,12 +24420,6 @@ WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
 ], WebwriterWordPuzzlesCrosswordCluebox);
 
 // src/widgets/crossword.ts
-function stopCtrlPropagation(event) {
-  if (event.ctrlKey) {
-    event.stopPropagation();
-    DEV: console.log("Prevented propagation of a single CTRL key sequence within widget");
-  }
-}
 function defaultCell2() {
   return {
     white: false,
@@ -24432,7 +24453,6 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
     });
     this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
-    document.addEventListener("keydown", stopCtrlPropagation);
   }
   /**
    * Styles
@@ -24497,8 +24517,7 @@ WebwriterWordPuzzlesCrossword = __decorateClass([
   t3("webwriter-word-puzzles-crossword")
 ], WebwriterWordPuzzlesCrossword);
 export {
-  WebwriterWordPuzzlesCrossword,
-  stopCtrlPropagation
+  WebwriterWordPuzzlesCrossword
 };
 /*! Bundled license information:
 

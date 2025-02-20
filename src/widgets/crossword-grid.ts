@@ -9,7 +9,7 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterWordPuzzlesCrossword, stopCtrlPropagation } from './crossword';
+import { WebwriterWordPuzzlesCrossword } from './crossword';
 import { WordClue } from './crossword-cluebox';
 
 // Shoelace
@@ -30,6 +30,13 @@ declare global {interface HTMLElementTagNameMap {
     }
 }
 
+
+function stopCtrlPropagation(event: KeyboardEvent): void {
+        if (event.ctrlKey) {
+            event.stopPropagation()
+            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
+        }
+    }
 
 
 // NOTE Almost all methods within this class are from / based on the crosswords-js module
@@ -194,6 +201,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 gridEl.appendChild(this.newCell(document, x, y));
             }
         }
+        gridEl.addEventListener("keydown", stopCtrlPropagation)
         this.gridEl = gridEl
         this.requestUpdate()
         return gridEl

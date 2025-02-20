@@ -9,7 +9,6 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { stopCtrlPropagation } from './crossword';
 import { PlacedWord } from './crossword-grid';
 
 
@@ -32,17 +31,13 @@ declare global {interface HTMLElementTagNameMap {
 }
 
 
-/** Custom data type for words and clues.
- * 
- * Includes word itself, its associated clue, its direction on the grid, 
- * and the number of the word on the grid. */
+
 export interface WordClue {
     word: string,
     clue: string,
     direction: string,
     number: number
 }
-
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
@@ -104,7 +99,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     constructor() {
         super()
         this.clueBoxInput = this.newClueBoxInput(document)
-        this.clueBoxInput.addEventListener("keydown", stopCtrlPropagation)
+        this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this))
         this.wordList = []
         this.wordsAndClues = []
     }
@@ -465,6 +460,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         return clueBoxInput
     }
 
+
     /**
      * Extracts the words from the cluebox
      * This works
@@ -522,31 +518,63 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         DEV: console.log("rendering table body");
         // Create body
         let bodyTable: HTMLTableSectionElement = clueBox.createTBody()
+        let lastInsArray: number[] = [-1, -1]
         bodyTable.insertRow()
         bodyTable.rows[0].insertCell()
         bodyTable.rows[0].insertCell()
         bodyTable.rows[0].cells[0].setAttribute('contenteditable', 'false')
         bodyTable.rows[0].cells[1].setAttribute('contenteditable', 'false')
-        let lastInsAcr, lastInsDown: number = -1
+
         for(let wordAndClue of wordsAndClues) {
-            let tableRow: HTMLTableRowElement = bodyTable.insertRow()
-            let tableCell1: HTMLTableCellElement = tableRow.insertCell()
-            tableCell1.setAttribute('contenteditable', 'false')
-            let tableCell2: HTMLTableCellElement = tableRow.insertCell()
-            tableCell2.setAttribute('contenteditable', 'false')
-            let chosenCell: HTMLTableCellElement
+            let cellColumn = 0
 
             if(wordAndClue.direction == "across") 
-                chosenCell = tableCell1
+                cellColumn = 0
             else
-                chosenCell = tableCell2
+                cellColumn = 1
 
-            chosenCell.innerHTML = "<b>[" + wordAndClue.number + "]</b> "+ wordAndClue.clue
+            if(bodyTable.rows.length <= lastInsArray[cellColumn] + 1) {
+                bodyTable.insertRow()
+                bodyTable.rows[bodyTable.rows.length - 1].insertCell()
+                bodyTable.rows[bodyTable.rows.length - 1].insertCell()
+                bodyTable.rows[bodyTable.rows.length - 1].cells[0].setAttribute('contenteditable', 'false')
+                bodyTable.rows[bodyTable.rows.length - 1].cells[1].setAttribute('contenteditable', 'false')
+            }
+
+            // NOTE idk if this is going to show anything useful
+            if(bodyTable.rows[lastInsArray[cellColumn]+1].cells[cellColumn].innerHTML == "") {
+                bodyTable.rows[lastInsArray[cellColumn]+1].cells[cellColumn].innerHTML = "<b>[" + wordAndClue.number + "]</b> "+ wordAndClue.clue
+                lastInsArray[cellColumn] += 1
+            }
         }
 
         this.clueBox = clueBox
         this.requestUpdate()
         return clueBox
+
+//        function addRow(table: HTMLTableElement) {
+//            table.insertRow()
+//            table.rows[table.rows.length-1].insertCell()
+//            table.rows[table.rows.length-1].insertCell()
+//            table.rows[table.rows.length-1].cells[0].setAttribute('contenteditable', 'false')
+//            table.rows[table.rows.length-1].cells[1].setAttribute('contenteditable', 'false')
+//        }
+    }
+
+    /** Event handler for stopping control propagation and rendering
+     * 
+     */
+    ctrlHandler(event: KeyboardEvent): void {
+        if (event.ctrlKey && event.key === "Enter") {
+            event.stopPropagation()
+            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)")
+            this.getNewWords()
+            if(this.wordsAndClues.length != 0) {
+                const genCw = new CustomEvent("generateCw", {bubbles: true, composed: true})
+                this.dispatchEvent(genCw)
+            }
+            DEV: console.log("This is supposed to generate the grid though")
+        }
     }
 
     

@@ -33,12 +33,12 @@ declare global {interface HTMLElementTagNameMap {
     }
 }
 
-export function stopCtrlPropagation(event: KeyboardEvent): void {
-        if (event.ctrlKey) {
-            event.stopPropagation()
-            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
-        }
-    }
+//export function stopCtrlPropagation(event: KeyboardEvent): void {
+//        if (event.ctrlKey) {
+//            event.stopPropagation()
+//            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
+//        }
+//    }
 
 
 // NOTE Almost all methods within this class are from / based on the crosswords-js module
@@ -116,7 +116,6 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
         })
         this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
-        document.addEventListener("keydown", stopCtrlPropagation)
     }
     /**
      * Styles
