@@ -21,8 +21,7 @@ import { SlButton, SlIcon } from '@shoelace-style/shoelace';
 // Icons
 import plus from 'bootstrap-icons/icons/plus-lg.svg';
 import minus from 'bootstrap-icons/icons/dash.svg';
-// TODO Add fontawesome icon
-let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
+import wand from 'bootstrap-icons/icons/magic.svg';
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
@@ -361,20 +360,20 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         DEV: console.log("rendering cluebox");
         const clueBoxInput: HTMLTableElement = document.createElement('table')
         clueBoxInput.classList.add('clueboxInput')
-        const headerTable: HTMLTableSectionElement = clueBoxInput.createTHead()
-        const headerRow: HTMLTableRowElement = headerTable.insertRow()
+        clueBoxInput.createTHead()
+        clueBoxInput.tHead.insertRow()
 
         // Add headers
         const headers = ["Words", "Clues"]
         for (const element of headers) {
             const th: HTMLTableCellElement = document.createElement('th');
             th.textContent = element;
-            headerRow.appendChild(th)
+            clueBoxInput.tHead.rows[0].appendChild(th)
         }
-        headerTable.insertRow(0)
+        clueBoxInput.tHead.insertRow(0)
         const generateCwCell: HTMLTableCellElement = document.createElement('th');
-        headerTable.rows.item(0).appendChild(generateCwCell)
-        headerTable.rows.item(0).className = "generateCw"
+        clueBoxInput.tHead.rows.item(0).appendChild(generateCwCell)
+        clueBoxInput.tHead.rows.item(0).className = "generateCw"
         generateCwCell.className = "generateCw"
         generateCwCell.colSpan = 2
 
@@ -391,24 +390,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             }
         })
         const generateCwIcon = generateCwButton.appendChild(document.createElement('sl-icon'))
-        generateCwIcon.setAttribute('src', eye)
+        generateCwIcon.setAttribute('src', wand)
         generateCwIcon.setAttribute('class', "generateCwIcon")
 
-
-        DEV: console.log("rendering table body");
         // Create body
         const bodyTable: HTMLTableSectionElement = clueBoxInput.createTBody()
-        const tableRow: HTMLTableRowElement = bodyTable.insertRow()
-        const tableCell1: HTMLTableCellElement = tableRow.insertCell()
-        tableCell1.setAttribute('contenteditable', 'true')
-        tableCell1.classList.add('word-column')
-        tableCell1.setAttribute("tabindex", "0")
-        const tableCell2: HTMLTableCellElement = tableRow.insertCell()
-        tableCell2.setAttribute('contenteditable', 'true')
-        tableCell2.classList.add('clue-column')
-        tableCell2.setAttribute("tabindex", "0")
-
-        DEV: console.log("create button for inserting and removing rows");
         // Create button for inserting and removing rows
         const buttonRow = bodyTable.insertRow()
         buttonRow.id = 'buttonRow'
@@ -422,22 +408,18 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         removeCell.setAttribute('removeRow', '')
         removeCell.classList.add('author-only')
 
+        addRow()
+        addRow()
+        addRow()
+        addRow()
+
         // Add button
         const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
         addButton.setAttribute('variant', 'default')
         addButton.setAttribute('size', 'medium')
         addButton.setAttribute('circle', '')
         addButton.classList.add('author-only')
-        addButton.addEventListener('click', () => {
-            DEV: console.log("blicked");
-            const newRow = bodyTable.insertRow(buttonRow.rowIndex-2);
-            const newCell1: HTMLTableCellElement = newRow.insertCell(0);
-            newCell1.setAttribute("contenteditable", "true");
-            newCell1.classList.add('word-column')
-            const newCell2: HTMLTableCellElement = newRow.insertCell(1);
-            newCell2.setAttribute("contenteditable", "true");
-            newCell2.classList.add('clue-column')
-        })
+        addButton.addEventListener('click', () => { addRow() })
         const addIcon = addButton.appendChild(document.createElement('sl-icon'))
         addIcon.setAttribute('src', plus)
         addIcon.setAttribute('font-size', '20px')
@@ -456,6 +438,16 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
         removeIcon.setAttribute('src', minus)
         removeButton.classList.add('author-only')
+
+        function addRow() {
+            bodyTable.insertRow(buttonRow.rowIndex-2);
+            bodyTable.rows[buttonRow.rowIndex-3].insertCell(0);
+            bodyTable.rows[buttonRow.rowIndex-3].insertCell(1);
+            bodyTable.rows[buttonRow.rowIndex-3].cells[0].setAttribute("contenteditable", "true");
+            bodyTable.rows[buttonRow.rowIndex-3].cells[0].classList.add('word-column')
+            bodyTable.rows[buttonRow.rowIndex-3].cells[1].setAttribute("contenteditable", "true");
+            bodyTable.rows[buttonRow.rowIndex-3].cells[1].classList.add('clue-column')
+        }
 
         return clueBoxInput
     }
@@ -491,7 +483,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         return this.wordsAndClues
     }
 
-    // TODO Implement function for generating a clue box for the preview
     /**
      * @constructor
      * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element 
@@ -528,7 +519,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         for(let wordAndClue of wordsAndClues) {
             let cellColumn = 0
 
-            if(wordAndClue.direction == "across") 
+            if(wordAndClue.direction == "across")
                 cellColumn = 0
             else
                 cellColumn = 1

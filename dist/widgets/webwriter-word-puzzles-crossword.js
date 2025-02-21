@@ -23934,8 +23934,10 @@ var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
 
+// node_modules/bootstrap-icons/icons/magic.svg
+var magic_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magic" viewBox="0 0 16 16">%0A  <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707zM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1zM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707zM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0z"/>%0A</svg>';
+
 // src/widgets/crossword-cluebox.ts
-var eye = "assets/fontawesome-icons/wand-magic-sparkles-solid.svg";
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   clueBoxInput;
   clueBox;
@@ -24219,18 +24221,18 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     DEV: console.log("rendering cluebox");
     const clueBoxInput = document2.createElement("table");
     clueBoxInput.classList.add("clueboxInput");
-    const headerTable = clueBoxInput.createTHead();
-    const headerRow = headerTable.insertRow();
+    clueBoxInput.createTHead();
+    clueBoxInput.tHead.insertRow();
     const headers = ["Words", "Clues"];
     for (const element of headers) {
       const th = document2.createElement("th");
       th.textContent = element;
-      headerRow.appendChild(th);
+      clueBoxInput.tHead.rows[0].appendChild(th);
     }
-    headerTable.insertRow(0);
+    clueBoxInput.tHead.insertRow(0);
     const generateCwCell = document2.createElement("th");
-    headerTable.rows.item(0).appendChild(generateCwCell);
-    headerTable.rows.item(0).className = "generateCw";
+    clueBoxInput.tHead.rows.item(0).appendChild(generateCwCell);
+    clueBoxInput.tHead.rows.item(0).className = "generateCw";
     generateCwCell.className = "generateCw";
     generateCwCell.colSpan = 2;
     const generateCwButton = generateCwCell.appendChild(document2.createElement("sl-button"));
@@ -24246,20 +24248,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       }
     });
     const generateCwIcon = generateCwButton.appendChild(document2.createElement("sl-icon"));
-    generateCwIcon.setAttribute("src", eye);
+    generateCwIcon.setAttribute("src", magic_default);
     generateCwIcon.setAttribute("class", "generateCwIcon");
-    DEV: console.log("rendering table body");
     const bodyTable = clueBoxInput.createTBody();
-    const tableRow = bodyTable.insertRow();
-    const tableCell1 = tableRow.insertCell();
-    tableCell1.setAttribute("contenteditable", "true");
-    tableCell1.classList.add("word-column");
-    tableCell1.setAttribute("tabindex", "0");
-    const tableCell2 = tableRow.insertCell();
-    tableCell2.setAttribute("contenteditable", "true");
-    tableCell2.classList.add("clue-column");
-    tableCell2.setAttribute("tabindex", "0");
-    DEV: console.log("create button for inserting and removing rows");
     const buttonRow = bodyTable.insertRow();
     buttonRow.id = "buttonRow";
     buttonRow.setAttribute("contenteditable", "false");
@@ -24270,20 +24261,17 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     const removeCell = buttonRow.insertCell(1);
     removeCell.setAttribute("removeRow", "");
     removeCell.classList.add("author-only");
+    addRow();
+    addRow();
+    addRow();
+    addRow();
     const addButton = addCell.appendChild(document2.createElement("sl-button"));
     addButton.setAttribute("variant", "default");
     addButton.setAttribute("size", "medium");
     addButton.setAttribute("circle", "");
     addButton.classList.add("author-only");
     addButton.addEventListener("click", () => {
-      DEV: console.log("blicked");
-      const newRow = bodyTable.insertRow(buttonRow.rowIndex - 2);
-      const newCell1 = newRow.insertCell(0);
-      newCell1.setAttribute("contenteditable", "true");
-      newCell1.classList.add("word-column");
-      const newCell2 = newRow.insertCell(1);
-      newCell2.setAttribute("contenteditable", "true");
-      newCell2.classList.add("clue-column");
+      addRow();
     });
     const addIcon = addButton.appendChild(document2.createElement("sl-icon"));
     addIcon.setAttribute("src", plus_lg_default);
@@ -24301,6 +24289,15 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     const removeIcon = removeButton.appendChild(document2.createElement("sl-icon"));
     removeIcon.setAttribute("src", dash_default);
     removeButton.classList.add("author-only");
+    function addRow() {
+      bodyTable.insertRow(buttonRow.rowIndex - 2);
+      bodyTable.rows[buttonRow.rowIndex - 3].insertCell(0);
+      bodyTable.rows[buttonRow.rowIndex - 3].insertCell(1);
+      bodyTable.rows[buttonRow.rowIndex - 3].cells[0].setAttribute("contenteditable", "true");
+      bodyTable.rows[buttonRow.rowIndex - 3].cells[0].classList.add("word-column");
+      bodyTable.rows[buttonRow.rowIndex - 3].cells[1].setAttribute("contenteditable", "true");
+      bodyTable.rows[buttonRow.rowIndex - 3].cells[1].classList.add("clue-column");
+    }
     return clueBoxInput;
   }
   /**
@@ -24327,7 +24324,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.wordList = words.filter((x3) => x3 != null);
     return this.wordsAndClues;
   }
-  // TODO Implement function for generating a clue box for the preview
   /**
    * @constructor
    * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element 
