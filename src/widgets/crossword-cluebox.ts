@@ -6,8 +6,7 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 import { html, css } from 'lit';
-import { LitElementWw, option } from '@webwriter/lit';
-import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { PlacedWord } from './crossword-grid';
 
@@ -87,6 +86,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     placedWords: PlacedWord[]
 
+    toggleDirection!: Function
+    currentClue!: Function
 
 
     /**
@@ -95,12 +96,14 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      */
-    constructor() {
+    constructor(toggleDir: Function, curClue: Function) {
         super()
         this.clueBoxInput = this.newClueBoxInput(document)
         this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this))
         this.wordList = []
         this.wordsAndClues = []
+        this.toggleDirection = toggleDir
+        this.currentClue = curClue
     }
 
     static get styles() {

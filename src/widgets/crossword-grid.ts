@@ -7,7 +7,7 @@
  */
 import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
-import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrossword } from './crossword';
 import { WordClue } from './crossword-cluebox';
@@ -76,6 +76,8 @@ function defaultCell(): Partial<Cell> {
     }
 }
 
+const DEFAULT_DIMENSION: number = 9
+
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  * @extends { WebwriterWordPuzzles  }
@@ -99,15 +101,20 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     @property({ type: HTMLDivElement, state: true, attribute: false})
     gridEl: HTMLDivElement
 
+    isDirectionAcross!: Function
+    getCurrentClue!: Function
+
     /**
      * @constructor
      * Some constructor I apparently thought was a good idea.
      * 
      * Pretty much just makes a grid with 9x9 dimensions
      */
-    constructor(dimension: number = 9) {
+    constructor(isDirAcross: Function, getCurClue: Function) {
         super()
-        this.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
+        this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
+        this.isDirectionAcross = isDirAcross
+        this.getCurrentClue = getCurClue
     }
 
     /**
@@ -119,6 +126,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
                 display: none;
             }
+            // TODO Add different CSS for when a row / column is in focus
             td:focus {
                 background-color: white;
             }
@@ -155,7 +163,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 background-color: black;
             }
             div.cell:focus {
-                background-color: pink;
+                background-color: lightblue;
+            }
+            div.focus-clue {
+                background-color: lightskyblue;
             }
             .cell-letter {
                 grid-column-start: 1;
@@ -180,6 +191,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             `
     }
+
+    // TODO Add event listener for adding the focus class based on the clue number and direction
+
     /**
      * @constructor
      * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
@@ -192,19 +206,56 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      */
     newCrosswordGridDOM(document) {
         let gridEl = document.createElement('div');
-        gridEl.classList.add('grid')
+        this.gridEl = gridEl
+        this.gridEl.classList.add('grid')
         for (let x = 1; x <= this.grid.length; x += 1) {
 //        DEV: console.log("A row of the non-DOM grid looks like this:")
 //        DEV: console.log((this.grid[x-1]))
             for (let y = 1; y <= this.grid.length; y += 1) {
                 //  Build the cell element and place cell in grid element
-                gridEl.appendChild(this.newCell(document, x, y));
+                this.gridEl.appendChild(this.newCell(document, x, y));
             }
         }
-        gridEl.addEventListener("keydown", stopCtrlPropagation)
-        this.gridEl = gridEl
+        this.gridEl.addEventListener("keydown", stopCtrlPropagation)
+
+        const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
+        this.gridEl.addEventListener('keypress', (e) => {
+            DEV: console.log("Pressed: " + e.key)
+            if (e.key === "Tab"|| isAlphaChar(e.key)) {
+                this.nextCell(e)
+            }
+            else if (e.key === " ") {
+                DEV: console.log("Current direction:", this.isDirectionAcross())
+            }
+        })
+
+//        DEV: console.log("gridEl:")
+//        DEV: console.log(this.gridEl)
         this.requestUpdate()
-        return gridEl
+        return this.gridEl
+    }
+
+    /** 
+     * For handling a keypress in the crossword grid. Goes to next relevant cell
+     * 
+    */
+    nextCell(e: KeyboardEvent) {
+        // Idk how to get typescript to stop crying about this even though it works
+        let grid_row = (Number((e.target).getAttribute("grid-row")))
+        let grid_col = (Number((e.target).getAttribute("grid-column")))
+        // TODO Read attribute from parent somehow. 
+        // Using an attribute of the cell is temporary
+        if(e.target.getAttribute("direction") === "across" || e.target.getAttribute("direction") === "both")
+            grid_col += 1
+        else
+            grid_row += 1
+        DEV: console.log("TODO: implement changing focus depending on across / down context")
+        DEV: console.log('[grid-row="'+ grid_row + '"][grid-column="' + grid_col + '"]')
+
+        this.gridEl.querySelector('[grid-row="'+ grid_row + '"][grid-column="' + grid_col + '"]').focus()
+
+        // TODO Add case where it's the last letter of the word
+            // Go to the next clue of the corresponding context
     }
 
     /**
@@ -224,6 +275,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         cellDOM.style.display = 'grid'
         cellDOM.style.gridRowStart = (x).toString()
         cellDOM.style.gridColumnStart = (y).toString()
+        cellDOM.setAttribute("grid-row", (x-1).toString())
+        cellDOM.setAttribute("grid-column", (y-1).toString())
+        cellDOM.style.gridColumnStart = (y).toString()
         // This is just temporary for testing
         try {
         if (!this.grid[x-1][y-1].white) {
@@ -237,6 +291,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             // This is how you make divs focusable
             cellDOM.setAttribute("tabindex", "0")
             cellDOM.setAttribute("answer", "true");
+            cellDOM.setAttribute("direction", this.grid[x-1][y-1].direction);
             // Create div for adding a letter
             const cellLetter = document.createElement('div');
             cellLetter.classList.add('cell-letter')
@@ -263,13 +318,23 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         cellDOM.addEventListener('keypress', (e) => {
             e.preventDefault(); // Prevent default character insertion
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
-            if (isAlphaChar(e.key))
+            if (isAlphaChar(e.key)) {
                 if (cellDOM.querySelector('.cell-letter')) {
                     cellDOM.querySelector('.cell-letter').textContent = e.key.toUpperCase()
                 }
                 else
                     cellDOM.textContent = e.key.toUpperCase(); // Replace content with pressed key
+            }
+            if (e.key == "Space") {
+                DEV: console.log("TODO: implement changing direction when spacebar placed")
+                this.isDirectionAcross()
+//                const toggleDirection = new CustomEvent("toggleDirection", {bubbles: true, composed: true})
+ //               this.dispatchEvent(toggleDirection)
+            }
             // TODO change focus depending on across / down context
+            if (e.key == "Tab") {
+                DEV: console.log("TODO: implement changing focus depending on across / down context")
+            }
         });
 
         return cellDOM

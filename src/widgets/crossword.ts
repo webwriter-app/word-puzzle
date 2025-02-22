@@ -7,7 +7,7 @@
  */
 import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
-import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrosswordGrid, PlacedWord } from './crossword-grid';
 import { WebwriterWordPuzzlesCrosswordCluebox, WordClue } from './crossword-cluebox';
@@ -19,11 +19,6 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 // Buttons
 import { SlButton, SlIcon } from '@shoelace-style/shoelace';
 
-// Icons
-import plus from 'bootstrap-icons/icons/plus-lg.svg';
-import minus from 'bootstrap-icons/icons/dash.svg';
-// TODO Add fontawesome icon
-let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
 
 declare global {interface HTMLElementTagNameMap {
         "webwriter-word-puzzles": WebwriterWordPuzzles;
@@ -90,10 +85,16 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     private clueWidget: WebwriterWordPuzzlesCrosswordCluebox
 
     /**
-     * Current context; true = across, false = down.
+     * Current context; direction. true = across, false = down.
      */
-    @property({ type: Boolean, state: true })
-    across: true // @type {boolean}
+    @state()
+    across: boolean = true // @type {boolean}
+
+    /**
+     * Current context; clue number.
+     */
+    @state()
+    clue!: number // @type {boolean}
 
 
     /**
@@ -105,17 +106,22 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      */
     constructor(dimension: number = 8) {
         super()
-        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
+        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid(this.isDirectionAcross, this.getCurrentClue)
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGridDOM(document)
-        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
+        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox(this.isDirectionAcross, this.getCurrentClue)
         this.clueWidget.newClueBoxInput(document)
+        this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+
         this.addEventListener("generateCw", () => {
             DEV: console.log("generateCw triggered")
             this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
             this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
         })
-        this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+        this.across = true
+        this.toggleDirection = this.toggleDirection.bind(this)
+        this.isDirectionAcross = this.isDirectionAcross.bind(this)
+        this.getCurrentClue = this.getCurrentClue.bind(this)
     }
     /**
      * Styles
@@ -144,6 +150,23 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
         };
+    }
+
+    isDirectionAcross(): boolean {
+        return this.across
+    }
+
+    toggleDirection(): void {
+        this.across = !this.across
+        DEV: console.log("Direction toggled")
+    }
+
+    getCurrentClue(): number {
+        return this.clue
+    }
+
+    setCurrentClue(clue: number): void {
+        this.clue = clue
     }
 
     /**
