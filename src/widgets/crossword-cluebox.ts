@@ -8,7 +8,7 @@
 import { html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { PlacedWord } from './crossword-grid';
+import { WordClue } from './crossword-grid';
 
 
 // Shoelace
@@ -28,14 +28,6 @@ declare global {interface HTMLElementTagNameMap {
   }
 }
 
-
-
-export interface WordClue {
-    word: string,
-    clue: string,
-    direction: string,
-    number: number
-}
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.

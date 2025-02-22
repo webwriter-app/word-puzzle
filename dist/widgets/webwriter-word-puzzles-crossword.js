@@ -1536,7 +1536,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   grid;
   gridEl;
   wordsAndClues;
-  wordsPlaced;
   currentDirectionAcross;
   currentClue;
   cur_row;
@@ -2229,9 +2228,6 @@ __decorateClass([
 __decorateClass([
   n4({ state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "wordsAndClues", 2);
-__decorateClass([
-  n4({ state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "wordsPlaced", 2);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "currentDirectionAcross", 2);

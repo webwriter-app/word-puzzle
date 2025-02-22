@@ -10,7 +10,6 @@ import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrossword } from './crossword';
-import { WordClue } from './crossword-cluebox';
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -56,13 +55,27 @@ interface Cell {
 }
 
 /** Custom data type for words placed on the grid. 
- * Includes word itself and coordinates. */
-export interface PlacedWord {
-    word: string;
-    x: number; // x coordinate
-    y: number; // y coordinate
-    direction: string; // true if across, false if down
+ * Includes word itself and coordinates. 
+ * ```typescript
+ * {
+ *     word: string;
+ *     clue: string;
+ *     x: number;
+ *     y: number;
+ *     direction: string;
+ *     number: number;
+ * }
+ * ```
+ * */
+export interface WordClue {
+    word: string,
+    clueText: string,
+    x: number, // x coordinate
+    y: number, // y coordinate
+    direction: string,
+    clueNumber: number
 }
+
 
 /**
  * Function to create a default cell object.
@@ -106,11 +119,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      */
     @property({ state: true, attribute: false})
     wordsAndClues: WordClue[]
-
-    // TODO CONSOLIDATE PLACEDWORD AND WORDSANDCLUES?
-    /** The words in the current grid */
-    @property({ state: true, attribute: false})
-    wordsPlaced: PlacedWord[]  // @type {string[]}
 
     /**
      * Whether the current direction is across or down.
@@ -417,17 +425,17 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let currentGrid: Partial<Cell>[][] = []
 
         /** The words that have been placed into the current grid */
-        let currentWordsPlaced: PlacedWord[] = []  // @type {string[]}
+        let currentWordsPlaced: WordClue[] = []  // @type {string[]}
 
         /** The best grid found so far.
          * Smallest grid with the largest amount of words placed
          */
         let bestGrid: Partial<Cell>[][] // @type {Cell[][]}
-        let bestWordsPlaced: PlacedWord[] = []  // @type {string[]}
+        let bestWordsPlaced: WordClue[] = []  // @type {string[]}
 
         /** Grid for testing adding / removing words */
         let scratchpadGrid: Partial<Cell>[][] = [] // @type {Cell[][]}
-        let scratchWordsPlaced: PlacedWord[] = []  // @type {string[]}
+        let scratchWordsPlaced: WordClue[] = []  // @type {string[]}
 
         /** The number of words in the best grid */
         let bestWordNr = 0 // @type{number}
@@ -477,18 +485,18 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * 
          * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
         */
-        function placeable(inputGrid: Partial<Cell>[][], wordNew: string): PlacedWord[] {
+        function placeable(inputGrid: Partial<Cell>[][], wordNew: string): WordClue[] {
             if (currentWordsPlaced.length == 0) {
                 let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
                 let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(wordNew.length/2);
 
-                let possiblePlacement: PlacedWord = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
+                let possiblePlacement: WordClue = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
 
                 return [possiblePlacement]
             }
 
             /** Function for determining whether a word is placeable in the grid. */
-            let possiblePlacements: PlacedWord[]  = []
+            let possiblePlacements: WordClue[]  = []
 
            // For every word already placed in the grid,
            // Go through all of its possible intersections with the new word
@@ -601,7 +609,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     }
                 }
 
-                    let possiblePlacement: PlacedWord = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
+                    let possiblePlacement: WordClue = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
 
                     if(noClash && notAdjacent){
                         possiblePlacements.push({...possiblePlacement})
@@ -618,9 +626,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             return possiblePlacements
         }
 
-        function selectPlacement(possiblePlacementOptions: PlacedWord[]): PlacedWord {
+        function selectPlacement(possiblePlacementOptions: WordClue[]): WordClue {
 
-            let possiblePlacementsNoResize: PlacedWord[] = []
+            let possiblePlacementsNoResize: WordClue[] = []
 
             // Prioritize word placement that doesn't require resizing the grid
             try {
@@ -633,7 +641,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 DEV: console.log("Apparently possiblePlacementOptions is undefined")
             }
 
-            let placement: PlacedWord
+            let placement: WordClue
             if(possiblePlacementsNoResize.length === 0) {
                 placement = possiblePlacementOptions[0]
             }
@@ -903,7 +911,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * This will be the amount required to get the furthest cell in bounds again
          * @returns { number } The increase required for 
          */
-        function enlargeGrid(inputGrid: Partial<Cell>[][], shift: number, wordToPlace: PlacedWord): [Partial<Cell>[][], PlacedWord] {
+        function enlargeGrid(inputGrid: Partial<Cell>[][], shift: number, wordToPlace: WordClue): [Partial<Cell>[][], WordClue] {
 
             // TODO Should I shift everything towards the center?
             let biggerGrid: Partial<Cell>[][] = []
@@ -940,7 +948,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             return [inputGrid, wordToPlace]
 
             /** Shifts the coordinates of the placed words so they're still accurate */
-            function shiftPlacedWords(placedWords: PlacedWord[]){
+            function shiftPlacedWords(placedWords: WordClue[]){
                 for(let wordPlaced of placedWords) {
                     DEV: console.log("There may be an error here if you try to edit one single attribute of a damn interface structure")
                     wordPlaced.x = wordPlaced.x + shift
