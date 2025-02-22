@@ -96,7 +96,6 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     @state()
     clue!: number // @type {boolean}
 
-
     /**
      * @constructor
      * Constructor for the crossword puzzle
@@ -106,10 +105,10 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      */
     constructor(dimension: number = 8) {
         super()
-        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid(this.isDirectionAcross, this.getCurrentClue)
+        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGridDOM(document)
-        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox(this.isDirectionAcross, this.getCurrentClue)
+        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
         this.clueWidget.newClueBoxInput(document)
         this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
 
@@ -118,10 +117,20 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
             this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
         })
+        this.addEventListener("change-direction", (e: CustomEvent) => {
+            DEV: console.log("change-direction triggered")
+            this.gridWidget.currentDirectionAcross = e.detail.currentDirectionAcross
+            this.clueWidget.currentDirectionAcross = e.detail.currentDirectionAcross
+        })
+        this.addEventListener("set-current-clue", (e: CustomEvent) => {
+            DEV: console.log("set-current-clue triggered")
+            DEV: console.log("Current clue:" + e.detail.clue)
+            this.gridWidget.currentDirectionAcross = e.detail.currentDirectionAcross
+            this.clueWidget.currentDirectionAcross = e.detail.currentDirectionAcross
+        })
+
         this.across = true
         this.toggleDirection = this.toggleDirection.bind(this)
-        this.isDirectionAcross = this.isDirectionAcross.bind(this)
-        this.getCurrentClue = this.getCurrentClue.bind(this)
     }
     /**
      * Styles
@@ -152,17 +161,11 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         };
     }
 
-    isDirectionAcross(): boolean {
-        return this.across
-    }
-
     toggleDirection(): void {
         this.across = !this.across
+        this.gridWidget.currentDirectionAcross = this.across
+        this.clueWidget.currentDirectionAcross = this.across
         DEV: console.log("Direction toggled")
-    }
-
-    getCurrentClue(): number {
-        return this.clue
     }
 
     setCurrentClue(clue: number): void {

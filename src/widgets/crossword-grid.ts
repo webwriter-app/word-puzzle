@@ -93,7 +93,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     grid: Partial<Cell>[][]
     //protected grid: Cell[][]
 
-        /**
+    /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
@@ -101,8 +101,42 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     @property({ type: HTMLDivElement, state: true, attribute: false})
     gridEl: HTMLDivElement
 
-    isDirectionAcross!: Function
-    getCurrentClue!: Function
+    /**
+     * The list of words grouped with their clues, direction, and word number.
+     */
+    @property({ state: true, attribute: false})
+    wordsAndClues: WordClue[]
+
+    // TODO CONSOLIDATE PLACEDWORD AND WORDSANDCLUES?
+    /** The words in the current grid */
+    @property({ state: true, attribute: false})
+    wordsPlaced: PlacedWord[]  // @type {string[]}
+
+    /**
+     * Whether the current direction is across or down.
+     * true if across, false if down
+     */
+    @property({ type: Boolean, state: true, attribute: false})
+    currentDirectionAcross: boolean
+
+    /**
+     * The clue the current selection corresponds to.
+     */
+    @property({ type: Number, state: true, attribute: false})
+    currentClue: number
+
+    /**
+     * Current row
+     */
+    @state()
+    cur_row: number // @type {boolean}
+
+    /**
+     * Current column
+     */
+    @state()
+    cur_col: number // @type {boolean}
+
 
     /**
      * @constructor
@@ -110,11 +144,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * 
      * Pretty much just makes a grid with 9x9 dimensions
      */
-    constructor(isDirAcross: Function, getCurClue: Function) {
+    constructor() {
         super()
         this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
-        this.isDirectionAcross = isDirAcross
-        this.getCurrentClue = getCurClue
     }
 
     /**
@@ -221,11 +253,26 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
         this.gridEl.addEventListener('keypress', (e) => {
             DEV: console.log("Pressed: " + e.key)
-            if (e.key === "Tab"|| isAlphaChar(e.key)) {
+            if (isAlphaChar(e.key)) {
                 this.nextCell(e)
+                const setCurrentClue = new CustomEvent("set-current-clue", {bubbles: true, composed: true, detail: {clue: 1}})
+                this.dispatchEvent(setCurrentClue)
+                // TODO Get current clue and change it if necessary
             }
+            else if(e.key === "Tab") {
+                // TODO Change to the next word in the given context
+                let grid_row = (Number((e.target).getAttribute("grid-row")))
+                let grid_col = (Number((e.target).getAttribute("grid-column")))
+                if(this.currentDirectionAcross) {
+                    // TODO
+                }
+            }
+
             else if (e.key === " ") {
-                DEV: console.log("Current direction:", this.isDirectionAcross())
+                DEV: console.log("Current direction is across:", this.currentDirectionAcross)
+                this.currentDirectionAcross = !this.currentDirectionAcross
+                const changeDirection = new CustomEvent("change-direction", {bubbles: true, composed: true, detail: {currentDirectionAcross: (this.currentDirectionAcross)}},)
+                this.dispatchEvent(changeDirection)
             }
         })
 
@@ -319,23 +366,23 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             e.preventDefault(); // Prevent default character insertion
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
             if (isAlphaChar(e.key)) {
-                if (cellDOM.querySelector('.cell-letter')) {
-                    cellDOM.querySelector('.cell-letter').textContent = e.key.toUpperCase()
-                }
-                else
-                    cellDOM.textContent = e.key.toUpperCase(); // Replace content with pressed key
-            }
-            if (e.key == "Space") {
-                DEV: console.log("TODO: implement changing direction when spacebar placed")
-                this.isDirectionAcross()
-//                const toggleDirection = new CustomEvent("toggleDirection", {bubbles: true, composed: true})
- //               this.dispatchEvent(toggleDirection)
-            }
-            // TODO change focus depending on across / down context
-            if (e.key == "Tab") {
-                DEV: console.log("TODO: implement changing focus depending on across / down context")
+                cellDOM.querySelector('.cell-letter').textContent = e.key.toUpperCase()
             }
         });
+
+        /**
+         * Event listener that replaces the text currently in the cell with whatever was pressed.
+         * 
+         * Overrides / prevents the default character insertion
+         */
+        cellDOM.addEventListener('focus', (e) => {
+            // TODO Get the current context
+            for(let wordClue of this.wordsPlaced) {
+
+            }
+        });
+
+
 
         return cellDOM
     }
@@ -1051,6 +1098,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 }
             }
         }
+
         for(let wordClue of wordsClues) {
             if(!wordClue.clue) {
                 wordClue.clue = "NO CLUE FOR THIS WORD"
@@ -1059,10 +1107,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
         }
 
-        // Afterwards, sort these by clue number
+        // Sort words by clue number
+        // This changes the original order but I don't think that's necessarily bad?
+        wordsClues.sort((a, b) => a.number - b.number)
+
+        this.wordsPlaced = bestWordsPlaced
+        this.wordsAndClues = wordsClues as WordClue[]
 
         return wordsClues as WordClue[]
-        
     }
 
     // TODO Implement answer checking

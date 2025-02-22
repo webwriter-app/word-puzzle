@@ -1535,19 +1535,22 @@ var DEFAULT_DIMENSION = 9;
 var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   grid;
   gridEl;
-  isDirectionAcross;
-  getCurrentClue;
+  wordsAndClues;
+  wordsPlaced;
+  currentDirectionAcross;
+  currentClue;
+  cur_row;
+  cur_col;
+  // @type {boolean}
   /**
    * @constructor
    * Some constructor I apparently thought was a good idea.
    * 
    * Pretty much just makes a grid with 9x9 dimensions
    */
-  constructor(isDirAcross, getCurClue) {
+  constructor() {
     super();
     this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
-    this.isDirectionAcross = isDirAcross;
-    this.getCurrentClue = getCurClue;
   }
   /**
    * Styles for the crossword grid.
@@ -1647,10 +1650,20 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
     this.gridEl.addEventListener("keypress", (e13) => {
       DEV: console.log("Pressed: " + e13.key);
-      if (e13.key === "Tab" || isAlphaChar(e13.key)) {
+      if (isAlphaChar(e13.key)) {
         this.nextCell(e13);
+        const setCurrentClue = new CustomEvent("set-current-clue", { bubbles: true, composed: true, detail: { clue: 1 } });
+        this.dispatchEvent(setCurrentClue);
+      } else if (e13.key === "Tab") {
+        let grid_row = Number(e13.target.getAttribute("grid-row"));
+        let grid_col = Number(e13.target.getAttribute("grid-column"));
+        if (this.currentDirectionAcross) {
+        }
       } else if (e13.key === " ") {
-        DEV: console.log("Current direction:", this.isDirectionAcross());
+        DEV: console.log("Current direction is across:", this.currentDirectionAcross);
+        this.currentDirectionAcross = !this.currentDirectionAcross;
+        const changeDirection = new CustomEvent("change-direction", { bubbles: true, composed: true, detail: { currentDirectionAcross: this.currentDirectionAcross } });
+        this.dispatchEvent(changeDirection);
       }
     });
     this.requestUpdate();
@@ -1720,17 +1733,11 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       e13.preventDefault();
       const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
       if (isAlphaChar(e13.key)) {
-        if (cellDOM.querySelector(".cell-letter")) {
-          cellDOM.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
-        } else
-          cellDOM.textContent = e13.key.toUpperCase();
+        cellDOM.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
       }
-      if (e13.key == "Space") {
-        DEV: console.log("TODO: implement changing direction when spacebar placed");
-        this.isDirectionAcross();
-      }
-      if (e13.key == "Tab") {
-        DEV: console.log("TODO: implement changing focus depending on across / down context");
+    });
+    cellDOM.addEventListener("focus", (e13) => {
+      for (let wordClue of this.wordsPlaced) {
       }
     });
     return cellDOM;
@@ -2199,6 +2206,9 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       if (!(wordClue.clue && wordClue.direction && wordClue.number && wordClue.word))
         DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word);
     }
+    wordsClues.sort((a5, b4) => a5.number - b4.number);
+    this.wordsPlaced = bestWordsPlaced;
+    this.wordsAndClues = wordsClues;
     return wordsClues;
   }
   // TODO Implement answer checking
@@ -2216,6 +2226,24 @@ __decorateClass([
 __decorateClass([
   n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "gridEl", 2);
+__decorateClass([
+  n4({ state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "wordsAndClues", 2);
+__decorateClass([
+  n4({ state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "wordsPlaced", 2);
+__decorateClass([
+  n4({ type: Boolean, state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "currentDirectionAcross", 2);
+__decorateClass([
+  n4({ type: Number, state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "currentClue", 2);
+__decorateClass([
+  r6()
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "cur_row", 2);
+__decorateClass([
+  r6()
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "cur_col", 2);
 WebwriterWordPuzzlesCrosswordGrid = __decorateClass([
   t3("webwriter-word-puzzles-crossword-grid")
 ], WebwriterWordPuzzlesCrosswordGrid);
@@ -3165,7 +3193,7 @@ var computePosition = async (reference, floating, config) => {
     middlewareData
   };
 };
-async function detectOverflow(state3, options) {
+async function detectOverflow(state2, options) {
   var _await$platform$isEle;
   if (options === void 0) {
     options = {};
@@ -3177,14 +3205,14 @@ async function detectOverflow(state3, options) {
     rects,
     elements,
     strategy
-  } = state3;
+  } = state2;
   const {
     boundary = "clippingAncestors",
     rootBoundary = "viewport",
     elementContext = "floating",
     altBoundary = false,
     padding = 0
-  } = evaluate(options, state3);
+  } = evaluate(options, state2);
   const paddingObject = getPaddingObject(padding);
   const altContext = elementContext === "floating" ? "reference" : "floating";
   const element = elements[altBoundary ? altContext : elementContext];
@@ -3224,7 +3252,7 @@ async function detectOverflow(state3, options) {
 var arrow = (options) => ({
   name: "arrow",
   options,
-  async fn(state3) {
+  async fn(state2) {
     const {
       x: x3,
       y: y4,
@@ -3233,11 +3261,11 @@ var arrow = (options) => ({
       platform: platform2,
       elements,
       middlewareData
-    } = state3;
+    } = state2;
     const {
       element,
       padding = 0
-    } = evaluate(options, state3) || {};
+    } = evaluate(options, state2) || {};
     if (element == null) {
       return {};
     }
@@ -3290,7 +3318,7 @@ var flip = function(options) {
   return {
     name: "flip",
     options,
-    async fn(state3) {
+    async fn(state2) {
       var _middlewareData$arrow, _middlewareData$flip;
       const {
         placement,
@@ -3299,7 +3327,7 @@ var flip = function(options) {
         initialPlacement,
         platform: platform2,
         elements
-      } = state3;
+      } = state2;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = true,
@@ -3308,7 +3336,7 @@ var flip = function(options) {
         fallbackAxisSideDirection = "none",
         flipAlignment = true,
         ...detectOverflowOptions
-      } = evaluate(options, state3);
+      } = evaluate(options, state2);
       if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3322,7 +3350,7 @@ var flip = function(options) {
         fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
       }
       const placements2 = [initialPlacement, ...fallbackPlacements];
-      const overflow = await detectOverflow(state3, detectOverflowOptions);
+      const overflow = await detectOverflow(state2, detectOverflowOptions);
       const overflows = [];
       let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
       if (checkMainAxis) {
@@ -3387,19 +3415,19 @@ var flip = function(options) {
     }
   };
 };
-async function convertValueToCoords(state3, options) {
+async function convertValueToCoords(state2, options) {
   const {
     placement,
     platform: platform2,
     elements
-  } = state3;
+  } = state2;
   const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
   const side = getSide(placement);
   const alignment = getAlignment(placement);
   const isVertical = getSideAxis(placement) === "y";
   const mainAxisMulti = ["left", "top"].includes(side) ? -1 : 1;
   const crossAxisMulti = rtl && isVertical ? -1 : 1;
-  const rawValue = evaluate(options, state3);
+  const rawValue = evaluate(options, state2);
   let {
     mainAxis,
     crossAxis,
@@ -3431,15 +3459,15 @@ var offset = function(options) {
   return {
     name: "offset",
     options,
-    async fn(state3) {
+    async fn(state2) {
       var _middlewareData$offse, _middlewareData$arrow;
       const {
         x: x3,
         y: y4,
         placement,
         middlewareData
-      } = state3;
-      const diffCoords = await convertValueToCoords(state3, options);
+      } = state2;
+      const diffCoords = await convertValueToCoords(state2, options);
       if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3461,12 +3489,12 @@ var shift = function(options) {
   return {
     name: "shift",
     options,
-    async fn(state3) {
+    async fn(state2) {
       const {
         x: x3,
         y: y4,
         placement
-      } = state3;
+      } = state2;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = false,
@@ -3483,12 +3511,12 @@ var shift = function(options) {
           }
         },
         ...detectOverflowOptions
-      } = evaluate(options, state3);
+      } = evaluate(options, state2);
       const coords = {
         x: x3,
         y: y4
       };
-      const overflow = await detectOverflow(state3, detectOverflowOptions);
+      const overflow = await detectOverflow(state2, detectOverflowOptions);
       const crossAxis = getSideAxis(getSide(placement));
       const mainAxis = getOppositeAxis(crossAxis);
       let mainAxisCoord = coords[mainAxis];
@@ -3508,7 +3536,7 @@ var shift = function(options) {
         crossAxisCoord = clamp(min2, crossAxisCoord, max2);
       }
       const limitedCoords = limiter.fn({
-        ...state3,
+        ...state2,
         [mainAxis]: mainAxisCoord,
         [crossAxis]: crossAxisCoord
       });
@@ -3533,20 +3561,20 @@ var size = function(options) {
   return {
     name: "size",
     options,
-    async fn(state3) {
+    async fn(state2) {
       var _state$middlewareData, _state$middlewareData2;
       const {
         placement,
         rects,
         platform: platform2,
         elements
-      } = state3;
+      } = state2;
       const {
         apply = () => {
         },
         ...detectOverflowOptions
-      } = evaluate(options, state3);
-      const overflow = await detectOverflow(state3, detectOverflowOptions);
+      } = evaluate(options, state2);
+      const overflow = await detectOverflow(state2, detectOverflowOptions);
       const side = getSide(placement);
       const alignment = getAlignment(placement);
       const isYAxis = getSideAxis(placement) === "y";
@@ -3567,13 +3595,13 @@ var size = function(options) {
       const maximumClippingWidth = width - overflow.left - overflow.right;
       const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
       const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-      const noShift = !state3.middlewareData.shift;
+      const noShift = !state2.middlewareData.shift;
       let availableHeight = overflowAvailableHeight;
       let availableWidth = overflowAvailableWidth;
-      if ((_state$middlewareData = state3.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
+      if ((_state$middlewareData = state2.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
         availableWidth = maximumClippingWidth;
       }
-      if ((_state$middlewareData2 = state3.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
+      if ((_state$middlewareData2 = state2.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
         availableHeight = maximumClippingHeight;
       }
       if (noShift && !alignment) {
@@ -3588,7 +3616,7 @@ var size = function(options) {
         }
       }
       await apply({
-        ...state3,
+        ...state2,
         availableWidth,
         availableHeight
       });
@@ -15558,10 +15586,10 @@ var SubmenuController = class {
       }
     }
   }
-  setSubmenuState(state3) {
+  setSubmenuState(state2) {
     if (this.popupRef.value) {
-      if (this.popupRef.value.active !== state3) {
-        this.popupRef.value.active = state3;
+      if (this.popupRef.value.active !== state2) {
+        this.popupRef.value.active = state2;
         this.host.requestUpdate();
       }
     }
@@ -23993,6 +24021,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
    */
   wordList;
+  // TODO COMBINE WORDS AND CLUES AND PLACEDWORDS DATA STRUCTURE
   /**
    * The list of words grouped with their clues, direction, and word number.
    */
@@ -24003,7 +24032,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * Contains coordinate information
    */
   placedWords;
-  toggleDirection;
+  currentDirectionAcross;
   currentClue;
   /**
    * @constructor
@@ -24011,14 +24040,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
    */
-  constructor(toggleDir, curClue) {
+  constructor() {
     super();
     this.clueBoxInput = this.newClueBoxInput(document);
     this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this));
     this.wordList = [];
     this.wordsAndClues = [];
-    this.toggleDirection = toggleDir;
-    this.currentClue = curClue;
   }
   static get styles() {
     return i`
@@ -24461,6 +24488,12 @@ __decorateClass([
 __decorateClass([
   n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
+__decorateClass([
+  n4({ type: Boolean, state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "currentDirectionAcross", 2);
+__decorateClass([
+  n4({ type: Boolean, state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "currentClue", 2);
 WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
   t3("webwriter-word-puzzles-crossword-cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox);
@@ -24489,10 +24522,10 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    */
   constructor(dimension = 8) {
     super();
-    this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid(this.isDirectionAcross, this.getCurrentClue);
+    this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid();
     this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell2()));
     this.gridWidget.newCrosswordGridDOM(document);
-    this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox(this.isDirectionAcross, this.getCurrentClue);
+    this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
     this.clueWidget.newClueBoxInput(document);
     this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
     this.addEventListener("generateCw", () => {
@@ -24500,10 +24533,19 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues);
       this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues);
     });
+    this.addEventListener("change-direction", (e13) => {
+      DEV: console.log("change-direction triggered");
+      this.gridWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
+      this.clueWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
+    });
+    this.addEventListener("set-current-clue", (e13) => {
+      DEV: console.log("set-current-clue triggered");
+      DEV: console.log("Current clue:" + e13.detail.clue);
+      this.gridWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
+      this.clueWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
+    });
     this.across = true;
     this.toggleDirection = this.toggleDirection.bind(this);
-    this.isDirectionAcross = this.isDirectionAcross.bind(this);
-    this.getCurrentClue = this.getCurrentClue.bind(this);
   }
   /**
    * Styles
@@ -24532,15 +24574,11 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
     };
   }
-  isDirectionAcross() {
-    return this.across;
-  }
   toggleDirection() {
     this.across = !this.across;
+    this.gridWidget.currentDirectionAcross = this.across;
+    this.clueWidget.currentDirectionAcross = this.across;
     DEV: console.log("Direction toggled");
-  }
-  getCurrentClue() {
-    return this.clue;
   }
   setCurrentClue(clue) {
     this.clue = clue;

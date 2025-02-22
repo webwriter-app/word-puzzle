@@ -72,6 +72,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
     wordList: string[]
+
+    // TODO COMBINE WORDS AND CLUES AND PLACEDWORDS DATA STRUCTURE
     
     /**
      * The list of words grouped with their clues, direction, and word number.
@@ -86,9 +88,18 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     placedWords: PlacedWord[]
 
-    toggleDirection!: Function
-    currentClue!: Function
+    /**
+     * Whether the current direction is across or down.
+     * true if across, false if down
+     */
+    @property({ type: Boolean, state: true, attribute: false})
+    currentDirectionAcross: boolean
 
+    /**
+     * The clue the current selection corresponds to.
+     */
+    @property({ type: Boolean, state: true, attribute: false})
+    currentClue: boolean
 
     /**
      * @constructor
@@ -96,14 +107,12 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
      */
-    constructor(toggleDir: Function, curClue: Function) {
+    constructor() {
         super()
         this.clueBoxInput = this.newClueBoxInput(document)
         this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this))
         this.wordList = []
         this.wordsAndClues = []
-        this.toggleDirection = toggleDir
-        this.currentClue = curClue
     }
 
     static get styles() {
