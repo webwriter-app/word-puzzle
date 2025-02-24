@@ -43,6 +43,14 @@ function stopCtrlPropagation(event: KeyboardEvent): void {
 /**
  * Cell object for the crossword grid. 
  * Maybe use this for the logic eventually
+ * ```typescript
+ * {
+ *     white: boolean;
+ *     answer: string;
+ *     number: number;
+ *     direction: string;
+ * }
+ * ```
  */
 interface Cell {
     white: boolean;
@@ -80,7 +88,7 @@ export interface WordClue {
 /**
  * Function to create a default cell object.
  */
-function defaultCell(): Partial<Cell> {
+export function defaultCell(): Partial<Cell> {
     return {
         white: false,
         answer: null, // NOTE Should this be here, or should 
@@ -118,7 +126,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({ state: true, attribute: false})
-    wordsAndClues: WordClue[]
+    wordsAndClues: Partial<WordClue>[]
 
     /**
      * Whether the current direction is across or down.
@@ -379,15 +387,54 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         });
 
         /**
-         * Event listener that replaces the text currently in the cell with whatever was pressed.
+         * Event listener for current focus
          * 
          * Overrides / prevents the default character insertion
          */
+        // TODO This isn't actually working like I'd expect it to for whatever reason.
+        // It works correctly the first time but doesn't change anymore after that
         cellDOM.addEventListener('focus', (e) => {
             // TODO Get the current context
-            for(let wordClue of this.wordsPlaced) {
+            let grid_row = (e.target).getAttribute("grid-row")
+            let grid_col = (e.target).getAttribute("grid-col")
+            DEV: console.log("Current cell coordinates..? (" + grid_row + ", " + grid_col + ")")
+            
 
+            if(this.cur_row == null || this.cur_row == null) {
+                DEV: console.log("cur_row and cur_col are both null")
+                this.cur_row = Number((e.target).getAttribute("grid-row"))
+                this.cur_col = Number((e.target).getAttribute("grid-col"))
             }
+            // Needs to be corrected bc it's 1-indexed in the DOM
+            let x = this.cur_row + 1
+            let y = this.cur_col + 1
+
+            DEV: console.log("Current row (DOM grid): " + x)
+            DEV: console.log("Current col (DOM grid): " + y)
+
+            if(this.currentDirectionAcross) {
+                try {
+                    while(this.grid[x][y-1].white) {
+                        y -= 1
+                    }
+                }
+                catch(error) {
+                    DEV: console.log("No cell to the left")
+                }
+            }
+            else {
+                try {
+                    while(this.grid[x-1][y].white) {
+                        x -= 1
+                    }
+                }
+                catch(error) {
+                    DEV: console.log("No cell above")
+                }
+            }
+            DEV: console.log("Coordinates: (" + x + ", " + y + ")")
+            this.currentClue = this.grid[x][y].number
+
         });
 
 
@@ -425,17 +472,17 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let currentGrid: Partial<Cell>[][] = []
 
         /** The words that have been placed into the current grid */
-        let currentWordsPlaced: WordClue[] = []  // @type {string[]}
+        let currentWordsPlaced: Partial<WordClue>[] = []  // @type {string[]}
 
         /** The best grid found so far.
          * Smallest grid with the largest amount of words placed
          */
         let bestGrid: Partial<Cell>[][] // @type {Cell[][]}
-        let bestWordsPlaced: WordClue[] = []  // @type {string[]}
+        let bestWordsPlaced: Partial<WordClue>[] = []  // @type {string[]}
 
         /** Grid for testing adding / removing words */
         let scratchpadGrid: Partial<Cell>[][] = [] // @type {Cell[][]}
-        let scratchWordsPlaced: WordClue[] = []  // @type {string[]}
+        let scratchWordsPlaced: Partial<WordClue>[] = []  // @type {string[]}
 
         /** The number of words in the best grid */
         let bestWordNr = 0 // @type{number}
@@ -485,18 +532,18 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * 
          * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
         */
-        function placeable(inputGrid: Partial<Cell>[][], wordNew: string): WordClue[] {
+        function placeable(inputGrid: Partial<Cell>[][], wordNew: string): Partial<WordClue>[] {
             if (currentWordsPlaced.length == 0) {
                 let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
                 let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(wordNew.length/2);
 
-                let possiblePlacement: WordClue = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
+                let possiblePlacement: Partial<WordClue> = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
 
                 return [possiblePlacement]
             }
 
             /** Function for determining whether a word is placeable in the grid. */
-            let possiblePlacements: WordClue[]  = []
+            let possiblePlacements: Partial<WordClue>[]  = []
 
            // For every word already placed in the grid,
            // Go through all of its possible intersections with the new word
@@ -609,7 +656,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     }
                 }
 
-                    let possiblePlacement: WordClue = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
+                    let possiblePlacement: Partial<WordClue> = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
 
                     if(noClash && notAdjacent){
                         possiblePlacements.push({...possiblePlacement})
@@ -626,9 +673,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             return possiblePlacements
         }
 
-        function selectPlacement(possiblePlacementOptions: WordClue[]): WordClue {
+        function selectPlacement(possiblePlacementOptions: Partial<WordClue>[]): Partial<WordClue> {
 
-            let possiblePlacementsNoResize: WordClue[] = []
+            let possiblePlacementsNoResize: Partial<WordClue>[] = []
 
             // Prioritize word placement that doesn't require resizing the grid
             try {
@@ -641,7 +688,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 DEV: console.log("Apparently possiblePlacementOptions is undefined")
             }
 
-            let placement: WordClue
+            let placement: Partial<WordClue>
             if(possiblePlacementsNoResize.length === 0) {
                 placement = possiblePlacementOptions[0]
             }
@@ -735,9 +782,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * @param {number} inputY - Y coordinate where the first letter of the word should be placed
          * @param {string} direction - whether the word is across or down.
         */
-        function addWord(inputGrid: Partial<Cell>[][], word: string, inputX: number, inputY: number, direction: string): Partial<Cell>[][] {
+        function addWord(inputGrid: Partial<Cell>[][], wordToPlace: Partial<WordClue>): Partial<Cell>[][] {
             // I don't think this is iterating over chars 
-            let wordToPlace = {word: word, x: inputX, y: inputY, direction: direction}
             let shift: number = 0
 
             let x = wordToPlace.x
@@ -745,7 +791,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
             let success = false
 
-            DEV: console.log("Placing " + word + " " + direction)
+            DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.direction)
 
             let timeout = 0
             while(!success) {
@@ -758,10 +804,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     clueCount += 1
                 }
 
-                for(let j = 0; j < word.length; j++) {
-                    inputGrid[x][y].answer = word[j]
+                for(let j = 0; j < wordToPlace.word.length; j++) {
+                    inputGrid[x][y].answer = wordToPlace.word[j]
                     inputGrid[x][y].white = true
-                    if (direction == "across") {
+                    if (wordToPlace.direction == "across") {
                         if (inputGrid[x][y].direction == "" || !inputGrid[x][y].direction || inputGrid[x][y].direction == "across") {
                             inputGrid[x][y].direction = "across"
                         }
@@ -780,7 +826,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                         x += 1
                     }
                 }
-                DEV: console.log(word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")")
+                DEV: console.log(wordToPlace.word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")")
                 success = true
             }
             catch(error) {
@@ -788,7 +834,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 if(timeout >= 3) {
                     throw new Error("You've created an infinite loop, congratulations")
                 }
-                DEV: console.log("There was an error while adding " + word + " to the grid, at (" + x + ", " + y + ").")
+                DEV: console.log("There was an error while adding " + wordToPlace.word + " to the grid, at (" + x + ", " + y + ").")
                 DEV: console.log("Grid size:" + inputGrid.length)
                 DEV: console.log("Message:" + error.message)
                 DEV: console.log("Stack:" + error.stack)
@@ -796,7 +842,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 // Resize grid if word would be out of bounds at the top / left
                 if (wordToPlace.x < 0 || wordToPlace.y < 0) {
                     let shift = Math.abs(Math.min(wordToPlace.x, wordToPlace.y))
-                    DEV: console.log(word + " (" + wordToPlace.word + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ") must be shifted by " + shift + ".")
+                    DEV: console.log(wordToPlace.word + " (" + wordToPlace.word + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ") must be shifted by " + shift + ".")
                     let increase = shift
                     DEV: console.log("Current grid dimensions: " + inputGrid.length)
                     let enlargedGrid = enlargeGrid(inputGrid, shift, wordToPlace)
@@ -807,15 +853,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
 
                 // Resize grid if word would be out of bounds at the bottom / right
-                if(direction == "across") {
-                    if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + word.length - 1 >= inputGrid.length) {
-                        let increase = wordToPlace.y + word.length - inputGrid.length
+                if(wordToPlace.direction == "across") {
+                    if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
+                        let increase = wordToPlace.y + wordToPlace.word.length - inputGrid.length
                         DEV: console.log("Current grid dimensions: " + inputGrid.length)
-                        if(wordToPlace.y + word.length - 1 >= inputGrid.length) {
-                            DEV: console.log(word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
+                        if(wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
+                            DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
                         }
                         else {
-                            DEV: console.log(word + " is on an out-of-bounds row (" + wordToPlace.x + ").")
+                            DEV: console.log(wordToPlace.word + " is on an out-of-bounds row (" + wordToPlace.x + ").")
                         }
                         let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace)
                         inputGrid = enlargedGrid[0]
@@ -824,14 +870,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     }
                 }
                 else  {
-                    if (wordToPlace.x + word.length - 1 >= inputGrid.length || wordToPlace.y - 1 >= inputGrid.length) {
-                        let increase = wordToPlace.x + word.length - inputGrid.length
+                    if (wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length || wordToPlace.y - 1 >= inputGrid.length) {
+                        let increase = wordToPlace.x + wordToPlace.word.length - inputGrid.length
                         DEV: console.log("Current grid dimensions: " + inputGrid.length)
-                        if(wordToPlace.x + word.length - 1 >= inputGrid.length) {
-                            DEV: console.log(word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
+                        if(wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length) {
+                            DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
                         }
                         else {
-                            DEV: console.log(word + " is on an out-of-bounds column (" + wordToPlace.y + ").")
+                            DEV: console.log(wordToPlace.word + " is on an out-of-bounds column (" + wordToPlace.y + ").")
                         }
                         let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace)
                         inputGrid = enlargedGrid[0]
@@ -843,7 +889,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             currentWordsPlaced.push(wordToPlace)
             try {
-                wordsLeft.splice(wordsLeft.indexOf(word), 1)
+                wordsLeft.splice(wordsLeft.indexOf(wordToPlace.word), 1)
             } catch(error) {
                 DEV: console.log("No words left")
             }
@@ -911,7 +957,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * This will be the amount required to get the furthest cell in bounds again
          * @returns { number } The increase required for 
          */
-        function enlargeGrid(inputGrid: Partial<Cell>[][], shift: number, wordToPlace: WordClue): [Partial<Cell>[][], WordClue] {
+        function enlargeGrid(inputGrid: Partial<Cell>[][], shift: number, wordToPlace: Partial<WordClue>): [Partial<Cell>[][], Partial<WordClue>] {
 
             // TODO Should I shift everything towards the center?
             let biggerGrid: Partial<Cell>[][] = []
@@ -948,7 +994,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             return [inputGrid, wordToPlace]
 
             /** Shifts the coordinates of the placed words so they're still accurate */
-            function shiftPlacedWords(placedWords: WordClue[]){
+            function shiftPlacedWords(placedWords: Partial<WordClue>[]){
                 for(let wordPlaced of placedWords) {
                     DEV: console.log("There may be an error here if you try to edit one single attribute of a damn interface structure")
                     wordPlaced.x = wordPlaced.x + shift
@@ -1027,8 +1073,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 verticalPadding = 0
             }
 
-            
-            // TODO continue making the dimensions square
             // Initialize the grid and shift everything
             for(let i = 0; i < inputGrid.length; i++) {
                 newGrid[i] = []
@@ -1053,7 +1097,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     DEV: console.log("Placement for " + word + ": " + placement.x + ", " + placement.y)
                     DEV: console.log("Placing " + word)
                 try {
-                    inputGrid = addWord(inputGrid, placement.word,placement.x, placement.y, placement.direction)
+                    inputGrid = addWord(inputGrid, placement)
                 }
                 catch (error) {
                     DEV: console.log("Something went wrong during placement of " + word + ".")
@@ -1102,24 +1146,23 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             for(let wordClue of wordsClues) {
                 if(wordObj.word == wordClue.word) {
                     wordClue.direction = wordObj.direction
-                    wordClue.number = this.grid[wordObj.x][wordObj.y].number
+                    wordClue.clueNumber = this.grid[wordObj.x][wordObj.y].number
                 }
             }
         }
 
         for(let wordClue of wordsClues) {
-            if(!wordClue.clue) {
-                wordClue.clue = "NO CLUE FOR THIS WORD"
+            if(!wordClue.clueText) {
+                wordClue.clueText = "NO CLUE FOR THIS WORD"
             }
-            if(!(wordClue.clue && wordClue.direction && wordClue.number && wordClue.word))
+            if(!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
                 DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
         }
 
         // Sort words by clue number
         // This changes the original order but I don't think that's necessarily bad?
-        wordsClues.sort((a, b) => a.number - b.number)
+        wordsClues.sort((a, b) => a.clueNumber - b.clueNumber)
 
-        this.wordsPlaced = bestWordsPlaced
         this.wordsAndClues = wordsClues as WordClue[]
 
         return wordsClues as WordClue[]

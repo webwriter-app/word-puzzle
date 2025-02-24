@@ -9,8 +9,8 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterWordPuzzlesCrosswordGrid, PlacedWord } from './crossword-grid';
-import { WebwriterWordPuzzlesCrosswordCluebox, WordClue } from './crossword-cluebox';
+import { WebwriterWordPuzzlesCrosswordGrid, WordClue, defaultCell } from './crossword-grid';
+import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
 
 
 // Shoelace
@@ -38,28 +38,6 @@ declare global {interface HTMLElementTagNameMap {
 
 // NOTE Almost all methods within this class are from / based on the crosswords-js module
 
-/**
- * Cell object for the crossword grid. 
- * Maybe use this for the logic eventually
- */
-interface Cell {
-    white: boolean;
-    answer: string; // Correct letter
-    number: number; // Clue number
-    direction: string; // Down, across, both, or null
-}
-
-/**
- * Function to create a default cell object.
- */
-function defaultCell(): Cell {
-    return {
-        white: false,
-        answer: null,
-        number: null,
-        direction: null
-    }
-}
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
@@ -110,12 +88,12 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.gridWidget.newCrosswordGridDOM(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
         this.clueWidget.newClueBoxInput(document)
-        this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+        this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
 
         this.addEventListener("generateCw", () => {
             DEV: console.log("generateCw triggered")
             this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
-            this.clueWidget.clueBox = this.clueWidget.generateClueBox(this.clueWidget.wordsAndClues as WordClue[])
+            this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
         })
         this.addEventListener("change-direction", (e: CustomEvent) => {
             DEV: console.log("change-direction triggered")
@@ -187,15 +165,14 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         }
 
         this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(wordsAndClues)
-        this.clueWidget.generateClueBox(wordsAndClues as WordClue[])
-        // TODO Left off here, trying to generate other clue box but it's not really working
+//        this.clueWidget.generateClueBox(wordsAndClues as WordClue[])
     }
 
 
     render() {
         return (html`<div class="wrapper">
-                ${this.gridWidget}
                 ${this.clueWidget}
+                ${this.gridWidget}
             </div>
             `)
     }
