@@ -145,13 +145,13 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * Current row
      */
     @state()
-    cur_row: number // @type {boolean}
+    cur_row_dom: number // @type {boolean}
 
     /**
      * Current column
      */
     @state()
-    cur_col: number // @type {boolean}
+    cur_col_dom: number // @type {boolean}
 
 
     /**
@@ -277,8 +277,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             else if(e.key === "Tab") {
                 // TODO Change to the next word in the given context
-                let grid_row = (Number((e.target).getAttribute("grid-row")))
-                let grid_col = (Number((e.target).getAttribute("grid-column")))
+                let grid_row = (Number((e.target).getAttribute("grid-row-dom")))
+                let grid_col = (Number((e.target).getAttribute("grid-column-dom")))
                 if(this.currentDirectionAcross) {
                     // TODO
                 }
@@ -304,8 +304,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     */
     nextCell(e: KeyboardEvent) {
         // Idk how to get typescript to stop crying about this even though it works
-        let grid_row = (Number((e.target).getAttribute("grid-row")))
-        let grid_col = (Number((e.target).getAttribute("grid-column")))
+        let grid_row = (Number((e.target).getAttribute("grid-row-dom")))
+        let grid_col = (Number((e.target).getAttribute("grid-column-dom")))
         // TODO Read attribute from parent somehow. 
         // Using an attribute of the cell is temporary
         if(e.target.getAttribute("direction") === "across" || e.target.getAttribute("direction") === "both")
@@ -313,9 +313,11 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         else
             grid_row += 1
         DEV: console.log("TODO: implement changing focus depending on across / down context")
-        DEV: console.log('[grid-row="'+ grid_row + '"][grid-column="' + grid_col + '"]')
+        DEV: console.log('[grid-row-dom="'+ grid_row + '"][grid-column-dom="' + grid_col + '"]')
 
-        this.gridEl.querySelector('[grid-row="'+ grid_row + '"][grid-column="' + grid_col + '"]').focus()
+        this.gridEl.querySelector('[grid-row-dom="'+ grid_row + '"][grid-column-dom="' + grid_col + '"]').focus()
+        this.cur_col_dom = grid_row
+        this.cur_row_dom = grid_col
 
         // TODO Add case where it's the last letter of the word
             // Go to the next clue of the corresponding context
@@ -332,14 +334,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * @returns {HTMLDivElement} the DOM element for the _cell_
      * Source: crosswords-js
      */
+    // TODO idk why the focusing stuff isn't working now, maybe I set the values here wrong
     protected newCell(document: Document, x: number, y: number) {
         const cellDOM: HTMLDivElement = document.createElement('div');
         cellDOM.className = 'cell'
         cellDOM.style.display = 'grid'
         cellDOM.style.gridRowStart = (x).toString()
         cellDOM.style.gridColumnStart = (y).toString()
-        cellDOM.setAttribute("grid-row", (x-1).toString())
-        cellDOM.setAttribute("grid-column", (y-1).toString())
+        cellDOM.setAttribute("grid-row-dom", (x).toString())
+        cellDOM.setAttribute("grid-col-dom", (y).toString())
         cellDOM.style.gridColumnStart = (y).toString()
         // This is just temporary for testing
         try {
@@ -393,21 +396,22 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          */
         // TODO This isn't actually working like I'd expect it to for whatever reason.
         // It works correctly the first time but doesn't change anymore after that
-        cellDOM.addEventListener('focus', (e) => {
+        cellDOM.addEventListener('focusin', (e: FocusEvent) => {
             // TODO Get the current context
-            let grid_row = (e.target).getAttribute("grid-row")
-            let grid_col = (e.target).getAttribute("grid-col")
-            DEV: console.log("Current cell coordinates..? (" + grid_row + ", " + grid_col + ")")
+            e.stopPropagation()
+            this.cur_row_dom = (e.target).getAttribute("grid-row-dom")
+            this.cur_col_dom = (e.target).getAttribute("grid-col-dom")
+            DEV: console.log("Current cell coordinates..? (" + this.cur_row_dom + ", " + this.cur_col_dom + ")")
             
 
-            if(this.cur_row == null || this.cur_row == null) {
+            if(this.cur_row_dom == null || this.cur_row_dom == null) {
                 DEV: console.log("cur_row and cur_col are both null")
-                this.cur_row = Number((e.target).getAttribute("grid-row"))
-                this.cur_col = Number((e.target).getAttribute("grid-col"))
+                this.cur_row_dom = Number((e.target).getAttribute("grid-row-dom"))
+                this.cur_col_dom = Number((e.target).getAttribute("grid-col-dom"))
             }
             // Needs to be corrected bc it's 1-indexed in the DOM
-            let x = this.cur_row + 1
-            let y = this.cur_col + 1
+            let x = this.cur_row_dom 
+            let y = this.cur_col_dom 
 
             DEV: console.log("Current row (DOM grid): " + x)
             DEV: console.log("Current col (DOM grid): " + y)
@@ -432,7 +436,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     DEV: console.log("No cell above")
                 }
             }
-            DEV: console.log("Coordinates: (" + x + ", " + y + ")")
+            DEV: console.log("Coordinates: (" + this.cur_row_dom + ", " + this.cur_col_dom + ")")
             this.currentClue = this.grid[x][y].number
 
         });
