@@ -1536,7 +1536,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   grid;
   gridEl;
   wordsAndClues;
-  currentDirectionAcross;
+  acrossContext;
   currentClue;
   cur_row_dom;
   cur_col_dom;
@@ -1550,6 +1550,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
+    this.acrossContext = true;
   }
   /**
    * Styles for the crossword grid.
@@ -1574,7 +1575,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 box-sizing: border-box;
                 width: max-content;
                 height: max-content;
-                border: 2px solid black;
+                border: 2px solid #333333;
             }
             div.cell {
                 display: grid;
@@ -1585,7 +1586,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 width: 100%;
                 min-width: 40px;
                 min-height: 40px;
-                border: 1px solid black;
+                border: 1px solid #333333;
                 max-width: 40px;
                 max-height: 40px;
                 position: center;
@@ -1594,7 +1595,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 font-size: 18pt;
             }
             div.cell[black] {
-                background-color: black;
+                background-color: #333333;
             }
             div.cell:focus {
                 background-color: lightblue;
@@ -1627,7 +1628,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   }
   // TODO Add event listener for adding the focus class based on the clue number and direction
   /**
-   * @constructor
    * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
    * 
    * Dimensions are based on {@link this.grid | grid}.
@@ -1646,25 +1646,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       }
     }
     this.gridEl.addEventListener("keydown", stopCtrlPropagation);
-    const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
-    this.gridEl.addEventListener("keypress", (e13) => {
-      DEV: console.log("Pressed: " + e13.key);
-      if (isAlphaChar(e13.key)) {
-        this.nextCell(e13);
-        const setCurrentClue = new CustomEvent("set-current-clue", { bubbles: true, composed: true, detail: { clue: 1 } });
-        this.dispatchEvent(setCurrentClue);
-      } else if (e13.key === "Tab") {
-        let grid_row = Number(e13.target.getAttribute("grid-row-dom"));
-        let grid_col = Number(e13.target.getAttribute("grid-column-dom"));
-        if (this.currentDirectionAcross) {
-        }
-      } else if (e13.key === " ") {
-        DEV: console.log("Current direction is across:", this.currentDirectionAcross);
-        this.currentDirectionAcross = !this.currentDirectionAcross;
-        const changeDirection = new CustomEvent("change-direction", { bubbles: true, composed: true, detail: { currentDirectionAcross: this.currentDirectionAcross } });
-        this.dispatchEvent(changeDirection);
-      }
-    });
     this.requestUpdate();
     return this.gridEl;
   }
@@ -1673,20 +1654,79 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * 
   */
   nextCell(e13) {
-    let grid_row = Number(e13.target.getAttribute("grid-row-dom"));
-    let grid_col = Number(e13.target.getAttribute("grid-column-dom"));
-    if (e13.target.getAttribute("direction") === "across" || e13.target.getAttribute("direction") === "both")
-      grid_col += 1;
-    else
-      grid_row += 1;
+    let currentCell = e13.target;
+    let nextWord;
+    let nextCell;
+    let grid_row = Number(currentCell.getAttribute("grid-row-dom"));
+    let grid_col = Number(currentCell.getAttribute("grid-col-dom"));
+    const incr_row = Number(!this.acrossContext);
+    const incr_col = Number(this.acrossContext);
+    if (grid_col + incr_col > this.grid.length || grid_row + incr_row > this.grid.length) {
+      nextWord = this.wordsAndClues[this.getNextWordIndex()];
+      grid_row = nextWord.x + 1;
+      grid_col = nextWord.y + 1;
+      nextCell = this.getCellDOM(grid_row, grid_col);
+    } else {
+      if (!this.getCellObj(grid_row + incr_row, grid_col + incr_col).white) {
+        nextWord = this.wordsAndClues[this.getNextWordIndex()];
+        grid_row = nextWord.x + 1;
+        grid_col = nextWord.y + 1;
+        nextCell = this.getCellDOM(grid_row, grid_col);
+      } else {
+        grid_row += incr_row;
+        grid_col += incr_col;
+        nextCell = this.getCellDOM(grid_row, grid_col);
+      }
+    }
     DEV: console.log("TODO: implement changing focus depending on across / down context");
-    DEV: console.log('[grid-row-dom="' + grid_row + '"][grid-column-dom="' + grid_col + '"]');
-    this.gridEl.querySelector('[grid-row-dom="' + grid_row + '"][grid-column-dom="' + grid_col + '"]').focus();
+    DEV: console.log('Changed: [grid-row-dom="' + grid_row + '"][grid-col-dom="' + grid_col + '"]');
+    DEV: console.log("Next cell:");
+    DEV: console.log(nextCell);
+    if (grid_row > this.grid.length || grid_col > this.grid.length) {
+      currentCell.blur();
+    }
+    nextCell.focus();
     this.cur_col_dom = grid_row;
     this.cur_row_dom = grid_col;
+    if (nextWord) {
+      this.setContext(nextWord.clueNumber, nextWord.direction == "across");
+    }
+  }
+  /** Function for getting a cell based on its location in the DOM grid. 
+   * 
+   * @param {number} row the row number, 1-indexed
+   * @param {number} col the column number, 1-indexed
+   * @returns {HTMLDivElement} the DOM element of the cell
+  */
+  getCellDOM(row, col) {
+    return this.gridEl.querySelector('[grid-row-dom="' + row + '"][grid-col-dom="' + col + '"]');
+  }
+  /** Function for returning a cell element in the grid. Not from the DOM.
+   * 
+   * @param {number} row the row number, 1-indexed. Conversion happens internally
+   * @param {number} col the column number, 1-indexed. Conversion happens internally
+   * @returns {Cell} the properties of the Cell element
+   */
+  getCellObj(row, col) {
+    return this.grid[row - 1][col - 1];
+  }
+  /** Function for getting the next word in context of the direction and current clue number.
+   * Returns the empty cell element at the next word
+   * 
+   * @returns {HTMLDivElement} the DOM element of the cell
+  */
+  // May not need the arguments lol
+  getNextWordIndex() {
+    let direction = this.acrossContext ? "across" : "down";
+    let opposite_direction = this.acrossContext ? "down" : "across";
+    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == this.currentClue && wordClue.direction == direction);
+    i9 += 1;
+    if (i9 >= this.wordsAndClues.length) {
+      i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.direction == opposite_direction);
+    }
+    return i9;
   }
   /**
-   * @constructor
    * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
    * 
    * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
@@ -1736,43 +1776,63 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
       if (isAlphaChar(e13.key)) {
         cellDOM.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
+        this.nextCell(e13);
+        const setCurrentClue = new CustomEvent("set-current-clue", { bubbles: true, composed: true, detail: { clue: 1, acrossContext: this.acrossContext } });
+        this.dispatchEvent(setCurrentClue);
+      } else if (e13.key === "Tab") {
+        let grid_row = Number(e13.target.getAttribute("grid-row-dom"));
+        let grid_col = Number(e13.target.getAttribute("grid-col-dom"));
+        if (this.acrossContext) {
+        }
+      } else if (e13.key === " ") {
+        DEV: console.log("Current direction is across:", this.acrossContext);
+        this.acrossContext = !this.acrossContext;
+        const changeDirection = new CustomEvent("change-direction", { bubbles: true, composed: true, detail: { acrossContext: this.acrossContext } });
+        this.dispatchEvent(changeDirection);
       }
     });
     cellDOM.addEventListener("focusin", (e13) => {
+      DEV: console.log("Cell focus event triggered");
       e13.stopPropagation();
-      this.cur_row_dom = e13.target.getAttribute("grid-row-dom");
-      this.cur_col_dom = e13.target.getAttribute("grid-col-dom");
-      DEV: console.log("Current cell coordinates..? (" + this.cur_row_dom + ", " + this.cur_col_dom + ")");
-      if (this.cur_row_dom == null || this.cur_row_dom == null) {
-        DEV: console.log("cur_row and cur_col are both null");
-        this.cur_row_dom = Number(e13.target.getAttribute("grid-row-dom"));
-        this.cur_col_dom = Number(e13.target.getAttribute("grid-col-dom"));
-      }
-      let x4 = this.cur_row_dom;
-      let y5 = this.cur_col_dom;
-      DEV: console.log("Current row (DOM grid): " + x4);
-      DEV: console.log("Current col (DOM grid): " + y5);
-      if (this.currentDirectionAcross) {
-        try {
-          while (this.grid[x4][y5 - 1].white) {
-            y5 -= 1;
-          }
-        } catch (error) {
-          DEV: console.log("No cell to the left");
-        }
-      } else {
-        try {
-          while (this.grid[x4 - 1][y5].white) {
-            x4 -= 1;
-          }
-        } catch (error) {
-          DEV: console.log("No cell above");
-        }
-      }
-      DEV: console.log("Coordinates: (" + this.cur_row_dom + ", " + this.cur_col_dom + ")");
-      this.currentClue = this.grid[x4][y5].number;
+      this.cellFocusHandler(e13, x3, y4);
     });
     return cellDOM;
+  }
+  cellFocusHandler(e13) {
+    this.cur_row_dom = Number(e13.target.getAttribute("grid-row-dom"));
+    this.cur_col_dom = Number(e13.target.getAttribute("grid-col-dom"));
+    DEV: console.log("Current cell coordinates..? (" + this.cur_row_dom + ", " + this.cur_col_dom + ")");
+    if (this.cur_row_dom == null || this.cur_row_dom == null) {
+      DEV: console.log("cur_row and cur_col are both null");
+      this.cur_row_dom = Number(e13.target.getAttribute("grid-row-dom"));
+      this.cur_col_dom = Number(e13.target.getAttribute("grid-col-dom"));
+    }
+    let x3 = this.cur_row_dom - 1;
+    let y4 = this.cur_col_dom - 1;
+    DEV: console.log("Current coordinates (DOM grid): (" + x3 + ", " + y4 + ")");
+    DEV: console.log("Current grid: ");
+    DEV: console.log(this.grid);
+    if (this.acrossContext) {
+      while (y4 > 0 && this.grid[x3][y4 - 1].white) {
+        y4 -= 1;
+      }
+    } else {
+      while (x3 > 0 && this.grid[x3 - 1][y4].white) {
+        x3 -= 1;
+      }
+    }
+    DEV: console.log("Word beginning (DOM): (" + (x3 + 1) + ", " + (y4 + 1) + ")");
+    this.setContext(this.grid[x3][y4].number, this.acrossContext);
+  }
+  /**
+   * Dispatches an event to change the current clue and direction context.
+   * 
+   * @param {number} clue the updated clue number
+   * @param {boolean} across whether the updated direction is across
+   */
+  setContext(clue, across) {
+    let setContext = new CustomEvent("set-context", { bubbles: true, composed: true, detail: { clue, acrossContext: across } });
+    this.dispatchEvent(setContext);
   }
   /**
    * Generates crossword puzzle based off of words in the clue box.
@@ -2227,18 +2287,23 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         if (wordObj.word == wordClue.word) {
           wordClue.direction = wordObj.direction;
           wordClue.clueNumber = this.grid[wordObj.x][wordObj.y].number;
+          wordClue.x = wordObj.x;
+          wordClue.y = wordObj.y;
         }
       }
     }
     for (let wordClue of wordsClues) {
       if (!wordClue.clueText) {
-        wordClue.clueText = "NO CLUE FOR THIS WORD";
+        wordClue.clueText = "* No clue for this word *";
       }
       if (!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
         DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word);
     }
     wordsClues.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
+    wordsClues.sort((a5, b4) => Number(b4.direction === "across") - Number(a5.direction === "across"));
     this.wordsAndClues = wordsClues;
+    DEV: console.log("Words and clues (sorted by clue number):");
+    DEV: console.log(this.wordsAndClues);
     return wordsClues;
   }
   // TODO Implement answer checking
@@ -2251,17 +2316,17 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   }
 };
 __decorateClass([
-  n4({ type: Array, state: true })
+  n4({ type: Array, state: true, attribute: true, reflect: true })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "grid", 2);
 __decorateClass([
   n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "gridEl", 2);
 __decorateClass([
-  n4({ state: true, attribute: false })
+  n4({ type: Array, state: true, attribute: true, reflect: true })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "wordsAndClues", 2);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "currentDirectionAcross", 2);
+], WebwriterWordPuzzlesCrosswordGrid.prototype, "acrossContext", 2);
 __decorateClass([
   n4({ type: Number, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordGrid.prototype, "currentClue", 2);
@@ -24044,10 +24109,10 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   clueBoxInput;
   clueBox;
   /**
-    * The list of words grouped with their clues, direction, and word number.
-    */
+   * The list of words grouped with their clues, direction, and word number.
+   */
   wordsAndClues = [];
-  currentDirectionAcross;
+  acrossContext;
   currentClue;
   /**
    * @constructor
@@ -24092,10 +24157,10 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             }
             .word-column {
                 width: 25%; /* Temporary width and height*/
-           }
+            }
             .clue-column {
                 width: 75%; /* Temporary width and height*/
-           }
+            }
             table.clueboxInput > thead {
                 font-family: var(--sl-font-sans);
                 color: var(--sl-color-gray-700);
@@ -24267,7 +24332,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 overflow-wrap: anywhere;
                 height: 30px;
                 width: 50%;
- 
+
             }
             `;
   }
@@ -24499,9 +24564,9 @@ __decorateClass([
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "currentDirectionAcross", 2);
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "acrossContext", 2);
 __decorateClass([
-  n4({ type: Boolean, state: true, attribute: false })
+  n4({ type: Number, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "currentClue", 2);
 WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
   t3("webwriter-word-puzzles-crossword-cluebox")
@@ -24511,8 +24576,8 @@ WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
 var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   gridWidget;
   clueWidget;
-  across = true;
-  clue;
+  acrossContext = true;
+  currentClue;
   // @type {boolean}
   /**
    * @constructor
@@ -24534,18 +24599,20 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues);
       this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues);
     });
-    this.addEventListener("change-direction", (e13) => {
-      DEV: console.log("change-direction triggered");
-      this.gridWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
-      this.clueWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
-    });
-    this.addEventListener("set-current-clue", (e13) => {
-      DEV: console.log("set-current-clue triggered");
+    this.addEventListener("set-context", (e13) => {
+      DEV: console.log("set-context triggered");
       DEV: console.log("Current clue:" + e13.detail.clue);
-      this.gridWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
-      this.clueWidget.currentDirectionAcross = e13.detail.currentDirectionAcross;
+      if (e13.detail.acrossContext)
+        DEV: console.log("Current direction: across");
+      else
+        DEV: console.log("Current direction: down");
+      this.currentClue = e13.detail.clue;
+      this.acrossContext = e13.detail.acrossContext;
+      this.gridWidget.currentClue = this.currentClue;
+      this.clueWidget.currentClue = this.currentClue;
+      this.gridWidget.acrossContext = this.acrossContext;
+      this.clueWidget.acrossContext = this.acrossContext;
     });
-    this.across = true;
     this.toggleDirection = this.toggleDirection.bind(this);
   }
   /**
@@ -24576,13 +24643,13 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     };
   }
   toggleDirection() {
-    this.across = !this.across;
-    this.gridWidget.currentDirectionAcross = this.across;
-    this.clueWidget.currentDirectionAcross = this.across;
+    this.acrossContext = !this.acrossContext;
+    this.gridWidget.acrossContext = this.acrossContext;
+    this.clueWidget.acrossContext = this.acrossContext;
     DEV: console.log("Direction toggled");
   }
   setCurrentClue(clue) {
-    this.clue = clue;
+    this.currentClue = clue;
   }
   /**
    * Generates crossword puzzle based off of words in the clue box and 
@@ -24614,10 +24681,10 @@ __decorateClass([
 ], WebwriterWordPuzzlesCrossword.prototype, "clueWidget", 2);
 __decorateClass([
   r6()
-], WebwriterWordPuzzlesCrossword.prototype, "across", 2);
+], WebwriterWordPuzzlesCrossword.prototype, "acrossContext", 2);
 __decorateClass([
   r6()
-], WebwriterWordPuzzlesCrossword.prototype, "clue", 2);
+], WebwriterWordPuzzlesCrossword.prototype, "currentClue", 2);
 WebwriterWordPuzzlesCrossword = __decorateClass([
   t3("webwriter-word-puzzles-crossword")
 ], WebwriterWordPuzzlesCrossword);

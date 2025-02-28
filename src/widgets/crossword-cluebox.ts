@@ -22,7 +22,7 @@ import wand from 'bootstrap-icons/icons/magic.svg';
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
     "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
-  }
+    }
 }
 
 
@@ -55,7 +55,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     @property({ type: HTMLDivElement, state: true, attribute: false})
     clueBox: HTMLTableElement
 
-   /**
+    /**
      * The list of words grouped with their clues, direction, and word number.
      */
     wordsAndClues: Partial<WordClue>[] = []
@@ -65,13 +65,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * true if across, false if down
      */
     @property({ type: Boolean, state: true, attribute: false})
-    currentDirectionAcross: boolean
+    acrossContext: boolean
 
     /**
      * The clue the current selection corresponds to.
      */
-    @property({ type: Boolean, state: true, attribute: false})
-    currentClue: boolean
+    @property({ type: Number, state: true, attribute: false})
+    currentClue: number
 
     /**
      * @constructor
@@ -120,10 +120,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             }
             .word-column {
                 width: 25%; /* Temporary width and height*/
-           }
+            }
             .clue-column {
                 width: 75%; /* Temporary width and height*/
-           }
+            }
             table.clueboxInput > thead {
                 font-family: var(--sl-font-sans);
                 color: var(--sl-color-gray-700);
@@ -295,7 +295,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 overflow-wrap: anywhere;
                 height: 30px;
                 width: 50%;
- 
+
             }
             `
     }
@@ -499,7 +499,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         col1.style.width = '50%'
         col2.style.width = '50%'
         clueBox.insertBefore(colgroup, clueBox.tHead)
- 
+
 
         DEV: console.log("rendering table body");
         // Create body

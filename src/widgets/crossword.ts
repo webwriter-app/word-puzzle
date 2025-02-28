@@ -66,13 +66,13 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      * Current context; direction. true = across, false = down.
      */
     @state()
-    across: boolean = true // @type {boolean}
+    acrossContext: boolean = true // @type {boolean}
 
     /**
      * Current context; clue number.
      */
     @state()
-    clue!: number // @type {boolean}
+    currentClue!: number // @type {boolean}
 
     /**
      * @constructor
@@ -95,19 +95,21 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
             this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
         })
-        this.addEventListener("change-direction", (e: CustomEvent) => {
-            DEV: console.log("change-direction triggered")
-            this.gridWidget.currentDirectionAcross = e.detail.currentDirectionAcross
-            this.clueWidget.currentDirectionAcross = e.detail.currentDirectionAcross
-        })
-        this.addEventListener("set-current-clue", (e: CustomEvent) => {
-            DEV: console.log("set-current-clue triggered")
+        this.addEventListener("set-context", (e: CustomEvent) => {
+            DEV: console.log("set-context triggered")
             DEV: console.log("Current clue:" + e.detail.clue)
-            this.gridWidget.currentDirectionAcross = e.detail.currentDirectionAcross
-            this.clueWidget.currentDirectionAcross = e.detail.currentDirectionAcross
+            if(e.detail.acrossContext)
+                DEV: console.log("Current direction: across")
+            else
+                DEV: console.log("Current direction: down")
+            this.currentClue = e.detail.clue
+            this.acrossContext = e.detail.acrossContext
+            this.gridWidget.currentClue = this.currentClue
+            this.clueWidget.currentClue = this.currentClue
+            this.gridWidget.acrossContext = this.acrossContext
+            this.clueWidget.acrossContext = this.acrossContext
         })
 
-        this.across = true
         this.toggleDirection = this.toggleDirection.bind(this)
     }
     /**
@@ -140,14 +142,14 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     }
 
     toggleDirection(): void {
-        this.across = !this.across
-        this.gridWidget.currentDirectionAcross = this.across
-        this.clueWidget.currentDirectionAcross = this.across
+        this.acrossContext = !this.acrossContext
+        this.gridWidget.acrossContext = this.acrossContext
+        this.clueWidget.acrossContext = this.acrossContext
         DEV: console.log("Direction toggled")
     }
 
     setCurrentClue(clue: number): void {
-        this.clue = clue
+        this.currentClue = clue
     }
 
     /**

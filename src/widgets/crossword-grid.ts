@@ -110,7 +110,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
     // TODO Add a skeleton for the grid while the crossword is being created?
 
-    @property({ type: Array, state: true })
+    @property({ type: Array, state: true, attribute: true, reflect: true})
     grid: Partial<Cell>[][]
     //protected grid: Cell[][]
 
@@ -124,8 +124,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
     /**
      * The list of words grouped with their clues, direction, and word number.
+     * TODO attr. candidate
      */
-    @property({ state: true, attribute: false})
+    @property({ type: Array, state: true, attribute: true, reflect: true})
     wordsAndClues: Partial<WordClue>[]
 
     /**
@@ -133,7 +134,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * true if across, false if down
      */
     @property({ type: Boolean, state: true, attribute: false})
-    currentDirectionAcross: boolean
+    acrossContext: boolean
 
     /**
      * The clue the current selection corresponds to.
@@ -163,6 +164,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     constructor() {
         super()
         this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
+        this.acrossContext = true
     }
 
     /**
@@ -188,7 +190,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 box-sizing: border-box;
                 width: max-content;
                 height: max-content;
-                border: 2px solid black;
+                border: 2px solid #333333;
             }
             div.cell {
                 display: grid;
@@ -199,7 +201,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 width: 100%;
                 min-width: 40px;
                 min-height: 40px;
-                border: 1px solid black;
+                border: 1px solid #333333;
                 max-width: 40px;
                 max-height: 40px;
                 position: center;
@@ -208,7 +210,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 font-size: 18pt;
             }
             div.cell[black] {
-                background-color: black;
+                background-color: #333333;
             }
             div.cell:focus {
                 background-color: lightblue;
@@ -243,7 +245,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     // TODO Add event listener for adding the focus class based on the clue number and direction
 
     /**
-     * @constructor
      * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
      * 
      * Dimensions are based on {@link this.grid | grid}.
@@ -266,6 +267,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         }
         this.gridEl.addEventListener("keydown", stopCtrlPropagation)
 
+        /*
         const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
         this.gridEl.addEventListener('keypress', (e) => {
             DEV: console.log("Pressed: " + e.key)
@@ -278,7 +280,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             else if(e.key === "Tab") {
                 // TODO Change to the next word in the given context
                 let grid_row = (Number((e.target).getAttribute("grid-row-dom")))
-                let grid_col = (Number((e.target).getAttribute("grid-column-dom")))
+                let grid_col = (Number((e.target).getAttribute("grid-col-dom")))
                 if(this.currentDirectionAcross) {
                     // TODO
                 }
@@ -291,6 +293,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 this.dispatchEvent(changeDirection)
             }
         })
+        */
 
 //        DEV: console.log("gridEl:")
 //        DEV: console.log(this.gridEl)
@@ -304,27 +307,98 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     */
     nextCell(e: KeyboardEvent) {
         // Idk how to get typescript to stop crying about this even though it works
-        let grid_row = (Number((e.target).getAttribute("grid-row-dom")))
-        let grid_col = (Number((e.target).getAttribute("grid-column-dom")))
-        // TODO Read attribute from parent somehow. 
-        // Using an attribute of the cell is temporary
-        if(e.target.getAttribute("direction") === "across" || e.target.getAttribute("direction") === "both")
-            grid_col += 1
-        else
-            grid_row += 1
-        DEV: console.log("TODO: implement changing focus depending on across / down context")
-        DEV: console.log('[grid-row-dom="'+ grid_row + '"][grid-column-dom="' + grid_col + '"]')
+        let currentCell: HTMLDivElement = (e.target)
+        let nextWord: Partial<WordClue>
+        let nextCell: HTMLDivElement
+        let grid_row = (Number(currentCell.getAttribute("grid-row-dom")))
+        let grid_col = (Number(currentCell.getAttribute("grid-col-dom")))
 
-        this.gridEl.querySelector('[grid-row-dom="'+ grid_row + '"][grid-column-dom="' + grid_col + '"]').focus()
+        // Using an attribute of the cell is temporary
+        // TODO Check if the next cell is available. otherwise, don't
+        // If bigger than grid, get the next word
+        const incr_row = Number(!this.acrossContext)
+        const incr_col = Number(this.acrossContext)
+        if((grid_col + incr_col > this.grid.length) || (grid_row + incr_row > this.grid.length)) {
+            nextWord = this.wordsAndClues[this.getNextWordIndex()]
+            grid_row = nextWord.x + 1
+            grid_col = nextWord.y + 1
+            nextCell = this.getCellDOM(grid_row, grid_col)
+        }
+        else {
+            // If the next cell is black, get next word
+            if(!this.getCellObj(grid_row + incr_row, grid_col + incr_col).white) {
+                nextWord = this.wordsAndClues[this.getNextWordIndex()]
+                grid_row = nextWord.x + 1
+                grid_col = nextWord.y + 1
+                nextCell = this.getCellDOM(grid_row, grid_col)
+            }
+            else {
+                grid_row += incr_row
+                grid_col += incr_col
+                nextCell = this.getCellDOM(grid_row, grid_col)
+            }
+        }
+
+        DEV: console.log("TODO: implement changing focus depending on across / down context")
+        DEV: console.log('Changed: [grid-row-dom="'+ grid_row + '"][grid-col-dom="' + grid_col + '"]')
+
+        DEV: console.log('Next cell:')
+        DEV: console.log(nextCell)
+
+        // TODO iterate over cells and find the next empty one
+
+        // TODO Blur if there are no empty cells
+        if(grid_row > this.grid.length || grid_col > this.grid.length) {
+            currentCell.blur()
+        }
+        
+        nextCell.focus()
         this.cur_col_dom = grid_row
         this.cur_row_dom = grid_col
 
-        // TODO Add case where it's the last letter of the word
-            // Go to the next clue of the corresponding context
+        // Update the context only if another word was chosen
+        if(nextWord) {
+            this.setContext(nextWord.clueNumber, (nextWord.direction == "across"))
+        }
+    }
+    /** Function for getting a cell based on its location in the DOM grid. 
+     * 
+     * @param {number} row the row number, 1-indexed
+     * @param {number} col the column number, 1-indexed
+     * @returns {HTMLDivElement} the DOM element of the cell
+    */
+    getCellDOM(row: number, col: number): HTMLDivElement {
+        return this.gridEl.querySelector('[grid-row-dom="'+ row + '"][grid-col-dom="' + col + '"]')
+    }
+
+    /** Function for returning a cell element in the grid. Not from the DOM.
+     * 
+     * @param {number} row the row number, 1-indexed. Conversion happens internally
+     * @param {number} col the column number, 1-indexed. Conversion happens internally
+     * @returns {Cell} the properties of the Cell element
+     */
+    getCellObj(row: number, col: number): Partial<Cell> {
+        return this.grid[row-1][col-1]
+    }
+
+    /** Function for getting the next word in context of the direction and current clue number.
+     * Returns the empty cell element at the next word
+     * 
+     * @returns {HTMLDivElement} the DOM element of the cell
+    */
+   // May not need the arguments lol
+    getNextWordIndex(): number {
+        let direction = this.acrossContext ? "across" : "down"
+        let opposite_direction = this.acrossContext ? "down" : "across"
+            let i = this.wordsAndClues.findIndex(wordClue => wordClue.clueNumber == this.currentClue && wordClue.direction == direction)
+            i += 1
+            if(i >= this.wordsAndClues.length) {
+                i = this.wordsAndClues.findIndex(wordClue => wordClue.direction == opposite_direction)
+            }
+        return i
     }
 
     /**
-     * @constructor
      * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
      * 
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
@@ -386,6 +460,24 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
             if (isAlphaChar(e.key)) {
                 cellDOM.querySelector('.cell-letter').textContent = e.key.toUpperCase()
+                this.nextCell(e)
+                const setCurrentClue = new CustomEvent("set-current-clue", {bubbles: true, composed: true, detail: {clue: 1, acrossContext: this.acrossContext}})
+                this.dispatchEvent(setCurrentClue)
+                // TODO Get current clue and change it if necessary
+            }
+            else if(e.key === "Tab") {
+                // TODO Change to the next word in the given context
+                let grid_row = (Number((e.target).getAttribute("grid-row-dom")))
+                let grid_col = (Number((e.target).getAttribute("grid-col-dom")))
+                if(this.acrossContext) {
+                    // TODO
+                }
+            }
+            else if (e.key === " ") {
+                DEV: console.log("Current direction is across:", this.acrossContext)
+                this.acrossContext = !this.acrossContext
+                const changeDirection = new CustomEvent("change-direction", {bubbles: true, composed: true, detail: {acrossContext: (this.acrossContext)}},)
+                this.dispatchEvent(changeDirection)
             }
         });
 
@@ -397,53 +489,60 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         // TODO This isn't actually working like I'd expect it to for whatever reason.
         // It works correctly the first time but doesn't change anymore after that
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {
+            DEV: console.log("Cell focus event triggered")
             // TODO Get the current context
             e.stopPropagation()
-            this.cur_row_dom = (e.target).getAttribute("grid-row-dom")
-            this.cur_col_dom = (e.target).getAttribute("grid-col-dom")
-            DEV: console.log("Current cell coordinates..? (" + this.cur_row_dom + ", " + this.cur_col_dom + ")")
-            
-
-            if(this.cur_row_dom == null || this.cur_row_dom == null) {
-                DEV: console.log("cur_row and cur_col are both null")
-                this.cur_row_dom = Number((e.target).getAttribute("grid-row-dom"))
-                this.cur_col_dom = Number((e.target).getAttribute("grid-col-dom"))
-            }
-            // Needs to be corrected bc it's 1-indexed in the DOM
-            let x = this.cur_row_dom 
-            let y = this.cur_col_dom 
-
-            DEV: console.log("Current row (DOM grid): " + x)
-            DEV: console.log("Current col (DOM grid): " + y)
-
-            if(this.currentDirectionAcross) {
-                try {
-                    while(this.grid[x][y-1].white) {
-                        y -= 1
-                    }
-                }
-                catch(error) {
-                    DEV: console.log("No cell to the left")
-                }
-            }
-            else {
-                try {
-                    while(this.grid[x-1][y].white) {
-                        x -= 1
-                    }
-                }
-                catch(error) {
-                    DEV: console.log("No cell above")
-                }
-            }
-            DEV: console.log("Coordinates: (" + this.cur_row_dom + ", " + this.cur_col_dom + ")")
-            this.currentClue = this.grid[x][y].number
-
+            this.cellFocusHandler(e, x, y)
         });
 
 
-
         return cellDOM
+    }
+
+    cellFocusHandler(e: FocusEvent) {
+        this.cur_row_dom = Number((e.target).getAttribute("grid-row-dom"))
+        this.cur_col_dom = Number((e.target).getAttribute("grid-col-dom"))
+        DEV: console.log("Current cell coordinates..? (" + this.cur_row_dom + ", " + this.cur_col_dom + ")")
+        
+        if(this.cur_row_dom == null || this.cur_row_dom == null) {
+            DEV: console.log("cur_row and cur_col are both null")
+            this.cur_row_dom = Number((e.target).getAttribute("grid-row-dom"))
+            this.cur_col_dom = Number((e.target).getAttribute("grid-col-dom"))
+        }
+        // Needs to be corrected bc it's 1-indexed in the DOM
+        let x = this.cur_row_dom - 1
+        let y = this.cur_col_dom - 1
+
+        DEV: console.log("Current coordinates (DOM grid): (" + x + ", " + y + ")")
+
+        DEV: console.log("Current grid: ")
+        DEV: console.log(this.grid)
+
+        // Iterate to beginning of word
+        if(this.acrossContext) {
+            while(y > 0 && this.grid[x][y-1].white) {
+                y -= 1
+            }
+        }
+        else {
+            while(x > 0 && this.grid[x-1][y].white) {
+                x -= 1
+            }
+        }
+        DEV: console.log("Word beginning (DOM): (" + (x+1) + ", " + (y+1) + ")")
+        this.setContext(this.grid[x][y].number, this.acrossContext)
+    }
+
+
+    /**
+     * Dispatches an event to change the current clue and direction context.
+     * 
+     * @param {number} clue the updated clue number
+     * @param {boolean} across whether the updated direction is across
+     */
+    setContext(clue: number, across: boolean): void {
+        let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: {clue: clue, acrossContext: across}})
+        this.dispatchEvent(setContext)
     }
 
     /**
@@ -972,7 +1071,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     biggerGrid[i] = []
                     for (let j = 0; j < inputGrid.length * 2; j++) {
                         if((i < shift || j < shift) || 
-                           (i - shift >= inputGrid.length || j - shift >= inputGrid.length)) {
+                            (i - shift >= inputGrid.length || j - shift >= inputGrid.length)) {
 //                            DEV: console.log("(" + i + ", " + j + ") not defined at (" + (i - shift) + ", " + (j - shift) + ") for inputGrid")
                             biggerGrid[i][j] = defaultCell()
                         }
@@ -1151,23 +1250,30 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 if(wordObj.word == wordClue.word) {
                     wordClue.direction = wordObj.direction
                     wordClue.clueNumber = this.grid[wordObj.x][wordObj.y].number
+                    wordClue.x = wordObj.x
+                    wordClue.y = wordObj.y
                 }
             }
         }
 
         for(let wordClue of wordsClues) {
             if(!wordClue.clueText) {
-                wordClue.clueText = "NO CLUE FOR THIS WORD"
+                wordClue.clueText = "* No clue for this word *"
             }
             if(!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
                 DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
         }
 
+        // The following changes the original order, but I don't think that's necessarily bad?
+
         // Sort words by clue number
-        // This changes the original order but I don't think that's necessarily bad?
         wordsClues.sort((a, b) => a.clueNumber - b.clueNumber)
+        // Sort words by across / down
+        wordsClues.sort((a, b) => Number(b.direction === "across") - Number(a.direction === "across"))
 
         this.wordsAndClues = wordsClues as WordClue[]
+        DEV: console.log("Words and clues (sorted by clue number):")
+        DEV: console.log(this.wordsAndClues)
 
         return wordsClues as WordClue[]
     }
