@@ -1550,7 +1550,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
-    this.acrossContext = true;
+    this.acrossContext = null;
   }
   /**
    * Styles for the crossword grid.
@@ -1659,37 +1659,76 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     let nextCell;
     let grid_row = Number(currentCell.getAttribute("grid-row-dom"));
     let grid_col = Number(currentCell.getAttribute("grid-col-dom"));
-    const incr_row = Number(!this.acrossContext);
-    const incr_col = Number(this.acrossContext);
-    if (grid_col + incr_col > this.grid.length || grid_row + incr_row > this.grid.length) {
-      nextWord = this.wordsAndClues[this.getNextWordIndex()];
-      grid_row = nextWord.x + 1;
-      grid_col = nextWord.y + 1;
-      nextCell = this.getCellDOM(grid_row, grid_col);
-    } else {
-      if (!this.getCellObj(grid_row + incr_row, grid_col + incr_col).white) {
-        nextWord = this.wordsAndClues[this.getNextWordIndex()];
+    let grid_row_cur = Number(currentCell.getAttribute("grid-row-dom"));
+    let grid_col_cur = Number(currentCell.getAttribute("grid-col-dom"));
+    let acrossContextCur = this.acrossContext;
+    let clueCur = this.currentClue;
+    let timeoutLimit = 0;
+    for (let wordClue of this.wordsAndClues) {
+      timeoutLimit += wordClue.word.length;
+    }
+    let acrossContext;
+    let clueContext = clueCur;
+    if (this.acrossContext == null) {
+      acrossContext = currentCell.getAttribute("direction") == "across" || currentCell.getAttribute("direction") == "both";
+    }
+    if (this.currentClue == null) {
+      clueContext = getClueNumber(acrossContext, this.cur_row_dom, this.cur_col_dom);
+    }
+    let timeout = 0;
+    do {
+      let incr_row = Number(!acrossContext);
+      let incr_col = Number(acrossContext);
+      if (grid_col + incr_col > this.grid.length || grid_row + incr_row > this.grid.length) {
+        nextWord = this.wordsAndClues[this.getNextWordIndex(clueContext, acrossContext)];
         grid_row = nextWord.x + 1;
         grid_col = nextWord.y + 1;
         nextCell = this.getCellDOM(grid_row, grid_col);
       } else {
-        grid_row += incr_row;
-        grid_col += incr_col;
-        nextCell = this.getCellDOM(grid_row, grid_col);
+        if (!this.getCellObj(grid_row + incr_row, grid_col + incr_col).white) {
+          nextWord = this.wordsAndClues[this.getNextWordIndex(clueContext, acrossContext)];
+          grid_row = nextWord.x + 1;
+          grid_col = nextWord.y + 1;
+          nextCell = this.getCellDOM(grid_row, grid_col);
+        } else {
+          grid_row += incr_row;
+          grid_col += incr_col;
+          nextCell = this.getCellDOM(grid_row, grid_col);
+        }
+      }
+      DEV: console.log("TODO: implement changing focus depending on across / down context");
+      DEV: console.log('Changed: [grid-row-dom="' + grid_row + '"][grid-col-dom="' + grid_col + '"]');
+      DEV: console.log("Next cell:");
+      DEV: console.log(nextCell);
+      timeout += 1;
+      if (timeout > timeoutLimit) {
+        throw new Error("You've created an infinite loop, congratulations");
+      }
+      if (nextWord) {
+        clueContext = nextWord.clueNumber;
+        acrossContext = nextWord.direction == "across";
+      }
+      timeout += 1;
+    } while (nextCell.querySelector(".cell-letter").textContent !== "" || timeout < timeoutLimit);
+    if (grid_row == grid_row_cur && grid_col == grid_col_cur) {
+      currentCell.blur();
+      this.setContext(null, null);
+    } else {
+      nextCell.focus();
+      this.cur_col_dom = grid_row;
+      this.cur_row_dom = grid_col;
+      if (nextWord) {
+        this.setContext(nextWord.clueNumber, nextWord.direction == "across");
       }
     }
-    DEV: console.log("TODO: implement changing focus depending on across / down context");
-    DEV: console.log('Changed: [grid-row-dom="' + grid_row + '"][grid-col-dom="' + grid_col + '"]');
-    DEV: console.log("Next cell:");
-    DEV: console.log(nextCell);
-    if (grid_row > this.grid.length || grid_col > this.grid.length) {
-      currentCell.blur();
-    }
-    nextCell.focus();
-    this.cur_col_dom = grid_row;
-    this.cur_row_dom = grid_col;
-    if (nextWord) {
-      this.setContext(nextWord.clueNumber, nextWord.direction == "across");
+    function getClueNumber(across, x3, y4) {
+      let shift_row = Number(!across);
+      let shift_col = Number(across);
+      while (!this.grid[x3 - 1][y4 - 1].number) {
+        x3 -= shift_row;
+        y4 -= shift_col;
+      }
+      return this.grid[x3][y4].number;
     }
   }
   /** Function for getting a cell based on its location in the DOM grid. 
@@ -1716,10 +1755,9 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * @returns {HTMLDivElement} the DOM element of the cell
   */
   // May not need the arguments lol
-  getNextWordIndex() {
-    let direction = this.acrossContext ? "across" : "down";
-    let opposite_direction = this.acrossContext ? "down" : "across";
-    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == this.currentClue && wordClue.direction == direction);
+  getNextWordIndex(clue, direction) {
+    let opposite_direction = direction ? "down" : "across";
+    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.direction == direction);
     i9 += 1;
     if (i9 >= this.wordsAndClues.length) {
       i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.direction == opposite_direction);
@@ -1794,10 +1832,14 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     cellDOM.addEventListener("focusin", (e13) => {
       DEV: console.log("Cell focus event triggered");
       e13.stopPropagation();
-      this.cellFocusHandler(e13, x3, y4);
+      this.cellFocusHandler(e13);
     });
     return cellDOM;
   }
+  /** Handler for when a cell gains focus. Sets the clue and direction context
+   * 
+   * @param {FocusEvent} e - the event. Its target attribute is used
+  */
   cellFocusHandler(e13) {
     this.cur_row_dom = Number(e13.target.getAttribute("grid-row-dom"));
     this.cur_col_dom = Number(e13.target.getAttribute("grid-col-dom"));
