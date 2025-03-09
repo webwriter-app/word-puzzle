@@ -380,8 +380,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         // TODO Blur if there are no empty cells
         if(grid_row == grid_row_cur && grid_col == grid_col_cur) {
-            currentCell.blur()
-            this.setContext(null, null)
+            // currentCell.blur()
+            // this.setContext(null, null)
         }
         else {
             nextCell.focus()
@@ -419,13 +419,16 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     }
 
     getClueNumber(across: boolean, x: number, y: number): number {
-            let shift_row = Number(!across)
-            let shift_col = Number(across)
-            while(!this.grid[x-1][y-1].number) {
+            let shift_row = across ? 0 : 1
+            let shift_col = 1 - shift_row
+
+            // TODO Fix out of bounds checking
+            while((x-1-shift_row >= 0 && y-1-shift_col >= 0) && this.grid[x-1-shift_row][y-1-shift_col].white) {
                 x -= shift_row
                 y -= shift_col
             }
-            return this.grid[x][y].number
+
+            return this.grid[x-1][y-1].number
         }
 
     /** Function for getting a cell based on its location in the DOM grid. 
@@ -455,8 +458,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     */
    // May not need the arguments lol
     getNextWordIndex(direction: boolean, clue: number): number {
+        let direction_string = direction ? "across" : "down"
         let opposite_direction = direction ? "down" : "across"
-            let i = this.wordsAndClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.direction == direction)
+            let i = this.wordsAndClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.direction == direction_string)
             i += 1
             if(i >= this.wordsAndClues.length) {
                 i = this.wordsAndClues.findIndex(wordClue => wordClue.direction == opposite_direction)
@@ -592,9 +596,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(this.cur_row_dom, this.cur_col_dom)
 
         // This is ideally not supposed to happen if a cell is already currently selected
-        if (this.acrossContext == null) {
+        //if (this.acrossContext == null) {
             this.acrossContext = acrossContext
-        }
+        //}
 
         this.currentClue = clueContext
 

@@ -1710,8 +1710,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       timeout += 1;
     } while (nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit);
     if (grid_row == grid_row_cur && grid_col == grid_col_cur) {
-      currentCell.blur();
-      this.setContext(null, null);
     } else {
       nextCell.focus();
       this.cur_col_dom = grid_row;
@@ -1740,13 +1738,13 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     return { across, clue };
   }
   getClueNumber(across, x3, y4) {
-    let shift_row = Number(!across);
-    let shift_col = Number(across);
-    while (!this.grid[x3 - 1][y4 - 1].number) {
+    let shift_row = across ? 0 : 1;
+    let shift_col = 1 - shift_row;
+    while (x3 - 1 - shift_row >= 0 && y4 - 1 - shift_col >= 0 && this.grid[x3 - 1 - shift_row][y4 - 1 - shift_col].white) {
       x3 -= shift_row;
       y4 -= shift_col;
     }
-    return this.grid[x3][y4].number;
+    return this.grid[x3 - 1][y4 - 1].number;
   }
   /** Function for getting a cell based on its location in the DOM grid. 
    * 
@@ -1773,8 +1771,9 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   */
   // May not need the arguments lol
   getNextWordIndex(direction, clue) {
+    let direction_string = direction ? "across" : "down";
     let opposite_direction = direction ? "down" : "across";
-    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.direction == direction);
+    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.direction == direction_string);
     i9 += 1;
     if (i9 >= this.wordsAndClues.length) {
       i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.direction == opposite_direction);
@@ -1872,9 +1871,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     DEV: console.log("Current grid: ");
     DEV: console.log(this.grid);
     let { across: acrossContext, clue: clueContext } = this.getContextFromCell(this.cur_row_dom, this.cur_col_dom);
-    if (this.acrossContext == null) {
-      this.acrossContext = acrossContext;
-    }
+    this.acrossContext = acrossContext;
     this.currentClue = clueContext;
     if (this.acrossContext) {
       while (y4 > 0 && this.grid[x3][y4 - 1].white) {
