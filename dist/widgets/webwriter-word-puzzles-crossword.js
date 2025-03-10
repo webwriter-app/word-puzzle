@@ -1825,27 +1825,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       DEV: console.log("Error at (" + x3 + "," + y4 + ")");
     }
     cellDOM.addEventListener("keydown", (e13) => {
-      e13.preventDefault();
-      const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
-      if (isAlphaChar(e13.key)) {
-        cellDOM.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
-        this.nextEmptyCell(e13);
-        const setCurrentClue = new CustomEvent("set-current-clue", { bubbles: true, composed: true, detail: { clue: 1, acrossContext: this.acrossContext } });
-        this.dispatchEvent(setCurrentClue);
-      } else if (e13.key === "Tab") {
-        e13.stopPropagation();
-        let nextWord = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)];
-        this.cur_row = nextWord.x;
-        this.cur_col = nextWord.y;
-        this.setContext(nextWord.direction == "across", nextWord.clueNumber);
-        let cell = this.getCellDOM(this.cur_row, this.cur_col);
-        cell.focus();
-      } else if (e13.key === " ") {
-        DEV: console.log("Current direction is across:", this.acrossContext);
-        this.acrossContext = !this.acrossContext;
-        const changeDirection = new CustomEvent("change-direction", { bubbles: true, composed: true, detail: { acrossContext: this.acrossContext } });
-        this.dispatchEvent(changeDirection);
-      }
+      this.cellKeydownHandler(e13);
     });
     cellDOM.addEventListener("focusin", (e13) => {
       DEV: console.log("Cell focus event triggered");
@@ -1853,6 +1833,74 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       this.cellFocusHandler(e13);
     });
     return cellDOM;
+  }
+  /**
+   * Event listener for a cellDOM element that handles keypresses. 
+   * 
+   * Tab switches to the next word, space changes context for direction, and
+   * if the key was an alphabetic character, the text currently in the cell with whatever was pressed.
+   * 
+   * Overrides / prevents the default character insertion
+   */
+  cellKeydownHandler(e13) {
+    e13.preventDefault();
+    const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
+    switch (e13.key) {
+      case "Tab":
+        e13.stopPropagation();
+        let nextWord = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)];
+        this.cur_row = nextWord.x;
+        this.cur_col = nextWord.y;
+        this.setContext(nextWord.direction == "across", nextWord.clueNumber);
+        let cell = this.getCellDOM(this.cur_row, this.cur_col);
+        cell.focus();
+        break;
+      case " ":
+        DEV: console.log("Current direction is across:", this.acrossContext);
+        this.acrossContext = !this.acrossContext;
+        break;
+      case "ArrowLeft":
+      case "ArrowRight":
+      case "ArrowUp":
+      case "ArrowDown":
+        DEV: console.log("Arrow key pressed");
+        this.arrowKeyHandler(e13);
+        break;
+      default:
+        if (isAlphaChar(e13.key)) {
+          e13.target.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
+          this.nextEmptyCell(e13);
+        }
+    }
+  }
+  /**
+   * Handler for moving focus to another cell when the user presses an arrow key
+   * 
+   * @param {KeyboardEvent} move the keyboard event 
+   */
+  arrowKeyHandler(move) {
+    let cell = move.target;
+    let row = Number(cell.getAttribute("grid-row"));
+    let col = Number(cell.getAttribute("grid-col"));
+    let nextCell;
+    switch (move.key) {
+      case "ArrowLeft":
+        col -= 1;
+        break;
+      case "ArrowRight":
+        col += 1;
+        break;
+      case "ArrowUp":
+        row -= 1;
+        break;
+      case "ArrowDown":
+        row += 1;
+        break;
+    }
+    if (this.grid[row][col].white) {
+      nextCell = this.getCellDOM(row, col);
+      nextCell.focus();
+    }
   }
   /** Handler for when a cell gains focus. Sets the clue and direction context
    * 
