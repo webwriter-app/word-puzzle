@@ -1846,61 +1846,61 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     e13.preventDefault();
     const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
     let cell = e13.target;
+    let nextCell;
+    let row = Number(cell.getAttribute("grid-row"));
+    let col = Number(cell.getAttribute("grid-col"));
     switch (e13.key) {
+      // Go to next clue
       case "Tab":
         e13.stopPropagation();
         let nextWord = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)];
-        this.cur_row = nextWord.x;
-        this.cur_col = nextWord.y;
+        row = nextWord.x;
+        col = nextWord.y;
         this.setContext(nextWord.direction == "across", nextWord.clueNumber);
-        let nextCell = this.getCellDOM(this.cur_row, this.cur_col);
+        nextCell = this.getCellDOM(row, col);
         nextCell.focus();
         break;
+      // Change direction context if the current cell goes in both directions
       case " ":
         if (cell.getAttribute("direction") == "both") {
           this.setContext(!this.acrossContext, this.getClueNumber(!this.acrossContext, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))));
         }
         break;
+      // NAVIGATION ========================================================
       case "ArrowLeft":
-      case "ArrowRight":
-      case "ArrowUp":
-      case "ArrowDown":
-        this.arrowKeyHandler(e13);
+        col -= 1;
+        if (col >= 0 && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
         break;
+      case "ArrowRight":
+        col += 1;
+        if (col < this.grid.length && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      case "ArrowUp":
+        row -= 1;
+        if (row >= 0 && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      case "ArrowDown":
+        row += 1;
+        if (row < this.grid.length && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      // Insert character
       default:
         if (isAlphaChar(e13.key)) {
           cell.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
           this.nextEmptyCell(e13);
         }
-    }
-  }
-  /**
-   * Handler for moving focus to another cell when the user presses an arrow key
-   * 
-   * @param {KeyboardEvent} move the keyboard event 
-   */
-  arrowKeyHandler(move) {
-    let cell = move.target;
-    let row = Number(cell.getAttribute("grid-row"));
-    let col = Number(cell.getAttribute("grid-col"));
-    let nextCell;
-    switch (move.key) {
-      case "ArrowLeft":
-        col -= 1;
-        break;
-      case "ArrowRight":
-        col += 1;
-        break;
-      case "ArrowUp":
-        row -= 1;
-        break;
-      case "ArrowDown":
-        row += 1;
-        break;
-    }
-    if (this.grid[row][col].white) {
-      nextCell = this.getCellDOM(row, col);
-      nextCell.focus();
     }
   }
   /** Handler for when a cell gains focus. Sets the clue and direction context
