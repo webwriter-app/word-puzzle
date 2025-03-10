@@ -1653,8 +1653,13 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * For handling a keypress in the crossword grid. Goes to next relevant cell
    * 
   */
-  nextCell(e13) {
-    let currentCell = e13.target;
+  nextEmptyCell(e13) {
+    let currentCell;
+    if (e13 == null) {
+      currentCell = this.getCellDOM(this.cur_row, this.cur_col);
+    } else {
+      currentCell = e13.target;
+    }
     let nextWord;
     let nextCell;
     let grid_row = Number(currentCell.getAttribute("grid-row"));
@@ -1674,18 +1679,21 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     if (this.currentClue != null) {
       clueContext = this.currentClue;
     }
+    let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1;
+    let i9 = -1;
     let timeout = 0;
     do {
       let incr_row = Number(!acrossContext);
       let incr_col = Number(acrossContext);
+      i9 = this.getNextWordIndex(acrossContext, clueContext);
       if (grid_col + incr_col > this.grid.length || grid_row + incr_row > this.grid.length) {
-        nextWord = this.wordsAndClues[this.getNextWordIndex(acrossContext, clueContext)];
+        nextWord = this.wordsAndClues[i9];
         grid_row = nextWord.x;
         grid_col = nextWord.y;
         nextCell = this.getCellDOM(grid_row, grid_col);
       } else {
-        if (!this.getCellObj(grid_row + incr_row, grid_col + incr_col).white) {
-          nextWord = this.wordsAndClues[this.getNextWordIndex(acrossContext, clueContext)];
+        if (!this.grid[grid_row + incr_row][grid_col + incr_col].white) {
+          nextWord = this.wordsAndClues[i9];
           grid_row = nextWord.x;
           grid_col = nextWord.y;
           nextCell = this.getCellDOM(grid_row, grid_col);
@@ -1708,14 +1716,14 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         acrossContext = nextWord.direction == "across";
       }
       timeout += 1;
-    } while (nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit);
-    if (grid_row == grid_row_cur && grid_col == grid_col_cur) {
+    } while (nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit && i9 != currentWordIndex);
+    if (i9 == currentWordIndex) {
       currentCell.blur();
       this.setContext(null, null);
     } else {
       nextCell.focus();
-      this.cur_col = grid_row;
-      this.cur_row = grid_col;
+      this.cur_col = Number(nextCell.getAttribute("grid-row"));
+      this.cur_row = Number(nextCell.getAttribute("grid-col"));
       if (nextWord) {
         this.setContext(nextWord.direction == "across", nextWord.clueNumber);
       }
@@ -1754,15 +1762,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   */
   getCellDOM(row, col) {
     return this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
-  }
-  /** Function for returning a cell element in the grid. Not from the DOM.
-   * 
-   * @param {number} row the row number, 1-indexed. Conversion happens internally
-   * @param {number} col the column number, 1-indexed. Conversion happens internally
-   * @returns {Cell} the properties of the Cell element
-   */
-  getCellObj(row, col) {
-    return this.grid[row][col];
   }
   /** Function for getting the next word in context of the direction and current clue number.
    * Returns the empty cell element at the next word
@@ -1828,7 +1827,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
       if (isAlphaChar(e13.key)) {
         cellDOM.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
-        this.nextCell(e13);
+        this.nextEmptyCell(e13);
         const setCurrentClue = new CustomEvent("set-current-clue", { bubbles: true, composed: true, detail: { clue: 1, acrossContext: this.acrossContext } });
         this.dispatchEvent(setCurrentClue);
       } else if (e13.key === "Tab") {
@@ -1837,7 +1836,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         this.cur_row = nextWord.x;
         this.cur_col = nextWord.y;
         this.setContext(nextWord.direction == "across", nextWord.clueNumber);
-        let cell = this.gridEl.querySelector('[grid-row="' + this.cur_row + '"][grid-col="' + this.cur_col + '"]');
+        let cell = this.getCellDOM(this.cur_row, this.cur_col);
         cell.focus();
       } else if (e13.key === " ") {
         DEV: console.log("Current direction is across:", this.acrossContext);

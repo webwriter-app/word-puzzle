@@ -305,9 +305,16 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * For handling a keypress in the crossword grid. Goes to next relevant cell
      * 
     */
-    nextCell(e: KeyboardEvent) {
+    nextEmptyCell(e?: KeyboardEvent) {
         // Idk how to get typescript to stop crying about this even though it works
-        let currentCell: HTMLDivElement = (e.target)
+        let currentCell: HTMLDivElement
+        if(e == null) {
+            currentCell = this.getCellDOM(this.cur_row, this.cur_col)
+        }
+        else {
+            currentCell = e.target
+        }
+
         let nextWord: Partial<WordClue>
         let nextCell: HTMLDivElement
         let grid_row = (Number(currentCell.getAttribute("grid-row")))
@@ -336,20 +343,25 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             clueContext = this.currentClue
         }
 
+        let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1
+        let i = -1
+
         let timeout = 0
         do {
             let incr_row = Number(!acrossContext)
             let incr_col = Number(acrossContext)
+            i = this.getNextWordIndex(acrossContext, clueContext)
             if((grid_col + incr_col > this.grid.length) || (grid_row + incr_row > this.grid.length)) {
-                nextWord = this.wordsAndClues[this.getNextWordIndex(acrossContext, clueContext)]
+                // TODO Extract this into another function
+                nextWord = this.wordsAndClues[i]
                 grid_row = nextWord.x
                 grid_col = nextWord.y
                 nextCell = this.getCellDOM(grid_row, grid_col)
             }
             else {
                 // If the next cell is black, get next word
-                if(!this.getCellObj(grid_row + incr_row, grid_col + incr_col).white) {
-                    nextWord = this.wordsAndClues[this.getNextWordIndex(acrossContext, clueContext)]
+                if(!this.grid[grid_row + incr_row][grid_col + incr_col].white) {
+                    nextWord = this.wordsAndClues[i]
                     grid_row = nextWord.x
                     grid_col = nextWord.y
                     nextCell = this.getCellDOM(grid_row, grid_col)
@@ -376,17 +388,17 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
 
             timeout += 1
-        } while(nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit)
+        } while(nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit && i != currentWordIndex)
 
-        // TODO Blur if there are no empty cells
-        if(grid_row == grid_row_cur && grid_col == grid_col_cur) {
+        // Blur if there are no empty cells
+        if(i == currentWordIndex) {
             currentCell.blur()
             this.setContext(null, null)
         }
         else {
             nextCell.focus()
-            this.cur_col = grid_row
-            this.cur_row = grid_col
+            this.cur_col = Number(nextCell.getAttribute("grid-row"))
+            this.cur_row = Number(nextCell.getAttribute("grid-col"))
             // Update context only if another word was chosen
             if(nextWord) {
                 this.setContext((nextWord.direction == "across"), nextWord.clueNumber)
@@ -437,16 +449,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     */
     getCellDOM(row: number, col: number): HTMLDivElement {
         return this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
-    }
-
-    /** Function for returning a cell element in the grid. Not from the DOM.
-     * 
-     * @param {number} row the row number, 1-indexed. Conversion happens internally
-     * @param {number} col the column number, 1-indexed. Conversion happens internally
-     * @returns {Cell} the properties of the Cell element
-     */
-    getCellObj(row: number, col: number): Partial<Cell> {
-        return this.grid[row][col]
     }
 
     /** Function for getting the next word in context of the direction and current clue number.
@@ -525,7 +527,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
             if (isAlphaChar(e.key)) {
                 cellDOM.querySelector('.cell-letter').textContent = e.key.toUpperCase()
-                this.nextCell(e)
+                this.nextEmptyCell(e)
                 const setCurrentClue = new CustomEvent("set-current-clue", {bubbles: true, composed: true, detail: {clue: 1, acrossContext: this.acrossContext}})
                 this.dispatchEvent(setCurrentClue)
                 // TODO Get current clue and change it if necessary
@@ -538,7 +540,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 this.cur_row = nextWord.x
                 this.cur_col = nextWord.y
                 this.setContext((nextWord.direction == "across"), nextWord.clueNumber)
-                let cell: HTMLDivElement = this.gridEl.querySelector('[grid-row="'+ this.cur_row + '"][grid-col="' + this.cur_col + '"]')
+                let cell: HTMLDivElement = this.getCellDOM(this.cur_row, this.cur_col)
                 cell.focus()
             }
             else if (e.key === " ") {
