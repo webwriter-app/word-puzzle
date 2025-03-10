@@ -1710,6 +1710,8 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       timeout += 1;
     } while (nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit);
     if (grid_row == grid_row_cur && grid_col == grid_col_cur) {
+      currentCell.blur();
+      this.setContext(null, null);
     } else {
       nextCell.focus();
       this.cur_col = grid_row;
@@ -1805,7 +1807,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       } else {
         cellDOM.contentEditable = "true";
         cellDOM.removeAttribute("black");
-        cellDOM.setAttribute("tabindex", "0");
         cellDOM.setAttribute("answer", "true");
         cellDOM.setAttribute("direction", this.grid[x3][y4].direction);
         const cellLetter = document2.createElement("div");
@@ -1822,7 +1823,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     } catch (error) {
       DEV: console.log("Error at (" + x3 + "," + y4 + ")");
     }
-    cellDOM.addEventListener("keypress", (e13) => {
+    cellDOM.addEventListener("keydown", (e13) => {
       e13.preventDefault();
       const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
       if (isAlphaChar(e13.key)) {
@@ -1831,10 +1832,13 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         const setCurrentClue = new CustomEvent("set-current-clue", { bubbles: true, composed: true, detail: { clue: 1, acrossContext: this.acrossContext } });
         this.dispatchEvent(setCurrentClue);
       } else if (e13.key === "Tab") {
-        let grid_row = Number(e13.target.getAttribute("grid-row"));
-        let grid_col = Number(e13.target.getAttribute("grid-col"));
-        if (this.acrossContext) {
-        }
+        e13.stopPropagation();
+        let nextWord = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)];
+        this.cur_row = nextWord.x;
+        this.cur_col = nextWord.y;
+        this.setContext(nextWord.direction == "across", nextWord.clueNumber);
+        let cell = this.gridEl.querySelector('[grid-row="' + this.cur_row + '"][grid-col="' + this.cur_col + '"]');
+        cell.focus();
       } else if (e13.key === " ") {
         DEV: console.log("Current direction is across:", this.acrossContext);
         this.acrossContext = !this.acrossContext;

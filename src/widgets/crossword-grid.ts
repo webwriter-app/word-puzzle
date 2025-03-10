@@ -380,8 +380,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         // TODO Blur if there are no empty cells
         if(grid_row == grid_row_cur && grid_col == grid_col_cur) {
-            // currentCell.blur()
-            // this.setContext(null, null)
+            currentCell.blur()
+            this.setContext(null, null)
         }
         else {
             nextCell.focus()
@@ -495,8 +495,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         else {
             cellDOM.contentEditable = "true";
             cellDOM.removeAttribute("black")
-            // This is how you make divs focusable
-            cellDOM.setAttribute("tabindex", "0")
             cellDOM.setAttribute("answer", "true");
             cellDOM.setAttribute("direction", this.grid[x][y].direction);
             // Create div for adding a letter
@@ -522,7 +520,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * 
          * Overrides / prevents the default character insertion
          */
-        cellDOM.addEventListener('keypress', (e) => {
+        cellDOM.addEventListener('keydown', (e) => {
             e.preventDefault(); // Prevent default character insertion
             const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
             if (isAlphaChar(e.key)) {
@@ -533,12 +531,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 // TODO Get current clue and change it if necessary
             }
             else if(e.key === "Tab") {
-                // TODO Change to the next word in the given context
-                let grid_row = (Number((e.target).getAttribute("grid-row")))
-                let grid_col = (Number((e.target).getAttribute("grid-col")))
-                if(this.acrossContext) {
-                    // TODO
-                }
+                // TODO Trigger part of nextCell function?
+                // TODO Extract part of nextCell function into nextWord "level"
+                e.stopPropagation()
+                let nextWord  = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)]
+                this.cur_row = nextWord.x
+                this.cur_col = nextWord.y
+                this.setContext((nextWord.direction == "across"), nextWord.clueNumber)
+                let cell: HTMLDivElement = this.gridEl.querySelector('[grid-row="'+ this.cur_row + '"][grid-col="' + this.cur_col + '"]')
+                cell.focus()
             }
             else if (e.key === " ") {
                 DEV: console.log("Current direction is across:", this.acrossContext)
