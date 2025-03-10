@@ -818,7 +818,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                         row_shift = wordNew.length
                     }
 
-                    if(possibleX - (row_shift === 0 ? 0 : 1) >= 0 || possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
+                    if(possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
                         notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white
                     }
                     else {
@@ -836,52 +836,40 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                         if (possibleDirection == "across") {
                             if (i != intersection[0]) {
                                 if(i + possibleY >= 0 && i + possibleY < dimension) {
-                                    try {
-                                        // Don't place a word if there is a collision where the char isn't the same
-                                        if(wordNew[i] != inputGrid[possibleX + i][possibleY].answer)
+                                    // Don't place a word if there is a collision where the char isn't the same
+                                    if (possibleX >= 0 && possibleX < dimension) {
+                                        if(wordNew[i] != inputGrid[possibleX][possibleY + i].answer) {
                                             noClash = noClash && !inputGrid[possibleX][possibleY + i].white
+                                        }
                                     }
-                                    catch(error) {
-                                        DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").")
-                                        DEV: console.log("The grid dimensions are " + inputGrid.length)
+
+                                    // Checks for white cells above / below the word
+                                    if(possibleX - 1 >= 0 && possibleX - 1 < dimension) {
+                                        notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i].white
                                     }
-                                }
-                                
-                                try {
-                                    notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i].white
-                                } catch(error) {
-                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells below")
-                                }
-                                try {
-                                    notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i].white
-                                } catch(error) {
-                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells above")
+                                    if(possibleX + 1 >= 0 && possibleX + 1 < dimension) {
+                                        notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i].white
+                                    }
                                 }
                             }
                         }
                         else {
                             if (i != intersection[0]) {
                                 if(i + possibleX >= 0 && i + possibleX < dimension) {
-                                    try {
-                                        // Don't place a word if there is a collision where the char isn't the same
-                                        if(wordNew[i] != inputGrid[possibleX + i][possibleY].answer)
+                                    // Don't place a word if there is a collision where the char isn't the same
+                                    if (possibleY >= 0 && possibleY < dimension) {
+                                        if(wordNew[i] != inputGrid[possibleX + i][possibleY].answer) {
                                             noClash = noClash && !inputGrid[possibleX + i][possibleY].white
+                                        }
                                     }
-                                    catch(error) {
-                                        DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").")
-                                        DEV: console.log("The grid dimensions are " + inputGrid.length)
+
+                                    // Test for adjacent squares
+                                    if(possibleY - 1 >= 0 && possibleY - 1 < dimension) {
+                                        notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY - 1].white
                                     }
-                                }
-                                // Test for adjacent squares
-                                try {
-                                    notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY + 1].white
-                                } catch(error) {
-                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells to the right")
-                                }
-                                try {
-                                    notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY - 1].white
-                                } catch(error) {
-                                    DEV: console.log("Adjacency check (" + wordNew + "): No cells to the left")
+                                    if(possibleY + 1 >= 0 && possibleY + 1 < dimension) {
+                                        notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY + 1].white
+                                    }
                                 }
                         }
                     }
@@ -909,16 +897,13 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             let possiblePlacementsNoResize: Partial<WordClue>[] = []
 
             // Prioritize word placement that doesn't require resizing the grid
-            try {
-            for (let placementOption of possiblePlacementOptions) {
-                if (placementOption.x >= 0 && placementOption.y >= 0) {
-                    possiblePlacementsNoResize.push({...placementOption})
+            if(possiblePlacementOptions != null) {
+                for (let placementOption of possiblePlacementOptions) {
+                    if (placementOption.x >= 0 && placementOption.y >= 0) {
+                        possiblePlacementsNoResize.push({...placementOption})
+                    }
                 }
             }
-            } catch (error) {
-                DEV: console.log("Apparently possiblePlacementOptions is undefined")
-            }
-
             let placement: Partial<WordClue>
             if(possiblePlacementsNoResize.length === 0) {
                 placement = possiblePlacementOptions[0]

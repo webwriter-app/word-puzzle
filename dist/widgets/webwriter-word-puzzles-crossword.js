@@ -2020,7 +2020,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           } else {
             row_shift = wordNew.length;
           }
-          if (possibleX - (row_shift === 0 ? 0 : 1) >= 0 || possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
+          if (possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
             notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white;
           } else {
             DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left / top");
@@ -2034,45 +2034,33 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
             if (possibleDirection == "across") {
               if (i9 != intersection[0]) {
                 if (i9 + possibleY >= 0 && i9 + possibleY < dimension) {
-                  try {
-                    if (wordNew[i9] != inputGrid[possibleX + i9][possibleY].answer)
+                  if (possibleX >= 0 && possibleX < dimension) {
+                    if (wordNew[i9] != inputGrid[possibleX][possibleY + i9].answer) {
                       noClash = noClash && !inputGrid[possibleX][possibleY + i9].white;
-                  } catch (error) {
-                    DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").");
-                    DEV: console.log("The grid dimensions are " + inputGrid.length);
+                    }
                   }
-                }
-                try {
-                  notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i9].white;
-                } catch (error) {
-                  DEV: console.log("Adjacency check (" + wordNew + "): No cells below");
-                }
-                try {
-                  notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i9].white;
-                } catch (error) {
-                  DEV: console.log("Adjacency check (" + wordNew + "): No cells above");
+                  if (possibleX - 1 >= 0 && possibleX - 1 < dimension) {
+                    notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i9].white;
+                  }
+                  if (possibleX + 1 >= 0 && possibleX + 1 < dimension) {
+                    notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i9].white;
+                  }
                 }
               }
             } else {
               if (i9 != intersection[0]) {
                 if (i9 + possibleX >= 0 && i9 + possibleX < dimension) {
-                  try {
-                    if (wordNew[i9] != inputGrid[possibleX + i9][possibleY].answer)
+                  if (possibleY >= 0 && possibleY < dimension) {
+                    if (wordNew[i9] != inputGrid[possibleX + i9][possibleY].answer) {
                       noClash = noClash && !inputGrid[possibleX + i9][possibleY].white;
-                  } catch (error) {
-                    DEV: console.log("The cell seems to be undefined at (" + possibleX + ", " + possibleY + ").");
-                    DEV: console.log("The grid dimensions are " + inputGrid.length);
+                    }
                   }
-                }
-                try {
-                  notAdjacent = notAdjacent && !inputGrid[possibleX + i9][possibleY + 1].white;
-                } catch (error) {
-                  DEV: console.log("Adjacency check (" + wordNew + "): No cells to the right");
-                }
-                try {
-                  notAdjacent = notAdjacent && !inputGrid[possibleX + i9][possibleY - 1].white;
-                } catch (error) {
-                  DEV: console.log("Adjacency check (" + wordNew + "): No cells to the left");
+                  if (possibleY - 1 >= 0 && possibleY - 1 < dimension) {
+                    notAdjacent = notAdjacent && !inputGrid[possibleX + i9][possibleY - 1].white;
+                  }
+                  if (possibleY + 1 >= 0 && possibleY + 1 < dimension) {
+                    notAdjacent = notAdjacent && !inputGrid[possibleX + i9][possibleY + 1].white;
+                  }
                 }
               }
             }
@@ -2089,14 +2077,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     }
     function selectPlacement(possiblePlacementOptions) {
       let possiblePlacementsNoResize = [];
-      try {
+      if (possiblePlacementOptions != null) {
         for (let placementOption of possiblePlacementOptions) {
           if (placementOption.x >= 0 && placementOption.y >= 0) {
             possiblePlacementsNoResize.push({ ...placementOption });
           }
         }
-      } catch (error) {
-        DEV: console.log("Apparently possiblePlacementOptions is undefined");
       }
       let placement;
       if (possiblePlacementsNoResize.length === 0) {
