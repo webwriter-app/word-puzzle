@@ -1945,9 +1945,11 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     this.dispatchEvent(setContext);
   }
   /**
-   * Generates crossword puzzle based off of words in the clue box.
+   * Generates crossword puzzle based off of words in the clue box, without given coordinates.
    * 
    * Based off of Agarwal and Joshi 2020
+   * @param {Partial<WordClue>[]} wordsClues The list of words and clues from which to generate the crossword
+   * @returns {WordClue[]} 
    */
   generateCrossword(wordsClues) {
     DEV: console.log("Crossword generation triggered");
@@ -1986,6 +1988,45 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       rankings[i9] = rankWord(i9);
       i9++;
     }
+    bestGrid = generateCrosswordGrid(currentGrid, wordsOG);
+    bestWordsPlaced = currentWordsPlaced;
+    clueCount = 0;
+    for (let i9 = 0; i9 < bestGrid.length; i9++) {
+      let previousNumber = 0;
+      for (let j3 = 0; j3 < bestGrid.length; j3++) {
+        if (bestGrid[i9][j3].number) {
+          previousNumber = bestGrid[i9][j3].number;
+          bestGrid[i9][j3].number = clueCount + 1;
+          clueCount += 1;
+        }
+      }
+    }
+    for (let wordObj of bestWordsPlaced) {
+      for (let wordClue of wordsClues) {
+        if (wordObj.word == wordClue.word) {
+          wordClue.direction = wordObj.direction;
+          wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number;
+          wordClue.x = wordObj.x;
+          wordClue.y = wordObj.y;
+        }
+      }
+    }
+    this.grid = bestGrid;
+    DEV: console.log(this.grid);
+    this.newCrosswordGridDOM(document);
+    for (let wordClue of wordsClues) {
+      if (!wordClue.clueText) {
+        wordClue.clueText = "* No clue for this word *";
+      }
+      if (!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
+        DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word);
+    }
+    wordsClues.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
+    wordsClues.sort((a5, b4) => Number(b4.direction === "across") - Number(a5.direction === "across"));
+    this.wordsAndClues = wordsClues;
+    DEV: console.log("Words and clues (sorted by clue number):");
+    DEV: console.log(this.wordsAndClues);
+    return wordsClues;
     function placeable(inputGrid, wordNew) {
       if (currentWordsPlaced.length == 0) {
         let possiblePlacementX = Math.floor(inputGrid.length / 2 - 1);
@@ -2356,45 +2397,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       }
       return inputGrid;
     }
-    bestGrid = generateCrosswordGrid(currentGrid, wordsOG);
-    bestWordsPlaced = currentWordsPlaced;
-    clueCount = 0;
-    for (let i9 = 0; i9 < bestGrid.length; i9++) {
-      let previousNumber = 0;
-      for (let j3 = 0; j3 < bestGrid.length; j3++) {
-        if (bestGrid[i9][j3].number) {
-          previousNumber = bestGrid[i9][j3].number;
-          bestGrid[i9][j3].number = clueCount + 1;
-          clueCount += 1;
-        }
-      }
-    }
-    this.grid = bestGrid;
-    DEV: console.log(this.grid);
-    this.newCrosswordGridDOM(document);
-    for (let wordObj of bestWordsPlaced) {
-      for (let wordClue of wordsClues) {
-        if (wordObj.word == wordClue.word) {
-          wordClue.direction = wordObj.direction;
-          wordClue.clueNumber = this.grid[wordObj.x][wordObj.y].number;
-          wordClue.x = wordObj.x;
-          wordClue.y = wordObj.y;
-        }
-      }
-    }
-    for (let wordClue of wordsClues) {
-      if (!wordClue.clueText) {
-        wordClue.clueText = "* No clue for this word *";
-      }
-      if (!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
-        DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word);
-    }
-    wordsClues.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
-    wordsClues.sort((a5, b4) => Number(b4.direction === "across") - Number(a5.direction === "across"));
-    this.wordsAndClues = wordsClues;
-    DEV: console.log("Words and clues (sorted by clue number):");
-    DEV: console.log(this.wordsAndClues);
-    return wordsClues;
   }
   // TODO Implement answer checking
   // It should compare the text content of the cell with the answer in this.grid 

@@ -675,9 +675,11 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     }
 
     /**
-     * Generates crossword puzzle based off of words in the clue box.
+     * Generates crossword puzzle based off of words in the clue box, without given coordinates.
      * 
      * Based off of Agarwal and Joshi 2020
+     * @param {Partial<WordClue>[]} wordsClues The list of words and clues from which to generate the crossword
+     * @returns {WordClue[]} 
      */
     generateCrossword(wordsClues: Partial<WordClue>[]): WordClue[] {
 
@@ -758,6 +760,70 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             rankings[i] = rankWord(i)
             i++
         }
+
+        // Add words to grid (WIP)
+
+        bestGrid = generateCrosswordGrid(currentGrid, wordsOG)
+        bestWordsPlaced = currentWordsPlaced
+        // currentGrid = shrinkGrid(currentGrid)
+
+        // iterate through the cells and number them properly just in case
+        clueCount = 0
+
+        for(let i = 0; i < bestGrid.length; i++) {
+            let previousNumber = 0
+            for (let j = 0; j < bestGrid.length; j++) {
+                if(bestGrid[i][j].number) {
+                    previousNumber = bestGrid[i][j].number
+                    bestGrid[i][j].number = clueCount + 1
+                    clueCount += 1
+                }
+            }
+        }
+
+        // Use bestWordsPlaced to access coordinates of grid, read number
+        for(let wordObj of bestWordsPlaced) {
+            // NOTE This may cause issues
+            for(let wordClue of wordsClues) {
+                if(wordObj.word == wordClue.word) {
+                    wordClue.direction = wordObj.direction
+                    wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number
+                    wordClue.x = wordObj.x
+                    wordClue.y = wordObj.y
+                }
+            }
+        }
+
+        this.grid = bestGrid
+        DEV: console.log(this.grid)
+
+        this.newCrosswordGridDOM(document)
+
+        for(let wordClue of wordsClues) {
+            if(!wordClue.clueText) {
+                wordClue.clueText = "* No clue for this word *"
+            }
+            if(!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
+                DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
+        }
+
+        // The following changes the original order, but I don't think that's necessarily bad?
+
+        // Sort words by clue number
+        wordsClues.sort((a, b) => a.clueNumber - b.clueNumber)
+        // Sort words by across / down
+        wordsClues.sort((a, b) => Number(b.direction === "across") - Number(a.direction === "across"))
+
+        this.wordsAndClues = wordsClues as WordClue[]
+        DEV: console.log("Words and clues (sorted by clue number):")
+        DEV: console.log(this.wordsAndClues)
+
+        return wordsClues as WordClue[]
+
+
+        // =====================================================================================
+        // HELPER FUNCTIONS
+        // =====================================================================================
 
         /** Function that returns possible places for a word in the grid.
          * Returns null if there are no possible places.
@@ -1302,12 +1368,19 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                         && j > rightmost + horizontalPadding) {
                 }
             }
-
             return newGrid
         }
     }
 
+        /**
+         * Helper functions for generating intermediate crossword grids.
+         * 
+         * @param {Partial<Cell>[][]} inputGrid 
+         * @param {string[]} words
+         * @returns {Partial<Cell>[][]} 
+         */
         function generateCrosswordGrid(inputGrid: Partial<Cell>[][], words: string[]): Partial<Cell>[][] {
+            // TODO Make this function recursive
             for(let word of words) {
                 let placement = selectPlacement(placeable(inputGrid, word))
                     DEV: console.log("Placement for " + word + ": " + placement.x + ", " + placement.y)
@@ -1326,69 +1399,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             return inputGrid
         }
 
-        // =====================================================================================
-        // Add words to grid (WIP)
-
-        bestGrid = generateCrosswordGrid(currentGrid, wordsOG)
-        bestWordsPlaced = currentWordsPlaced
-        // currentGrid = shrinkGrid(currentGrid)
-
-        // TODO TEST: iterate through the cells and number them properly just in case
-        clueCount = 0
-
-        for(let i = 0; i < bestGrid.length; i++) {
-            let previousNumber = 0
-            for (let j = 0; j < bestGrid.length; j++) {
-                if(bestGrid[i][j].number) {
-                    previousNumber = bestGrid[i][j].number
-                    bestGrid[i][j].number = clueCount + 1
-                    clueCount += 1
-                }
-            }
-        }
-
-        // TODO Return word and clue information to display it
-
-        this.grid = bestGrid
-        DEV: console.log(this.grid)
-
-        this.newCrosswordGridDOM(document)
-
-        // TODO Define WordsAndClues to return
-
-        // Use bestWordsPlaced to access coordinates of grid, read number
-        for(let wordObj of bestWordsPlaced) {
-            // NOTE This may cause issues
-            for(let wordClue of wordsClues) {
-                if(wordObj.word == wordClue.word) {
-                    wordClue.direction = wordObj.direction
-                    wordClue.clueNumber = this.grid[wordObj.x][wordObj.y].number
-                    wordClue.x = wordObj.x
-                    wordClue.y = wordObj.y
-                }
-            }
-        }
-
-        for(let wordClue of wordsClues) {
-            if(!wordClue.clueText) {
-                wordClue.clueText = "* No clue for this word *"
-            }
-            if(!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
-                DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
-        }
-
-        // The following changes the original order, but I don't think that's necessarily bad?
-
-        // Sort words by clue number
-        wordsClues.sort((a, b) => a.clueNumber - b.clueNumber)
-        // Sort words by across / down
-        wordsClues.sort((a, b) => Number(b.direction === "across") - Number(a.direction === "across"))
-
-        this.wordsAndClues = wordsClues as WordClue[]
-        DEV: console.log("Words and clues (sorted by clue number):")
-        DEV: console.log(this.wordsAndClues)
-
-        return wordsClues as WordClue[]
     }
 
     // TODO Implement answer checking
