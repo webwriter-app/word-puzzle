@@ -208,6 +208,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 align-items: center;
                 text-align: center;
                 font-size: 18pt;
+                caret-color: transparent;
             }
             div.cell[black] {
                 background-color: #333333;
@@ -330,11 +331,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         }
         timeoutLimit = timeoutLimit * 10
 
-
-        // Using an attribute of the cell is temporary
-        // TODO Check if the next cell is available. otherwise, don't
-        // If bigger than grid, get the next word
-
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(grid_row, grid_col)
 
         if(this.acrossContext != null) {
@@ -354,13 +350,20 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         do {
             let incr_row = Number(!acrossContext)
             let incr_col = Number(acrossContext)
-            i = this.getNextWordIndex(acrossContext, clueContext)
+
+            // Edge case for a one-word crossword
+            if(this.wordsAndClues.length > 1) {
+                i = this.getNextWordIndex(acrossContext, clueContext)
+            }
 
             if((grid_col + incr_col >= this.grid.length) 
                 || (grid_row + incr_row >= this.grid.length) 
                 || this.grid[grid_row + incr_row][grid_col + incr_col] == null
                 || !this.grid[grid_row + incr_row][grid_col + incr_col].white) {
                 // If going further would be out of bounds, get next word
+                if(i == -1) {
+                    i = 0
+                }
                 nextWord = this.wordsAndClues[i]
                 grid_row = nextWord.x
                 grid_col = nextWord.y
@@ -373,9 +376,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     grid_col += incr_col
                     nextCell = this.getCellDOM(grid_row, grid_col)
             }
-
-            DEV: console.log('Potential next cell:')
-            DEV: console.log(nextCell)
 
             timeout += 1
             if(timeout > timeoutLimit) {
@@ -397,8 +397,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         } while(i != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "")
 
         if(nextCell.querySelector(".cell-letter").textContent == "") {
-            DEV: console.log('Final next cell:')
-            DEV: console.log(nextCell)
             nextCell.focus()
             this.cur_col = Number(nextCell.getAttribute("grid-row"))
             this.cur_row = Number(nextCell.getAttribute("grid-col"))
@@ -632,19 +630,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         DEV: console.log("Current cell coordinates..? (" + this.cur_row + ", " + this.cur_col + ")")
         
         if(this.cur_row == null || this.cur_row == null) {
-            DEV: console.log("cur_row and cur_col are both null")
             this.cur_row = Number((e.target).getAttribute("grid-row"))
             this.cur_col = Number((e.target).getAttribute("grid-col"))
         }
         // Needs to be corrected bc it's 1-indexed in the DOM
         let x = this.cur_row
         let y = this.cur_col
-
-        DEV: console.log("Current coordinates (0-indexed): (" + x + ", " + y + ")")
-
-        DEV: console.log("Current grid: ")
-        DEV: console.log(this.grid)
-
 
         // Ensure current context isn't null
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(this.cur_row, this.cur_col)
@@ -693,7 +684,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         // TODO Figure out generation / backtracking recursively
 
         // Initialization
-        DEV: console.log("generation triggered")
+        DEV: console.log("Crossword generation triggered")
 
         /** The words in their original order. */
         let wordsOG: string[] = [] // @type{string[]}
@@ -817,6 +808,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     let notAdjacent = true
 
                     // Don't place a word if there is a white cell right before or after it starts
+                    // TODO Refactor this to not use try... catch blocks
                     if(possibleDirection == "across"){
                         try {
                             notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY - 1].white

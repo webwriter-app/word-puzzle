@@ -1593,6 +1593,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 align-items: center;
                 text-align: center;
                 font-size: 18pt;
+                caret-color: transparent;
             }
             div.cell[black] {
                 background-color: #333333;
@@ -1689,8 +1690,13 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     do {
       let incr_row = Number(!acrossContext);
       let incr_col = Number(acrossContext);
-      i9 = this.getNextWordIndex(acrossContext, clueContext);
+      if (this.wordsAndClues.length > 1) {
+        i9 = this.getNextWordIndex(acrossContext, clueContext);
+      }
       if (grid_col + incr_col >= this.grid.length || grid_row + incr_row >= this.grid.length || this.grid[grid_row + incr_row][grid_col + incr_col] == null || !this.grid[grid_row + incr_row][grid_col + incr_col].white) {
+        if (i9 == -1) {
+          i9 = 0;
+        }
         nextWord = this.wordsAndClues[i9];
         grid_row = nextWord.x;
         grid_col = nextWord.y;
@@ -1700,8 +1706,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         grid_col += incr_col;
         nextCell = this.getCellDOM(grid_row, grid_col);
       }
-      DEV: console.log("Potential next cell:");
-      DEV: console.log(nextCell);
       timeout += 1;
       if (timeout > timeoutLimit) {
         throw new Error("You've created an infinite loop, congratulations");
@@ -1716,8 +1720,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       }
     } while (i9 != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "");
     if (nextCell.querySelector(".cell-letter").textContent == "") {
-      DEV: console.log("Final next cell:");
-      DEV: console.log(nextCell);
       nextCell.focus();
       this.cur_col = Number(nextCell.getAttribute("grid-row"));
       this.cur_row = Number(nextCell.getAttribute("grid-col"));
@@ -1912,15 +1914,11 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     this.cur_col = Number(e13.target.getAttribute("grid-col"));
     DEV: console.log("Current cell coordinates..? (" + this.cur_row + ", " + this.cur_col + ")");
     if (this.cur_row == null || this.cur_row == null) {
-      DEV: console.log("cur_row and cur_col are both null");
       this.cur_row = Number(e13.target.getAttribute("grid-row"));
       this.cur_col = Number(e13.target.getAttribute("grid-col"));
     }
     let x3 = this.cur_row;
     let y4 = this.cur_col;
-    DEV: console.log("Current coordinates (0-indexed): (" + x3 + ", " + y4 + ")");
-    DEV: console.log("Current grid: ");
-    DEV: console.log(this.grid);
     let { across: acrossContext, clue: clueContext } = this.getContextFromCell(this.cur_row, this.cur_col);
     this.acrossContext = acrossContext;
     this.currentClue = clueContext;
@@ -1952,7 +1950,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword(wordsClues) {
-    DEV: console.log("generation triggered");
+    DEV: console.log("Crossword generation triggered");
     let wordsOG = [];
     for (let wordClue of wordsClues) {
       wordsOG.push(wordClue.word);
