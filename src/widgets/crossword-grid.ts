@@ -328,6 +328,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         for(let wordClue of this.wordsAndClues) {
             timeoutLimit += wordClue.word.length
         }
+        timeoutLimit = timeoutLimit * 10
 
 
         // Using an attribute of the cell is temporary
@@ -344,6 +345,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         }
 
         let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1
+        if (currentWordIndex == -1) {
+            currentWordIndex = this.wordsAndClues.length - 1
+        }
         let i = -1
 
         let timeout = 0
@@ -351,8 +355,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             let incr_row = Number(!acrossContext)
             let incr_col = Number(acrossContext)
             i = this.getNextWordIndex(acrossContext, clueContext)
-            if((grid_col + incr_col > this.grid.length) || (grid_row + incr_row > this.grid.length)) {
-                // TODO Extract this into another function
+
+            if((grid_col + incr_col >= this.grid.length) 
+                || (grid_row + incr_row >= this.grid.length) 
+                || this.grid[grid_row + incr_row][grid_col + incr_col] == null
+                || !this.grid[grid_row + incr_row][grid_col + incr_col].white) {
+                // If going further would be out of bounds, get next word
                 nextWord = this.wordsAndClues[i]
                 grid_row = nextWord.x
                 grid_col = nextWord.y
@@ -360,42 +368,37 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             else {
                 // If the next cell is black, get next word
-                if(!this.grid[grid_row + incr_row][grid_col + incr_col].white) {
-                    nextWord = this.wordsAndClues[i]
-                    grid_row = nextWord.x
-                    grid_col = nextWord.y
-                    nextCell = this.getCellDOM(grid_row, grid_col)
-                }
-                else {
+                // otherwise, get the next cell
                     grid_row += incr_row
                     grid_col += incr_col
                     nextCell = this.getCellDOM(grid_row, grid_col)
-                }
             }
 
-            DEV: console.log("TODO: implement changing focus depending on across / down context")
-            DEV: console.log('Changed: [grid-row="'+ grid_row + '"][grid-col="' + grid_col + '"]')
-
-            DEV: console.log('Next cell:')
+            DEV: console.log('Potential next cell:')
             DEV: console.log(nextCell)
+
             timeout += 1
             if(timeout > timeoutLimit) {
                 throw new Error("You've created an infinite loop, congratulations")
             }
+
             if(nextWord) {
                 clueContext = nextWord.clueNumber
                 acrossContext = nextWord.direction == "across"
             }
 
             timeout += 1
-        } while(nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit && i != currentWordIndex)
+            if(timeout >= timeoutLimit) {
+                throw new Error("You've created an infinite loop, congratulations")
+            }
 
-        // Blur if there are no empty cells
-        if(i == currentWordIndex) {
-            currentCell.blur()
-            this.setContext(null, null)
-        }
-        else {
+            // TODO Fix this condition, it's problematic
+            // TODO Put iterating over cells of a word and the words themselves into different loops
+        } while(i != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "")
+
+        if(nextCell.querySelector(".cell-letter").textContent == "") {
+            DEV: console.log('Final next cell:')
+            DEV: console.log(nextCell)
             nextCell.focus()
             this.cur_col = Number(nextCell.getAttribute("grid-row"))
             this.cur_row = Number(nextCell.getAttribute("grid-col"))
@@ -403,6 +406,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             if(nextWord) {
                 this.setContext((nextWord.direction == "across"), nextWord.clueNumber)
             }
+        }
+        else {
+            // Blur if there are no empty cells
+            currentCell.blur()
         }
     }
 
@@ -458,6 +465,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     */
    // May not need the arguments lol
     getNextWordIndex(direction: boolean, clue: number): number {
+        if(this.wordsAndClues.length == 1) {
+            return 0
+        }
         let direction_string = direction ? "across" : "down"
         let opposite_direction = direction ? "down" : "across"
             let i = this.wordsAndClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.direction == direction_string)

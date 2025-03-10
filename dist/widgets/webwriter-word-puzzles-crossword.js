@@ -1672,6 +1672,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     for (let wordClue of this.wordsAndClues) {
       timeoutLimit += wordClue.word.length;
     }
+    timeoutLimit = timeoutLimit * 10;
     let { across: acrossContext, clue: clueContext } = this.getContextFromCell(grid_row, grid_col);
     if (this.acrossContext != null) {
       acrossContext = this.acrossContext;
@@ -1680,32 +1681,26 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       clueContext = this.currentClue;
     }
     let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1;
+    if (currentWordIndex == -1) {
+      currentWordIndex = this.wordsAndClues.length - 1;
+    }
     let i9 = -1;
     let timeout = 0;
     do {
       let incr_row = Number(!acrossContext);
       let incr_col = Number(acrossContext);
       i9 = this.getNextWordIndex(acrossContext, clueContext);
-      if (grid_col + incr_col > this.grid.length || grid_row + incr_row > this.grid.length) {
+      if (grid_col + incr_col >= this.grid.length || grid_row + incr_row >= this.grid.length || this.grid[grid_row + incr_row][grid_col + incr_col] == null || !this.grid[grid_row + incr_row][grid_col + incr_col].white) {
         nextWord = this.wordsAndClues[i9];
         grid_row = nextWord.x;
         grid_col = nextWord.y;
         nextCell = this.getCellDOM(grid_row, grid_col);
       } else {
-        if (!this.grid[grid_row + incr_row][grid_col + incr_col].white) {
-          nextWord = this.wordsAndClues[i9];
-          grid_row = nextWord.x;
-          grid_col = nextWord.y;
-          nextCell = this.getCellDOM(grid_row, grid_col);
-        } else {
-          grid_row += incr_row;
-          grid_col += incr_col;
-          nextCell = this.getCellDOM(grid_row, grid_col);
-        }
+        grid_row += incr_row;
+        grid_col += incr_col;
+        nextCell = this.getCellDOM(grid_row, grid_col);
       }
-      DEV: console.log("TODO: implement changing focus depending on across / down context");
-      DEV: console.log('Changed: [grid-row="' + grid_row + '"][grid-col="' + grid_col + '"]');
-      DEV: console.log("Next cell:");
+      DEV: console.log("Potential next cell:");
       DEV: console.log(nextCell);
       timeout += 1;
       if (timeout > timeoutLimit) {
@@ -1716,17 +1711,21 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         acrossContext = nextWord.direction == "across";
       }
       timeout += 1;
-    } while (nextCell.querySelector(".cell-letter").textContent !== "" && timeout < timeoutLimit && i9 != currentWordIndex);
-    if (i9 == currentWordIndex) {
-      currentCell.blur();
-      this.setContext(null, null);
-    } else {
+      if (timeout >= timeoutLimit) {
+        throw new Error("You've created an infinite loop, congratulations");
+      }
+    } while (i9 != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "");
+    if (nextCell.querySelector(".cell-letter").textContent == "") {
+      DEV: console.log("Final next cell:");
+      DEV: console.log(nextCell);
       nextCell.focus();
       this.cur_col = Number(nextCell.getAttribute("grid-row"));
       this.cur_row = Number(nextCell.getAttribute("grid-col"));
       if (nextWord) {
         this.setContext(nextWord.direction == "across", nextWord.clueNumber);
       }
+    } else {
+      currentCell.blur();
     }
   }
   getContextFromCell(row, col) {
@@ -1770,6 +1769,9 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   */
   // May not need the arguments lol
   getNextWordIndex(direction, clue) {
+    if (this.wordsAndClues.length == 1) {
+      return 0;
+    }
     let direction_string = direction ? "across" : "down";
     let opposite_direction = direction ? "down" : "across";
     let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.direction == direction_string);
