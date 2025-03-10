@@ -1845,6 +1845,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   cellKeydownHandler(e13) {
     e13.preventDefault();
     const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
+    let cell = e13.target;
     switch (e13.key) {
       case "Tab":
         e13.stopPropagation();
@@ -1852,23 +1853,23 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         this.cur_row = nextWord.x;
         this.cur_col = nextWord.y;
         this.setContext(nextWord.direction == "across", nextWord.clueNumber);
-        let cell = this.getCellDOM(this.cur_row, this.cur_col);
-        cell.focus();
+        let nextCell = this.getCellDOM(this.cur_row, this.cur_col);
+        nextCell.focus();
         break;
       case " ":
-        DEV: console.log("Current direction is across:", this.acrossContext);
-        this.acrossContext = !this.acrossContext;
+        if (cell.getAttribute("direction") == "both") {
+          this.setContext(!this.acrossContext, this.getClueNumber(!this.acrossContext, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))));
+        }
         break;
       case "ArrowLeft":
       case "ArrowRight":
       case "ArrowUp":
       case "ArrowDown":
-        DEV: console.log("Arrow key pressed");
         this.arrowKeyHandler(e13);
         break;
       default:
         if (isAlphaChar(e13.key)) {
-          e13.target.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
+          cell.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
           this.nextEmptyCell(e13);
         }
     }
