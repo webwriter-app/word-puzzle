@@ -808,30 +808,28 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     let notAdjacent = true
 
                     // Don't place a word if there is a white cell right before or after it starts
-                    // TODO Refactor this to not use try... catch blocks
+                    let col_shift = 0
+                    let row_shift = 0
+
                     if(possibleDirection == "across"){
-                        try {
-                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY - 1].white
-                        } catch(error) {
-                            DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left")
-                        }
-                        try {
-                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY + wordNew.length].white
-                        } catch(error) {
-                            DEV: console.log("Adjacency check (" + wordNew + "): No cell to the right")
-                        }
+                        col_shift = wordNew.length
                     }
                     else {
-                        try {
-                            notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY].white
-                        } catch(error) {
-                            DEV: console.log("Adjacency check (" + wordNew + "): No cell below")
-                        }
-                        try {
-                            notAdjacent = notAdjacent && !inputGrid[possibleX + wordNew.length][possibleY].white
-                        } catch(error) {
-                            DEV: console.log("Adjacency check (" + wordNew + "): No cell above")
-                        }
+                        row_shift = wordNew.length
+                    }
+
+                    if(possibleX - (row_shift === 0 ? 0 : 1) >= 0 || possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
+                        notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white
+                    }
+                    else {
+                        DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left / top")
+                    }
+
+                    if(possibleX + row_shift < inputGrid.length && possibleY + col_shift < inputGrid.length) {
+                        notAdjacent = notAdjacent && !inputGrid[possibleX + row_shift][possibleY + col_shift].white
+                    }
+                    else {
+                        DEV: console.log("Adjacency check (" + wordNew + "): No cell to the right / bottom")
                     }
 
                     for (let i = 0; i < wordNew.length; i++) {
