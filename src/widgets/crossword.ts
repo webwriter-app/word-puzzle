@@ -2,7 +2,7 @@
  * Main WebWriter Word Puzzles Widget.
  * 
  * @packageDocumentation
- * @module crosswords
+ * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
 import { html, css } from 'lit';
