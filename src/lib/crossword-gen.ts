@@ -794,6 +794,20 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
             }
             grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c]
             grid[wordClue.x + i ][wordClue.y + j].white = true
+
+            let direction = wordClue.across ? "across" : "down"
+            if(grid[wordClue.x + i ][wordClue.y + j].direction != null) {
+                let direction_opposite = !wordClue.across ? "across" : "down"
+                if(grid[wordClue.x + i ][wordClue.y + j].direction == direction_opposite) {
+                    grid[wordClue.x + i ][wordClue.y + j].direction = "both"
+                }
+                else {
+                    grid[wordClue.x + i ][wordClue.y + j].direction = direction
+                }
+            }
+            else {
+                    grid[wordClue.x + i ][wordClue.y + j].direction = direction
+            }
         }
     }
 

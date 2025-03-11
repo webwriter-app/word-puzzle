@@ -1979,6 +1979,17 @@ function generateCrosswordFromList(wordsClues) {
       }
       grid[wordClue.x + i9][wordClue.y + j3].answer = wordClue.word[c7];
       grid[wordClue.x + i9][wordClue.y + j3].white = true;
+      let direction = wordClue.across ? "across" : "down";
+      if (grid[wordClue.x + i9][wordClue.y + j3].direction != null) {
+        let direction_opposite = !wordClue.across ? "across" : "down";
+        if (grid[wordClue.x + i9][wordClue.y + j3].direction == direction_opposite) {
+          grid[wordClue.x + i9][wordClue.y + j3].direction = "both";
+        } else {
+          grid[wordClue.x + i9][wordClue.y + j3].direction = direction;
+        }
+      } else {
+        grid[wordClue.x + i9][wordClue.y + j3].direction = direction;
+      }
     }
   }
   return grid;
