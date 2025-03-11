@@ -58,7 +58,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
-    wordsAndClues: Partial<WordClue>[] = []
+    wordsAndClues: WordClue[] = []
 
     /**
      * Whether the current direction is across or down.
@@ -478,7 +478,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @returns {HTMLTableElement} the DOM element for the clue panel
      * Source: crosswords-js
      */
-    newClueBox(wordsAndClues: Partial<WordClue>[]): HTMLTableElement {
+    newClueBox(wordsAndClues: WordClue[]): HTMLTableElement {
         DEV: console.log("Generating cluebox, in theory")
         const clueBox: HTMLTableElement = document.createElement('table')
         clueBox.classList.add('cluebox')

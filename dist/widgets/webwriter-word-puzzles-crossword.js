@@ -2446,7 +2446,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * Generates crossword puzzle based off of words in the clue box, without given coordinates.
    * Calls the function in crossword-gen
    * 
-   * @param {Partial<WordClue>[]} wordsClues The list of words and clues from which to generate the crossword
+   * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
    * @returns {WordClue[]} 
    */
   generateCrossword(wordsClues) {

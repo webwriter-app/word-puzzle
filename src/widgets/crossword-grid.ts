@@ -56,11 +56,11 @@ function stopCtrlPropagation(event: KeyboardEvent): void {
 export interface Cell {
     white: boolean;
 /** The correct character */
-    answer: string; // Correct letter
+    answer?: string; // Correct letter
 /** The clue number. Can be null for white cells */
-    number: number; 
+    number?: number; 
 /** Direction of the word. Down, across, both, or null */
-    direction: string; 
+    direction?: string; 
 }
 
 /** Custom data type for words placed on the grid. 
@@ -78,18 +78,18 @@ export interface Cell {
  * */
 export interface WordClue {
     word: string,
-    clueText: string,
-    x: number, // x coordinate
-    y: number, // y coordinate
-    direction: string,
-    clueNumber: number
+    clueText?: string,
+    x?: number, // x coordinate
+    y?: number, // y coordinate
+    direction?: string,
+    clueNumber?: number
 }
 
 
 /**
  * Function to create a default cell object.
  */
-export function defaultCell(): Partial<Cell> {
+export function defaultCell(): Cell {
     return {
         white: false,
         answer: null, // NOTE Should this be here, or should 
@@ -100,7 +100,7 @@ export function defaultCell(): Partial<Cell> {
 
 export interface GenerationResults {
     wordsAndClues: WordClue[],
-    grid: Partial<Cell>[][]
+    grid: Cell[][]
 }
 
 
@@ -118,7 +118,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     // TODO Add a skeleton for the grid while the crossword is being created?
 
     @property({ type: Array, state: true, attribute: true, reflect: true})
-    grid: Partial<Cell>[][]
+    grid: Cell[][]
     //protected grid: Cell[][]
 
     /**
@@ -134,7 +134,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * TODO attr. candidate
      */
     @property({ type: Array, state: true, attribute: true, reflect: true})
-    wordsAndClues: Partial<WordClue>[]
+    wordsAndClues: WordClue[]
 
     /**
      * Whether the current direction is across or down.
@@ -292,7 +292,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             currentCell = e.target
         }
 
-        let nextWord: Partial<WordClue>
+        let nextWord: WordClue
         let nextCell: HTMLDivElement
         let grid_row = (Number(currentCell.getAttribute("grid-row")))
         let grid_col = (Number(currentCell.getAttribute("grid-col")))
@@ -654,10 +654,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * Generates crossword puzzle based off of words in the clue box, without given coordinates.
      * Calls the function in crossword-gen
      * 
-     * @param {Partial<WordClue>[]} wordsClues The list of words and clues from which to generate the crossword
+     * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {WordClue[]} 
      */
-    generateCrossword(wordsClues: Partial<WordClue>[]): WordClue[] {
+    generateCrossword(wordsClues: WordClue[]): WordClue[] {
         let {wordsAndClues, grid} = generateCrossword(wordsClues)
         this.wordsAndClues = wordsAndClues
         this.grid = generateCrosswordFromList(wordsAndClues)

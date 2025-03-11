@@ -12,10 +12,10 @@ import { WordClue, Cell, GenerationResults, defaultCell } from '../widgets/cross
      * Generates crossword puzzle based off of words in the clue box, without given coordinates.
      * 
      * Based off of Agarwal and Joshi 2020
-     * @param {Partial<WordClue>[]} wordsClues The list of words and clues from which to generate the crossword
+     * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {WordClue[]} 
      */
-export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationResults {
+export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     // TODO Figure out generation / backtracking recursively
 
@@ -37,20 +37,20 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
     let dimension: number = minDim
 
     /** The grid currently being worked withfound so far */
-    let currentGrid: Partial<Cell>[][] = []
+    let currentGrid: Cell[][] = []
 
     /** The words that have been placed into the current grid */
-    let currentWordsPlaced: Partial<WordClue>[] = []  // @type {string[]}
+    let currentWordsPlaced: WordClue[] = []  // @type {string[]}
 
     /** The best grid found so far.
      * Smallest grid with the largest amount of words placed
      */
-    let bestGrid: Partial<Cell>[][] // @type {Cell[][]}
-    let bestWordsPlaced: Partial<WordClue>[] = []  // @type {string[]}
+    let bestGrid: Cell[][] // @type {Cell[][]}
+    let bestWordsPlaced: WordClue[] = []  // @type {string[]}
 
     /** Grid for testing adding / removing words */
-    let scratchpadGrid: Partial<Cell>[][] = [] // @type {Cell[][]}
-    let scratchWordsPlaced: Partial<WordClue>[] = []  // @type {string[]}
+    let scratchpadGrid: Cell[][] = [] // @type {Cell[][]}
+    let scratchWordsPlaced: WordClue[] = []  // @type {string[]}
 
     /** The number of words in the best grid */
     let bestWordNr = 0 // @type{number}
@@ -155,18 +155,18 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
      * 
      * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
     */
-    function placeable(inputGrid: Partial<Cell>[][], wordNew: string): Partial<WordClue>[] {
+    function placeable(inputGrid: Cell[][], wordNew: string): WordClue[] {
         if (currentWordsPlaced.length == 0) {
             let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
             let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(wordNew.length/2);
 
-            let possiblePlacement: Partial<WordClue> = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
+            let possiblePlacement: WordClue = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
 
             return [possiblePlacement]
         }
 
         /** Function for determining whether a word is placeable in the grid. */
-        let possiblePlacements: Partial<WordClue>[]  = []
+        let possiblePlacements: WordClue[]  = []
 
         // For every word already placed in the grid,
         // Go through all of its possible intersections with the new word
@@ -266,7 +266,7 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
                 }
             }
 
-                let possiblePlacement: Partial<WordClue> = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
+                let possiblePlacement: WordClue = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
 
                 if(noClash && notAdjacent){
                     possiblePlacements.push({...possiblePlacement})
@@ -283,9 +283,9 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
         return possiblePlacements
     }
 
-    function selectPlacement(possiblePlacementOptions: Partial<WordClue>[]): Partial<WordClue> {
+    function selectPlacement(possiblePlacementOptions: WordClue[]): WordClue {
 
-        let possiblePlacementsNoResize: Partial<WordClue>[] = []
+        let possiblePlacementsNoResize: WordClue[] = []
 
         // Prioritize word placement that doesn't require resizing the grid
         if(possiblePlacementOptions != null) {
@@ -295,7 +295,7 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
                 }
             }
         }
-        let placement: Partial<WordClue>
+        let placement: WordClue
         if(possiblePlacementsNoResize.length === 0) {
             placement = possiblePlacementOptions[0]
         }
@@ -331,9 +331,9 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
      * multiple more to the grid, if any.
      * 
      * @param {string} word - the word which would be removed.
-     * @returns { Partial<Cell> } - the grid without the word, if its removal was blocking other words. Null otherwise
+     * @returns { Cell } - the grid without the word, if its removal was blocking other words. Null otherwise
     */
-    function blockingWord(inputGrid: Partial<Cell>[][], word: string): Partial<Cell>[][] {
+    function blockingWord(inputGrid: Cell[][], word: string): Cell[][] {
         // Get copy of added words
             // wordsPlaced but only the words
         let wordList: string[] = []
@@ -389,7 +389,7 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
      * @param {number} inputY - Y coordinate where the first letter of the word should be placed
      * @param {string} direction - whether the word is across or down.
     */
-    function addWord(inputGrid: Partial<Cell>[][], wordToPlace: Partial<WordClue>): Partial<Cell>[][] {
+    function addWord(inputGrid: Cell[][], wordToPlace: WordClue): Cell[][] {
         // I don't think this is iterating over chars 
         let shift: number = 0
 
@@ -564,10 +564,10 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
      * This will be the amount required to get the furthest cell in bounds again
      * @returns { number } The increase required for 
      */
-    function enlargeGrid(inputGrid: Partial<Cell>[][], shift: number, wordToPlace: Partial<WordClue>): [Partial<Cell>[][], Partial<WordClue>] {
+    function enlargeGrid(inputGrid: Cell[][], shift: number, wordToPlace: WordClue): [Cell[][], WordClue] {
 
         // TODO Should I shift everything towards the center?
-        let biggerGrid: Partial<Cell>[][] = []
+        let biggerGrid: Cell[][] = []
         DEV: console.log("Increasing grid size")
 
 //           try {
@@ -601,7 +601,7 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
         return [inputGrid, wordToPlace]
 
         /** Shifts the coordinates of the placed words so they're still accurate */
-        function shiftPlacedWords(placedWords: Partial<WordClue>[]){
+        function shiftPlacedWords(placedWords: WordClue[]){
             for(let wordPlaced of placedWords) {
                 DEV: console.log("There may be an error here if you try to edit one single attribute of a damn interface structure")
                 wordPlaced.x = wordPlaced.x + shift
@@ -612,10 +612,10 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
 
     /** Helper function for shrinking the grid after all the words were 
      * placed / the grid with most words placed
-     * @returns { Partial<Cell>[][] } The increase required for 
+     * @returns { Cell[][] } The increase required for 
      */
-    function shrinkGrid(inputGrid: Partial<Cell>[][]): Partial<Cell>[][] {
-        let newGrid: Partial<Cell>[][] = []
+    function shrinkGrid(inputGrid: Cell[][]): Cell[][] {
+        let newGrid: Cell[][] = []
 
         DEV: console.log("Shrinking grid")
         let leftmost, rightmost, topmost, bottommost: number
@@ -700,11 +700,11 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
     /**
      * Helper functions for generating intermediate crossword grids.
      * 
-     * @param {Partial<Cell>[][]} inputGrid 
+     * @param {Cell[][]} inputGrid 
      * @param {string[]} words
-     * @returns {Partial<Cell>[][]} 
+     * @returns {Cell[][]} 
      */
-    function generateCrosswordGrid(inputGrid: Partial<Cell>[][], words: string[]): Partial<Cell>[][] {
+    function generateCrosswordGrid(inputGrid: Cell[][], words: string[]): Cell[][] {
         // TODO Make this function recursive
         for(let word of words) {
             let placement = selectPlacement(placeable(inputGrid, word))
@@ -728,10 +728,10 @@ export function generateCrossword(wordsClues: Partial<WordClue>[]): GenerationRe
 /**
      * Generates crossword puzzle based off of a list of words with their given placements.
      * 
-     * @param {Partial<WordClue>[]} wordsClues The list of words and clues from which to generate the crossword
-     * @returns {Partial<Cell>[][]} The crossword object
+     * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
+     * @returns {Cell[][]} The crossword object
      */
-export function generateCrosswordFromList(wordsClues: Partial<WordClue>[]): Partial<Cell>[][] {
+export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
 
     // Initialization
     DEV: console.log("Crossword generation from list triggered")
@@ -758,7 +758,7 @@ export function generateCrosswordFromList(wordsClues: Partial<WordClue>[]): Part
     }
 
     let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1)
-    let grid: Partial<Cell>[][] = []
+    let grid: Cell[][] = []
 
     for(let i = 0; i < dimension; i++) {
         grid[i] = []
