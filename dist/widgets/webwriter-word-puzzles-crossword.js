@@ -1569,7 +1569,7 @@ function generateCrossword(wordsClues) {
   for (let wordObj of bestWordsPlaced) {
     for (let wordClue of wordsClues) {
       if (wordObj.word == wordClue.word) {
-        wordClue.direction = wordObj.direction;
+        wordClue.across = wordObj.across;
         wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number;
         wordClue.x = wordObj.x;
         wordClue.y = wordObj.y;
@@ -1580,24 +1580,24 @@ function generateCrossword(wordsClues) {
     if (!wordClue.clueText) {
       wordClue.clueText = "* No clue for this word *";
     }
-    if (!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
+    if (!(wordClue.clueText && wordClue.across != null && wordClue.clueNumber && wordClue.word))
       DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word);
   }
   wordsClues.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
-  wordsClues.sort((a5, b4) => Number(b4.direction === "across") - Number(a5.direction === "across"));
+  wordsClues.sort((a5, b4) => Number(b4.across) - Number(a5.across));
   return { wordsAndClues: wordsClues, grid: bestGrid };
   function placeable(inputGrid, wordNew) {
     if (currentWordsPlaced.length == 0) {
       let possiblePlacementX = Math.floor(inputGrid.length / 2 - 1);
       let possiblePlacementY = Math.floor(inputGrid.length / 2) - Math.floor(wordNew.length / 2);
-      let possiblePlacement = { word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across" };
+      let possiblePlacement = { word: wordNew, x: possiblePlacementX, y: possiblePlacementY, across: true };
       return [possiblePlacement];
     }
     let possiblePlacements = [];
     for (let placedWord of currentWordsPlaced) {
       let intersections = intersecting(wordNew, placedWord.word);
       let possibleDirection;
-      if (placedWord.direction == "across") {
+      if (placedWord.across) {
         possibleDirection = "down";
       } else {
         possibleDirection = "across";
@@ -1665,7 +1665,7 @@ function generateCrossword(wordsClues) {
             }
           }
         }
-        let possiblePlacement = { word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection };
+        let possiblePlacement = { word: wordNew, x: possibleX, y: possibleY, across: possibleDirection == "across" };
         if (noClash && notAdjacent) {
           possiblePlacements.push({ ...possiblePlacement });
         }
@@ -1729,7 +1729,7 @@ function generateCrossword(wordsClues) {
     let x3 = wordToPlace.x;
     let y4 = wordToPlace.y;
     let success = false;
-    DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.direction);
+    DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.across);
     let timeout = 0;
     while (!success) {
       try {
@@ -1742,7 +1742,7 @@ function generateCrossword(wordsClues) {
         for (let j3 = 0; j3 < wordToPlace.word.length; j3++) {
           inputGrid[x3][y4].answer = wordToPlace.word[j3];
           inputGrid[x3][y4].white = true;
-          if (wordToPlace.direction == "across") {
+          if (wordToPlace.across) {
             if (inputGrid[x3][y4].direction == "" || !inputGrid[x3][y4].direction || inputGrid[x3][y4].direction == "across") {
               inputGrid[x3][y4].direction = "across";
             } else {
@@ -1779,7 +1779,7 @@ function generateCrossword(wordsClues) {
           wordToPlace = enlargedGrid[1];
           DEV: console.log("Grid is now of dimension " + inputGrid.length + " and its contents should have been shifted by " + shift4 + ".");
         }
-        if (wordToPlace.direction == "across") {
+        if (wordToPlace.across) {
           if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
             let increase = wordToPlace.y + wordToPlace.word.length - inputGrid.length;
             DEV: console.log("Current grid dimensions: " + inputGrid.length);
@@ -1967,7 +1967,7 @@ function generateCrosswordFromList(wordsClues) {
   for (let wordClue of wordsClues) {
     leftmost = leftmost > wordClue.y ? wordClue.y : leftmost;
     topmost = topmost > wordClue.x ? wordClue.x : topmost;
-    if (wordClue.direction == "across") {
+    if (wordClue.across) {
       rightmost = rightmost < wordClue.y + wordClue.word.length - 1 ? wordClue.y + wordClue.word.length - 1 : rightmost;
       bottommost = bottommost < wordClue.x ? wordClue.x : bottommost;
     } else {
@@ -1996,8 +1996,8 @@ function generateCrosswordFromList(wordsClues) {
     for (let c7 = 0; c7 < wordClue.word.length; c7++) {
       grid[wordClue.x][wordClue.y].answer = wordClue.word[c7];
       let i9 = 0, j3 = 0;
-      switch (wordClue.direction) {
-        case "across":
+      switch (wordClue.across) {
+        case true:
           j3 = c7;
           break;
         default:
@@ -2210,7 +2210,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       }
       if (nextWord) {
         clueContext = nextWord.clueNumber;
-        acrossContext = nextWord.direction == "across";
+        acrossContext = nextWord.across;
       }
       timeout += 1;
       if (timeout >= timeoutLimit) {
@@ -2222,7 +2222,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       this.cur_col = Number(nextCell.getAttribute("grid-row"));
       this.cur_row = Number(nextCell.getAttribute("grid-col"));
       if (nextWord) {
-        this.setContext(nextWord.direction == "across", nextWord.clueNumber);
+        this.setContext(nextWord.across, nextWord.clueNumber);
       }
     } else {
       currentCell.blur();
@@ -2268,16 +2268,14 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
    * @returns {HTMLDivElement} the DOM element of the cell
   */
   // May not need the arguments lol
-  getNextWordIndex(direction, clue) {
+  getNextWordIndex(across, clue) {
     if (this.wordsAndClues.length == 1) {
       return 0;
     }
-    let direction_string = direction ? "across" : "down";
-    let opposite_direction = direction ? "down" : "across";
-    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.direction == direction_string);
+    let i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.across == across);
     i9 += 1;
     if (i9 >= this.wordsAndClues.length) {
-      i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.direction == opposite_direction);
+      i9 = this.wordsAndClues.findIndex((wordClue) => wordClue.across == !across);
     }
     return i9;
   }
@@ -2356,7 +2354,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         let nextWord = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)];
         row = nextWord.x;
         col = nextWord.y;
-        this.setContext(nextWord.direction == "across", nextWord.clueNumber);
+        this.setContext(nextWord.across, nextWord.clueNumber);
         nextCell = this.getCellDOM(row, col);
         nextCell.focus();
         break;

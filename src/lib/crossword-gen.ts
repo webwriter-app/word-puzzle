@@ -120,7 +120,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         // NOTE This may cause issues
         for(let wordClue of wordsClues) {
             if(wordObj.word == wordClue.word) {
-                wordClue.direction = wordObj.direction
+                wordClue.across = wordObj.across
                 wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number
                 wordClue.x = wordObj.x
                 wordClue.y = wordObj.y
@@ -132,7 +132,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         if(!wordClue.clueText) {
             wordClue.clueText = "* No clue for this word *"
         }
-        if(!(wordClue.clueText && wordClue.direction && wordClue.clueNumber && wordClue.word))
+        if(!(wordClue.clueText && (wordClue.across != null) && wordClue.clueNumber && wordClue.word))
             DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
     }
 
@@ -141,7 +141,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     // Sort words by clue number
     wordsClues.sort((a, b) => a.clueNumber - b.clueNumber)
     // Sort words by across / down
-    wordsClues.sort((a, b) => Number(b.direction === "across") - Number(a.direction === "across"))
+    wordsClues.sort((a, b) => Number(b.across) - Number(a.across))
 
     return {wordsAndClues: wordsClues as WordClue[], grid: bestGrid} 
 
@@ -160,7 +160,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
             let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(wordNew.length/2);
 
-            let possiblePlacement: WordClue = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, direction: "across"}
+            let possiblePlacement: WordClue = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, across: true}
 
             return [possiblePlacement]
         }
@@ -173,7 +173,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         for (let placedWord of currentWordsPlaced) {
             let intersections = intersecting(wordNew, placedWord.word)
             let possibleDirection: string
-            if (placedWord.direction == "across") {
+            if (placedWord.across) {
                 possibleDirection = "down"
             }
             else {
@@ -266,7 +266,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 }
             }
 
-                let possiblePlacement: WordClue = {word: wordNew, x: possibleX, y: possibleY, direction: possibleDirection}
+                let possiblePlacement: WordClue = {word: wordNew, x: possibleX, y: possibleY, across: (possibleDirection == "across")}
 
                 if(noClash && notAdjacent){
                     possiblePlacements.push({...possiblePlacement})
@@ -398,7 +398,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         let success = false
 
-        DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.direction)
+        DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.across)
 
         let timeout = 0
         while(!success) {
@@ -414,7 +414,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             for(let j = 0; j < wordToPlace.word.length; j++) {
                 inputGrid[x][y].answer = wordToPlace.word[j]
                 inputGrid[x][y].white = true
-                if (wordToPlace.direction == "across") {
+                if (wordToPlace.across) {
                     if (inputGrid[x][y].direction == "" || !inputGrid[x][y].direction || inputGrid[x][y].direction == "across") {
                         inputGrid[x][y].direction = "across"
                     }
@@ -460,7 +460,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
 
             // Resize grid if word would be out of bounds at the bottom / right
-            if(wordToPlace.direction == "across") {
+            if(wordToPlace.across) {
                 if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
                     let increase = wordToPlace.y + wordToPlace.word.length - inputGrid.length
                     DEV: console.log("Current grid dimensions: " + inputGrid.length)
@@ -736,7 +736,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
     // Initialization
     DEV: console.log("Crossword generation from list triggered")
 
-    let leftmost, rightmost, topmost, bottommost: number
+    let leftmost: number, rightmost: number, topmost: number, bottommost: number
 
     leftmost = wordsClues[0].y
     rightmost = wordsClues[0].y
@@ -747,7 +747,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
         leftmost = leftmost > wordClue.y ? wordClue.y : leftmost
         topmost = topmost > wordClue.x ? wordClue.x : topmost
 
-        if(wordClue.direction == "across") {
+        if(wordClue.across) {
             rightmost = rightmost < wordClue.y + wordClue.word.length - 1 ? wordClue.y + wordClue.word.length - 1 : rightmost
             bottommost = bottommost < wordClue.x ? wordClue.x : bottommost
         }
@@ -776,6 +776,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
             horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
         }
 
+        // TODO Something's wrong with this
 
     for(let wordClue of wordsClues) {
         wordClue.x -= topmost + verticalPadding
@@ -787,8 +788,8 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
             grid[wordClue.x][wordClue.y].answer = wordClue.word[c]
             let i = 0, j = 0
 
-            switch(wordClue.direction) {
-                case "across": 
+            switch(wordClue.across) {
+                case true: 
                     j = c
                     break
                 default:

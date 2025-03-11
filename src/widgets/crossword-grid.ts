@@ -81,7 +81,7 @@ export interface WordClue {
     clueText?: string,
     x?: number, // x coordinate
     y?: number, // y coordinate
-    direction?: string,
+    across?: boolean,
     clueNumber?: number
 }
 
@@ -360,7 +360,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
             if(nextWord) {
                 clueContext = nextWord.clueNumber
-                acrossContext = nextWord.direction == "across"
+                acrossContext = nextWord.across
             }
 
             timeout += 1
@@ -378,7 +378,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             this.cur_row = Number(nextCell.getAttribute("grid-col"))
             // Update context only if another word was chosen
             if(nextWord) {
-                this.setContext((nextWord.direction == "across"), nextWord.clueNumber)
+                this.setContext((nextWord.across), nextWord.clueNumber)
             }
         }
         else {
@@ -438,16 +438,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * @returns {HTMLDivElement} the DOM element of the cell
     */
    // May not need the arguments lol
-    getNextWordIndex(direction: boolean, clue: number): number {
+    getNextWordIndex(across: boolean, clue: number): number {
         if(this.wordsAndClues.length == 1) {
             return 0
         }
-        let direction_string = direction ? "across" : "down"
-        let opposite_direction = direction ? "down" : "across"
-            let i = this.wordsAndClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.direction == direction_string)
+            let i = this.wordsAndClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.across == across)
             i += 1
             if(i >= this.wordsAndClues.length) {
-                i = this.wordsAndClues.findIndex(wordClue => wordClue.direction == opposite_direction)
+                i = this.wordsAndClues.findIndex(wordClue => wordClue.across == !across)
             }
         return i
     }
@@ -547,7 +545,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 let nextWord  = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)]
                 row = nextWord.x
                 col = nextWord.y
-                this.setContext((nextWord.direction == "across"), nextWord.clueNumber)
+                this.setContext((nextWord.across), nextWord.clueNumber)
                 nextCell = this.getCellDOM(row, col)
                 nextCell.focus()
                 break;
