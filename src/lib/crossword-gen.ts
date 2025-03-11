@@ -30,8 +30,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     }
 
     /** The amount of words that still must be put into the grid */
-    let wordsLeft: string[] = Object.assign([], wordsOG) // @type {string[]}
-
+    let wordsLeft: WordClue[] = [] 
+    for(let i = 0; i < wordsClues.length; i++) {
+        wordsLeft[i] = wordsClues[i]
+    }
+    
     // Calculate minimum dimensions of crossword
     const minDim = wordsOG.map(word => word.length).reduce((max, len) => Math.max(max, len), 0)
 
@@ -64,21 +67,21 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     }
 
     // Initialize scratchpadGrid
-    for(let i = 0; i < wordsOG.reduce((accumulator, currentValue) => accumulator + currentValue.length, 0); i++) {
+    for(let i = 0; i < wordsClues.reduce((accumulator, currentValue) => accumulator + currentValue.word.length, 0); i++) {
         scratchpadGrid[i] = []
-        for (let j = 0; j < wordsOG.reduce((accumulator, currentValue) => accumulator + currentValue.length, 0); j++) {
+        for (let j = 0; j < wordsClues.reduce((accumulator, currentValue) => accumulator + currentValue.word.length, 0); j++) {
             scratchpadGrid[i][j] = defaultCell()
         }
     }
 
     /** The rankings of the words; indices correspond to original word list */
-    let rankings: number[] = Array(wordsOG.length).fill(-1) // @type{number[]}
+    let rankings: number[] = Array(wordsClues.length).fill(-1) // @type{number[]}
 
     /** The words in a list from high to low based off of ranking.
      * This may change based on backtracking so that the order 
      * doesn't correspond to the actual ranking anymore
      */
-    let rankedList: string[] = Array(wordsOG.length).fill("")
+    let rankedList: WordClue[]
     rankedList = sortWords() // @type{string[]}
 
     /** How many clues there currently are. Used to calculate next clue number.
@@ -91,14 +94,14 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     let epoch = 500 // @type{number}
 
     // Rank the words
-    for(let i = 0; i < wordsOG.length; null) {
+    for(let i = 0; i < wordsClues.length; null) {
         rankings[i] = rankWord(i)
         i++
     }
 
     // Add words to grid (WIP)
 
-    bestGrid = generateCrosswordGrid(currentGrid, wordsOG)
+    bestGrid = generateCrosswordGrid(currentGrid, wordsClues)
     bestWordsPlaced = currentWordsPlaced
     //DEV: console.log("Within generate crossword, bestWordsPlaced, before sorting:")
     //DEV: console.log(bestWordsPlaced)
@@ -155,16 +158,22 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     /** Function that returns possible places for a word in the grid.
      * Returns null if there are no possible places.
-     * 
+     * @param { Cell[][] } inputGrid a given input grid
+     * @param { WordClue } newWordClue 
      * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
     */
-    function placeable(inputGrid: Cell[][], wordNew: string): WordClue[] {
+    function placeable(inputGrid: Cell[][], newWordClue: WordClue): WordClue[] {
         if (currentWordsPlaced.length == 0) {
             let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
-            let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(wordNew.length/2);
+            let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(newWordClue.word.length/2);
 
-            let possiblePlacement: WordClue = {word: wordNew, x: possiblePlacementX, y: possiblePlacementY, across: true}
+            let possiblePlacement: WordClue = {...newWordClue}
 
+            possiblePlacement.x = possiblePlacementX
+            possiblePlacement.y = possiblePlacementY
+            possiblePlacement.across = true
+
+            
             return [possiblePlacement]
         }
 
@@ -174,7 +183,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         // For every word already placed in the grid,
         // Go through all of its possible intersections with the new word
         for (let placedWord of currentWordsPlaced) {
-            let intersections = intersecting(wordNew, placedWord.word)
+            let intersections = intersecting(newWordClue.word, placedWord.word)
             let possibleDirection: string
             if (placedWord.across) {
                 possibleDirection = "down"
@@ -206,10 +215,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 let row_shift = 0
 
                 if(possibleDirection == "across"){
-                    col_shift = wordNew.length
+                    col_shift = newWordClue.word.length
                 }
                 else {
-                    row_shift = wordNew.length
+                    row_shift = newWordClue.word.length
                 }
 
                 if(possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
@@ -220,13 +229,13 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     notAdjacent = notAdjacent && !inputGrid[possibleX + row_shift][possibleY + col_shift].white
                 }
 
-                for (let i = 0; i < wordNew.length; i++) {
+                for (let i = 0; i < newWordClue.word.length; i++) {
                     if (possibleDirection == "across") {
                         if (i != intersection[0]) {
                             if(i + possibleY >= 0 && i + possibleY < dimension) {
                                 // Don't place a word if there is a collision where the char isn't the same
                                 if (possibleX >= 0 && possibleX < dimension) {
-                                    if(wordNew[i] != inputGrid[possibleX][possibleY + i].answer) {
+                                    if(newWordClue.word[i] != inputGrid[possibleX][possibleY + i].answer) {
                                         noClash = noClash && !inputGrid[possibleX][possibleY + i].white
                                     }
                                 }
@@ -246,7 +255,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                             if(i + possibleX >= 0 && i + possibleX < dimension) {
                                 // Don't place a word if there is a collision where the char isn't the same
                                 if (possibleY >= 0 && possibleY < dimension) {
-                                    if(wordNew[i] != inputGrid[possibleX + i][possibleY].answer) {
+                                    if(newWordClue.word[i] != inputGrid[possibleX + i][possibleY].answer) {
                                         noClash = noClash && !inputGrid[possibleX + i][possibleY].white
                                     }
                                 }
@@ -263,7 +272,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 }
             }
 
-                let possiblePlacement: WordClue = {word: wordNew, x: possibleX, y: possibleY, across: (possibleDirection == "across")}
+                let possiblePlacement: WordClue = {...newWordClue}
+
+                possiblePlacement.x = possibleX
+                possiblePlacement.y = possibleY
+                possiblePlacement.across = possibleDirection == "across"
 
                 if(noClash && notAdjacent){
                     possiblePlacements.push({...possiblePlacement})
@@ -275,7 +288,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         // test all the placements to make sure they don't cross over already assigned squares, 
             // or have adjacent squares that don't belong to that word
-        DEV: console.log("Possible placements for " + wordNew + ": ")
+        DEV: console.log("Possible placements for " + newWordClue.word + ": ")
         DEV: console.log(possiblePlacements)
         return possiblePlacements
     }
@@ -335,13 +348,13 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     function blockingWord(inputGrid: Cell[][], word: string): Cell[][] {
         // Get copy of added words
             // wordsPlaced but only the words
-        let wordList: string[] = []
+        let wordList: WordClue[] = []
 
         // TODO make it not depend on wordsPlaced, I guess? Just do it manually with the grid :/
         // Maybe just use the scratchpad thing
         for(let wordPlaced of currentWordsPlaced) {
             if(wordPlaced.word != word)
-                wordList.push(wordPlaced.word)
+                wordList.push(wordPlaced)
         }
 
         //DEV: console.log("Word list without " + word + ": " + wordList)
@@ -359,13 +372,13 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     /** Helper function that removes the last added word from the grid
      * and adds it to the tail of the sorted list of words. 
      * 
-     * @returns { [Cell[][], string[]] } - the new grid and new list
+     * @returns { [Cell[][], WordClue[]] } - the new grid and new list
     */
-    function wraparound(grid: Cell[][], word: string): [Cell[][], string[]] {
+    function wraparound(grid: Cell[][], wordClue: WordClue): [Cell[][], WordClue[]] {
         // TODO
-        wordsLeft.push(word)
-        rankedList.splice(rankedList.indexOf(word), 1)
-        rankedList.push(word)
+        wordsLeft.push(wordClue)
+        rankedList.splice(rankedList.indexOf(wordClue), 1)
+        rankedList.push(wordClue)
         return
     }
 
@@ -373,11 +386,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * 
      * @returns { string } - the word that was removed.
     */
-    function remove(grid: Cell[][], word: string): void {
+    function remove(grid: Cell[][], wordClue: WordClue): void {
         // TODO
 
-        wordsLeft.push(word)
-        currentWordsPlaced.splice(currentWordsPlaced.findIndex(wordR => wordR.word === word), 1)
+        wordsLeft.push(wordClue)
+        currentWordsPlaced.splice(currentWordsPlaced.findIndex(wordR => wordR === wordClue), 1)
         return
     }
 
@@ -497,7 +510,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
         currentWordsPlaced.push(wordToPlace)
         try {
-            wordsLeft.splice(wordsLeft.indexOf(wordToPlace.word), 1)
+            wordsLeft.splice(wordsLeft.indexOf(wordToPlace), 1)
         } catch(error) {
             //DEV: console.log("No words left")
         }
@@ -506,7 +519,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     }
 
     /** Local helper function for ranking a word to place onto the grid next.
-     *  This ranking strategy is independent of the grid content.
+     * This ranking strategy is independent of the grid content.
+     * The wordsClues array is used
      * 
      * @param { number } wordIndex - the index of the word to be added to the grid (based off original word list)
      * @returns { number } - the rank of the word
@@ -515,11 +529,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         // Word-level intersections rather than letter-level intersections are used.
         let rank = 0
         
-        for(let i = 0; i < wordsOG.length; i++) {
+        for(let i = 0; i < wordsClues.length; i++) {
             if (i != wordIndex) {
-                wordLoop: for(let letter of wordsOG[wordIndex]) {
+                wordLoop: for(let letter of wordsClues[wordIndex].word) {
                     // Iterate over the letters of every word
-                    letterLoop: for (let letterOther of wordsOG[i]) {
+                    letterLoop: for (let letterOther of wordsClues[i].word) {
                         if (letter == letterOther) {
                             rank += 1
                             break wordLoop
@@ -534,9 +548,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     /** Local helper function for sorting the list of words based off of their ranking,
      * in ascending order.
      * 
-     * @returns { string[] } - the list of words sorted by rank in ascending order
+     * @returns { WordClue[] } - the list of words sorted by rank in ascending order
     */
-    function sortWords(): string[] {
+    function sortWords(): WordClue[] {
         // Create an array of indices
         const indices = rankings.map((_, index) => index)
         //DEV: console.log("indices: " + indices)
@@ -549,8 +563,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         });
         //DEV: console.log("sorted indices: " + indices)
 
-        for (let i = 0; i < wordsOG.length; i++) {
-            rankedList[i] = wordsOG[indices[i]]
+        rankedList = []
+
+        for (let i = 0; i < wordsClues.length; i++) {
+            rankedList[i] = wordsClues[indices[i]]
         }
 
         return rankedList;
@@ -699,19 +715,19 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * Helper functions for generating intermediate crossword grids.
      * 
      * @param {Cell[][]} inputGrid 
-     * @param {string[]} words
+     * @param {WordClue[]} words
      * @returns {Cell[][]} 
      */
-    function generateCrosswordGrid(inputGrid: Cell[][], words: string[]): Cell[][] {
+    function generateCrosswordGrid(inputGrid: Cell[][], wordsClues: WordClue[]): Cell[][] {
         // TODO Make this function recursive
-        for(let word of words) {
-            let placement = selectPlacement(placeable(inputGrid, word))
+        for(let wordClue of wordsClues) {
+            let placement = selectPlacement(placeable(inputGrid, wordClue))
                 //DEV: console.log("Placing " + word + " at (" + placement.x + ", " + placement.y + ")")
             try {
                 inputGrid = addWord(inputGrid, placement)
             }
             catch (error) {
-                DEV: console.log("During placement of " + word +":\n" + error.message)
+                DEV: console.log("During placement of " + wordClue.word +":\n" + error.message)
                 //DEV: console.log(error.stack)
             }
                 //DEV: console.log("Outside addword function:")
