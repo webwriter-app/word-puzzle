@@ -767,19 +767,36 @@ export function generateCrosswordFromList(wordsClues: Partial<WordClue>[]): Part
         }
     }
 
+    let horizontalPadding: number = 0, verticalPadding: number = 0
+
+        if(rightmost - leftmost >= bottommost - topmost) {
+            verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2)
+        }
+        else {
+            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
+        }
+
+
     for(let wordClue of wordsClues) {
-        wordClue.x -= topmost
-        wordClue.y -= leftmost
-        for(let i = 0; i < wordClue.word.length; i++) {
-            grid[wordClue.x][wordClue.y].answer = wordClue.word[i]
+        wordClue.x -= topmost + verticalPadding
+        wordClue.y -= leftmost + horizontalPadding
+        grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
+
+        for(let c = 0; c < wordClue.word.length; c++) {
+
+            grid[wordClue.x][wordClue.y].answer = wordClue.word[c]
+            let i = 0, j = 0
+
             switch(wordClue.direction) {
                 case "across": 
-                    grid[wordClue.x][wordClue.y + i].answer = wordClue.word[i]
+                    j = c
                     break
                 default:
-                    grid[wordClue.x + i][wordClue.y].answer = wordClue.word[i]
+                    i = c
                     break
             }
+            grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c]
+            grid[wordClue.x + i ][wordClue.y + j].white = true
         }
     }
 

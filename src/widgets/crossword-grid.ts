@@ -266,45 +266,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         this.gridEl = gridEl
         this.gridEl.classList.add('grid')
         for (let x = 0; x < this.grid.length; x += 1) {
-//        DEV: console.log("A row of the non-DOM grid looks like this:")
-//        DEV: console.log((this.grid[x-1]))
             for (let y = 0; y < this.grid.length; y += 1) {
                 //  Build the cell element and place cell in grid element
                 this.gridEl.appendChild(this.newCell(document, x, y));
             }
         }
         this.gridEl.addEventListener("keydown", stopCtrlPropagation)
-
-        /*
-        const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
-        this.gridEl.addEventListener('keypress', (e) => {
-            DEV: console.log("Pressed: " + e.key)
-            if (isAlphaChar(e.key)) {
-                this.nextCell(e)
-                const setCurrentClue = new CustomEvent("set-current-clue", {bubbles: true, composed: true, detail: {clue: 1}})
-                this.dispatchEvent(setCurrentClue)
-                // TODO Get current clue and change it if necessary
-            }
-            else if(e.key === "Tab") {
-                // TODO Change to the next word in the given context
-                let grid_row = (Number((e.target).getAttribute("grid-row-dom")))
-                let grid_col = (Number((e.target).getAttribute("grid-col-dom")))
-                if(this.currentDirectionAcross) {
-                    // TODO
-                }
-            }
-
-            else if (e.key === " ") {
-                DEV: console.log("Current direction is across:", this.currentDirectionAcross)
-                this.currentDirectionAcross = !this.currentDirectionAcross
-                const changeDirection = new CustomEvent("change-direction", {bubbles: true, composed: true, detail: {currentDirectionAcross: (this.currentDirectionAcross)}},)
-                this.dispatchEvent(changeDirection)
-            }
-        })
-        */
-
-//        DEV: console.log("gridEl:")
-//        DEV: console.log(this.gridEl)
+        DEV: console.log("gridEl:")
+        DEV: console.log(this.gridEl)
         this.requestUpdate()
         return this.gridEl
     }
@@ -691,10 +660,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     generateCrossword(wordsClues: Partial<WordClue>[]): WordClue[] {
         let {wordsAndClues, grid} = generateCrossword(wordsClues)
         this.wordsAndClues = wordsAndClues
-        this.grid = grid
+        this.grid = generateCrosswordFromList(wordsAndClues)
 
-        DEV: console.log("New crossword function:")
-        DEV: console.log(generateCrosswordFromList(wordsAndClues))
+        DEV: console.log("Current grid")
+        DEV: console.log(this.grid)
 
         this.newCrosswordGridDOM(document)
         this.wordsAndClues = wordsClues as WordClue[]

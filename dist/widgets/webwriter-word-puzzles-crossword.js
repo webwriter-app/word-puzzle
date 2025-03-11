@@ -1983,19 +1983,29 @@ function generateCrosswordFromList(wordsClues) {
       grid[i9][j3] = defaultCell();
     }
   }
+  let horizontalPadding = 0, verticalPadding = 0;
+  if (rightmost - leftmost >= bottommost - topmost) {
+    verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2);
+  } else {
+    horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2);
+  }
   for (let wordClue of wordsClues) {
-    wordClue.x -= topmost;
-    wordClue.y -= leftmost;
-    for (let i9 = 0; i9 < wordClue.word.length; i9++) {
-      grid[wordClue.x][wordClue.y].answer = wordClue.word[i9];
+    wordClue.x -= topmost + verticalPadding;
+    wordClue.y -= leftmost + horizontalPadding;
+    grid[wordClue.x][wordClue.y].number = wordClue.clueNumber;
+    for (let c7 = 0; c7 < wordClue.word.length; c7++) {
+      grid[wordClue.x][wordClue.y].answer = wordClue.word[c7];
+      let i9 = 0, j3 = 0;
       switch (wordClue.direction) {
         case "across":
-          grid[wordClue.x][wordClue.y + i9].answer = wordClue.word[i9];
+          j3 = c7;
           break;
         default:
-          grid[wordClue.x + i9][wordClue.y].answer = wordClue.word[i9];
+          i9 = c7;
           break;
       }
+      grid[wordClue.x + i9][wordClue.y + j3].answer = wordClue.word[c7];
+      grid[wordClue.x + i9][wordClue.y + j3].white = true;
     }
   }
   return grid;
@@ -2133,6 +2143,8 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       }
     }
     this.gridEl.addEventListener("keydown", stopCtrlPropagation);
+    DEV: console.log("gridEl:");
+    DEV: console.log(this.gridEl);
     this.requestUpdate();
     return this.gridEl;
   }
@@ -2440,9 +2452,9 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   generateCrossword(wordsClues) {
     let { wordsAndClues, grid } = generateCrossword(wordsClues);
     this.wordsAndClues = wordsAndClues;
-    this.grid = grid;
-    DEV: console.log("New crossword function:");
-    DEV: console.log(generateCrosswordFromList(wordsAndClues));
+    this.grid = generateCrosswordFromList(wordsAndClues);
+    DEV: console.log("Current grid");
+    DEV: console.log(this.grid);
     this.newCrosswordGridDOM(document);
     this.wordsAndClues = wordsClues;
     return wordsClues;
