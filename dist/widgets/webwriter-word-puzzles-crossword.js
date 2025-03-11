@@ -1517,7 +1517,6 @@ WebwriterWordPuzzles = __decorateClass([
 
 // src/lib/crossword-gen.ts
 function generateCrossword(wordsClues) {
-  DEV: console.log("Crossword generation triggered");
   let wordsOG = [];
   for (let wordClue of wordsClues) {
     wordsOG.push(wordClue.word);
@@ -1622,13 +1621,9 @@ function generateCrossword(wordsClues) {
         }
         if (possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
           notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white;
-        } else {
-          DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left / top");
         }
         if (possibleX + row_shift < inputGrid.length && possibleY + col_shift < inputGrid.length) {
           notAdjacent = notAdjacent && !inputGrid[possibleX + row_shift][possibleY + col_shift].white;
-        } else {
-          DEV: console.log("Adjacency check (" + wordNew + "): No cell to the right / bottom");
         }
         for (let i9 = 0; i9 < wordNew.length; i9++) {
           if (possibleDirection == "across") {
@@ -1709,7 +1704,6 @@ function generateCrossword(wordsClues) {
       if (wordPlaced.word != word)
         wordList.push(wordPlaced.word);
     }
-    DEV: console.log("Word list without " + word + ": " + wordList);
     generateCrosswordGrid(inputGrid, wordList);
     return;
   }
@@ -1729,7 +1723,6 @@ function generateCrossword(wordsClues) {
     let x3 = wordToPlace.x;
     let y4 = wordToPlace.y;
     let success = false;
-    DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.across);
     let timeout = 0;
     while (!success) {
       try {
@@ -1760,29 +1753,28 @@ function generateCrossword(wordsClues) {
         }
         DEV: console.log(wordToPlace.word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")");
         success = true;
+        if (timeout >= 3) {
+          throw new Error("You've created an infinite loop, congratulations");
+        }
       } catch (error) {
         timeout += 1;
         if (timeout >= 3) {
           throw new Error("You've created an infinite loop, congratulations");
         }
-        DEV: console.log("There was an error while adding " + wordToPlace.word + " to the grid, at (" + x3 + ", " + y4 + ").");
-        DEV: console.log("Grid size:" + inputGrid.length);
+        DEV: console.log("Error while adding " + wordToPlace.word + " to (" + inputGrid.length + " \xD7 " + inputGrid.length + ") grid, at (" + x3 + ", " + y4 + "):");
         DEV: console.log("Message:" + error.message);
-        DEV: console.log("Stack:" + error.stack);
         if (wordToPlace.x < 0 || wordToPlace.y < 0) {
           let shift4 = Math.abs(Math.min(wordToPlace.x, wordToPlace.y));
           DEV: console.log(wordToPlace.word + " (" + wordToPlace.word + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ") must be shifted by " + shift4 + ".");
           let increase = shift4;
-          DEV: console.log("Current grid dimensions: " + inputGrid.length);
           let enlargedGrid = enlargeGrid(inputGrid, shift4, wordToPlace);
           inputGrid = enlargedGrid[0];
           wordToPlace = enlargedGrid[1];
-          DEV: console.log("Grid is now of dimension " + inputGrid.length + " and its contents should have been shifted by " + shift4 + ".");
+          DEV: console.log("Grid is now (" + inputGrid.length + " \xD7 " + inputGrid.length + "). Contents should have been shifted by " + shift4 + ".");
         }
         if (wordToPlace.across) {
           if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
             let increase = wordToPlace.y + wordToPlace.word.length - inputGrid.length;
-            DEV: console.log("Current grid dimensions: " + inputGrid.length);
             if (wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
               DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").");
             } else {
@@ -1791,12 +1783,11 @@ function generateCrossword(wordsClues) {
             let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace);
             inputGrid = enlargedGrid[0];
             wordToPlace = enlargedGrid[1];
-            DEV: console.log("Grid is now of dimension " + inputGrid.length);
+            DEV: console.log("Grid is now (" + inputGrid.length + " \xD7 " + inputGrid.length + "). Contents should have been shifted by " + shift3 + ".");
           }
         } else {
           if (wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length || wordToPlace.y - 1 >= inputGrid.length) {
             let increase = wordToPlace.x + wordToPlace.word.length - inputGrid.length;
-            DEV: console.log("Current grid dimensions: " + inputGrid.length);
             if (wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length) {
               DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").");
             } else {
@@ -1805,6 +1796,7 @@ function generateCrossword(wordsClues) {
             let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace);
             inputGrid = enlargedGrid[0];
             wordToPlace = enlargedGrid[1];
+            DEV: console.log("Grid is now (" + inputGrid.length + " \xD7 " + inputGrid.length + "). Contents should have been shifted by " + shift3 + ".");
           }
         }
       }
@@ -1813,11 +1805,7 @@ function generateCrossword(wordsClues) {
     try {
       wordsLeft.splice(wordsLeft.indexOf(wordToPlace.word), 1);
     } catch (error) {
-      DEV: console.log("No words left");
     }
-    DEV: console.log("Words left: " + wordsLeft);
-    DEV: console.log("Grid should be larger. In addword function:");
-    DEV: console.log(inputGrid);
     return inputGrid;
   }
   function rankWord(wordIndex) {
@@ -1838,13 +1826,11 @@ function generateCrossword(wordsClues) {
   }
   function sortWords() {
     const indices = rankings.map((_3, index) => index);
-    DEV: console.log("indices: " + indices);
     indices.sort((a5, b4) => {
       if (rankings[a5] < rankings[b4]) return -1;
       if (rankings[a5] > rankings[b4]) return 1;
       return 0;
     });
-    DEV: console.log("sorted indices: " + indices);
     for (let i9 = 0; i9 < wordsOG.length; i9++) {
       rankedList[i9] = wordsOG[indices[i9]];
     }
@@ -1852,7 +1838,6 @@ function generateCrossword(wordsClues) {
   }
   function enlargeGrid(inputGrid, shift3, wordToPlace) {
     let biggerGrid = [];
-    DEV: console.log("Increasing grid size");
     for (let i9 = 0; i9 < inputGrid.length * 2; i9++) {
       biggerGrid[i9] = [];
       for (let j3 = 0; j3 < inputGrid.length * 2; j3++) {
@@ -1867,11 +1852,9 @@ function generateCrossword(wordsClues) {
     inputGrid = biggerGrid;
     wordToPlace.x += shift3;
     wordToPlace.y += shift3;
-    DEV: console.log("Current grid dimensions: " + inputGrid.length);
     return [inputGrid, wordToPlace];
     function shiftPlacedWords(placedWords) {
       for (let wordPlaced of placedWords) {
-        DEV: console.log("There may be an error here if you try to edit one single attribute of a damn interface structure");
         wordPlaced.x = wordPlaced.x + shift3;
         wordPlaced.y = wordPlaced.y + shift3;
       }
@@ -1914,10 +1897,6 @@ function generateCrossword(wordsClues) {
         }
       }
     }
-    DEV: console.log("Leftmost: " + leftmost);
-    DEV: console.log("Rightmost: " + rightmost);
-    DEV: console.log("Topmost: " + topmost);
-    DEV: console.log("Bottommost: " + bottommost);
     let newSize, horizontalPadding, verticalPadding;
     if (rightmost - leftmost >= bottommost - topmost) {
       newSize = rightmost - leftmost;
@@ -1942,17 +1921,11 @@ function generateCrossword(wordsClues) {
   function generateCrosswordGrid(inputGrid, words) {
     for (let word of words) {
       let placement = selectPlacement(placeable(inputGrid, word));
-      DEV: console.log("Placement for " + word + ": " + placement.x + ", " + placement.y);
-      DEV: console.log("Placing " + word);
       try {
         inputGrid = addWord(inputGrid, placement);
       } catch (error) {
-        DEV: console.log("Something went wrong during placement of " + word + ".");
-        DEV: console.log(error.message);
-        DEV: console.log(error.stack);
+        DEV: console.log("During placement of " + word + ":\n" + error.message);
       }
-      DEV: console.log("Outside addword function:");
-      DEV: console.log(inputGrid);
     }
     return inputGrid;
   }
@@ -1990,8 +1963,8 @@ function generateCrosswordFromList(wordsClues) {
     horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2);
   }
   for (let wordClue of wordsClues) {
-    wordClue.x -= topmost + verticalPadding;
-    wordClue.y -= leftmost + horizontalPadding;
+    wordClue.x = wordClue.x - topmost + verticalPadding;
+    wordClue.y = wordClue.y - leftmost + horizontalPadding;
     grid[wordClue.x][wordClue.y].number = wordClue.clueNumber;
     for (let c7 = 0; c7 < wordClue.word.length; c7++) {
       grid[wordClue.x][wordClue.y].answer = wordClue.word[c7];
@@ -2143,8 +2116,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       }
     }
     this.gridEl.addEventListener("keydown", stopCtrlPropagation);
-    DEV: console.log("gridEl:");
-    DEV: console.log(this.gridEl);
     this.requestUpdate();
     return this.gridEl;
   }
@@ -2320,13 +2291,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         }
       }
     } catch (error) {
-      DEV: console.log("Error at (" + x3 + "," + y4 + ")");
+      DEV: console.log("newCell(): Error at (" + x3 + "," + y4 + ")");
     }
     cellDOM.addEventListener("keydown", (e13) => {
       this.cellKeydownHandler(e13);
     });
     cellDOM.addEventListener("focusin", (e13) => {
-      DEV: console.log("Cell focus event triggered");
       e13.stopPropagation();
       this.cellFocusHandler(e13);
     });
@@ -2408,7 +2378,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
   cellFocusHandler(e13) {
     this.cur_row = Number(e13.target.getAttribute("grid-row"));
     this.cur_col = Number(e13.target.getAttribute("grid-col"));
-    DEV: console.log("Current cell coordinates..? (" + this.cur_row + ", " + this.cur_col + ")");
     if (this.cur_row == null || this.cur_row == null) {
       this.cur_row = Number(e13.target.getAttribute("grid-row"));
       this.cur_col = Number(e13.target.getAttribute("grid-col"));
@@ -2427,7 +2396,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         x3 -= 1;
       }
     }
-    DEV: console.log("Word beginning (0-indexed): (" + x3 + ", " + y4 + ")");
     this.setContext(this.acrossContext, this.currentClue);
   }
   /**
@@ -2451,8 +2419,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     let { wordsAndClues, grid } = generateCrossword(wordsClues);
     this.wordsAndClues = wordsAndClues;
     this.grid = generateCrosswordFromList(wordsAndClues);
-    DEV: console.log("Current grid");
-    DEV: console.log(this.grid);
     this.newCrosswordGridDOM(document);
     this.wordsAndClues = wordsClues;
     return wordsClues;
@@ -24506,7 +24472,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * Source: crosswords-js
    */
   newClueBoxInput(document2) {
-    DEV: console.log("rendering cluebox");
     const clueBoxInput = document2.createElement("table");
     clueBoxInput.classList.add("clueboxInput");
     const colgroup = document2.createElement("colgroup");
@@ -24582,7 +24547,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     removeButton.setAttribute("circle", "");
     removeButton.classList.add("author-only");
     removeButton.addEventListener("click", () => {
-      DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
       if (buttonRow.rowIndex > 3)
         bodyTable.deleteRow(buttonRow.rowIndex - 3);
     });
@@ -24633,7 +24597,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * Source: crosswords-js
    */
   newClueBox(wordsAndClues) {
-    DEV: console.log("Generating cluebox, in theory");
     const clueBox = document.createElement("table");
     clueBox.classList.add("cluebox");
     const headerTable = clueBox.createTHead();
@@ -24652,7 +24615,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     col1.style.width = "50%";
     col2.style.width = "50%";
     clueBox.insertBefore(colgroup, clueBox.tHead);
-    DEV: console.log("rendering table body");
     const bodyTable = clueBox.createTBody();
     const lastInsArray = [-1, -1];
     bodyTable.insertRow();
@@ -24688,18 +24650,15 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   ctrlHandler(event) {
     if (event.ctrlKey && event.key === "Enter") {
       event.stopPropagation();
-      DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)");
       this.getNewWords();
       if (this.wordsAndClues.length != 0) {
         const genCw = new CustomEvent("generateCw", { bubbles: true, composed: true });
         this.dispatchEvent(genCw);
       }
-      DEV: console.log("This is supposed to generate the grid though");
     } else if (event.ctrlKey)
       event.stopPropagation();
   }
   render() {
-    DEV: console.log("rendering cluebox");
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${this.clueBox}
                 ${this.clueBoxInput} 
@@ -24746,17 +24705,14 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.clueWidget.newClueBoxInput(document);
     this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues);
     this.addEventListener("generateCw", () => {
-      DEV: console.log("generateCw triggered");
       this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues);
       this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues);
     });
     this.addEventListener("set-context", (e13) => {
-      DEV: console.log("set-context triggered");
-      DEV: console.log("Current clue:" + e13.detail.clue);
       if (e13.detail.acrossContext)
-        DEV: console.log("Current direction: across");
+        DEV: console.log("set-context: across, clue " + e13.detail.clue);
       else
-        DEV: console.log("Current direction: down");
+        DEV: console.log("set-context: down, clue " + e13.detail.clue);
       this.currentClue = e13.detail.clue;
       this.acrossContext = e13.detail.acrossContext;
       this.gridWidget.currentClue = this.currentClue;

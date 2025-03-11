@@ -91,17 +91,15 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
 
         this.addEventListener("generateCw", () => {
-            DEV: console.log("generateCw triggered")
+            //DEV: console.log("generateCw triggered")
             this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
             this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
         })
         this.addEventListener("set-context", (e: CustomEvent) => {
-            DEV: console.log("set-context triggered")
-            DEV: console.log("Current clue:" + e.detail.clue)
             if(e.detail.acrossContext)
-                DEV: console.log("Current direction: across")
+                DEV: console.log("set-context: across, clue " + e.detail.clue)
             else
-                DEV: console.log("Current direction: down")
+                DEV: console.log("set-context: down, clue " + e.detail.clue)
             this.currentClue = e.detail.clue
             this.acrossContext = e.detail.acrossContext
             this.gridWidget.currentClue = this.currentClue

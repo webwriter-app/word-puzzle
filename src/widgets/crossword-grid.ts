@@ -272,8 +272,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
         }
         this.gridEl.addEventListener("keydown", stopCtrlPropagation)
-        DEV: console.log("gridEl:")
-        DEV: console.log(this.gridEl)
+        //DEV: console.log("gridEl:")
+        //DEV: console.log(this.gridEl)
         this.requestUpdate()
         return this.gridEl
     }
@@ -496,7 +496,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         }
         }
         catch(error) {
-            DEV: console.log("Error at (" + x + "," + y + ")")
+            DEV: console.log("newCell(): Error at (" + x + "," + y + ")")
         }
 
         /**
@@ -512,7 +512,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * Overrides / prevents the default character insertion
          */
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {
-            DEV: console.log("Cell focus event triggered")
+            // DEV: console.log("Cell focus event triggered")
             e.stopPropagation()
             this.cellFocusHandler(e)
         });
@@ -601,7 +601,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     cellFocusHandler(e: FocusEvent) {
         this.cur_row = Number((e.target).getAttribute("grid-row"))
         this.cur_col = Number((e.target).getAttribute("grid-col"))
-        DEV: console.log("Current cell coordinates..? (" + this.cur_row + ", " + this.cur_col + ")")
+        //DEV: console.log("Current cell coordinates..? (" + this.cur_row + ", " + this.cur_col + ")")
         
         if(this.cur_row == null || this.cur_row == null) {
             this.cur_row = Number((e.target).getAttribute("grid-row"))
@@ -632,7 +632,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 x -= 1
             }
         }
-        DEV: console.log("Word beginning (0-indexed): (" + x + ", " + y + ")")
+        //DEV: console.log("Word beginning (0-indexed): (" + x + ", " + y + ")")
         this.setContext(this.acrossContext, this.currentClue)
     }
 
@@ -658,10 +658,11 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     generateCrossword(wordsClues: WordClue[]): WordClue[] {
         let {wordsAndClues, grid} = generateCrossword(wordsClues)
         this.wordsAndClues = wordsAndClues
+        //DEV: console.log("Grid in generateCrossword:")
+        //DEV: console.log(grid)
+        //DEV: console.log("WORDS AND CLUES")
+        //DEV: console.log(this.wordsAndClues)
         this.grid = generateCrosswordFromList(wordsAndClues)
-
-        DEV: console.log("Current grid")
-        DEV: console.log(this.grid)
 
         this.newCrosswordGridDOM(document)
         this.wordsAndClues = wordsClues as WordClue[]

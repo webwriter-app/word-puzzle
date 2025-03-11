@@ -321,7 +321,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     newClueBoxInput(document): HTMLTableElement {
         // Create table and header
-        DEV: console.log("rendering cluebox");
+        //DEV: console.log("rendering cluebox");
         const clueBoxInput: HTMLTableElement = document.createElement('table')
         clueBoxInput.classList.add('clueboxInput')
         const colgroup: HTMLTableColElement = document.createElement('colgroup')
@@ -407,7 +407,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         removeButton.setAttribute('circle', '')
         removeButton.classList.add('author-only')
         removeButton.addEventListener('click', () => {
-            DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
+            //DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
             if(buttonRow.rowIndex > 3)
                 bodyTable.deleteRow(buttonRow.rowIndex-3)
         })
@@ -479,7 +479,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * Source: crosswords-js
      */
     newClueBox(wordsAndClues: WordClue[]): HTMLTableElement {
-        DEV: console.log("Generating cluebox, in theory")
+        //DEV: console.log("Generating cluebox, in theory")
         const clueBox: HTMLTableElement = document.createElement('table')
         clueBox.classList.add('cluebox')
         const headerTable: HTMLTableSectionElement = clueBox.createTHead()
@@ -501,7 +501,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         clueBox.insertBefore(colgroup, clueBox.tHead)
 
 
-        DEV: console.log("rendering table body");
+        //DEV: console.log("rendering table body");
         // Create body
         const bodyTable: HTMLTableSectionElement = clueBox.createTBody()
         const lastInsArray: number[] = [-1, -1]
@@ -553,13 +553,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     ctrlHandler(event: KeyboardEvent): void {
         if (event.ctrlKey && event.key === "Enter") {
             event.stopPropagation()
-            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)")
+            //DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)")
             this.getNewWords()
             if(this.wordsAndClues.length != 0) {
                 const genCw = new CustomEvent("generateCw", {bubbles: true, composed: true})
                 this.dispatchEvent(genCw)
             }
-            DEV: console.log("This is supposed to generate the grid though")
+            //DEV: console.log("This is supposed to generate the grid though")
         }
         else if(event.ctrlKey)
             event.stopPropagation()
@@ -567,7 +567,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     
     render() {
-        DEV: console.log("rendering cluebox")
+        //DEV: console.log("rendering cluebox")
         return (html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${this.clueBox}
                 ${this.clueBoxInput} 

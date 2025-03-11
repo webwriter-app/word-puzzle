@@ -18,9 +18,10 @@ import { WordClue, Cell, GenerationResults, defaultCell } from '../widgets/cross
 export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     // TODO Figure out generation / backtracking recursively
+    // TODO Make the coordinates not come out negative sometimes
 
     // Initialization
-    DEV: console.log("Crossword generation triggered")
+    //DEV: console.log("Crossword generation triggered")
 
     /** The words in their original order. */
     let wordsOG: string[] = [] // @type{string[]}
@@ -99,6 +100,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     bestGrid = generateCrosswordGrid(currentGrid, wordsOG)
     bestWordsPlaced = currentWordsPlaced
+    //DEV: console.log("Within generate crossword, bestWordsPlaced, before sorting:")
+    //DEV: console.log(bestWordsPlaced)
     // currentGrid = shrinkGrid(currentGrid)
 
     // iterate through the cells and number them properly just in case
@@ -212,15 +215,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 if(possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
                     notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white
                 }
-                else {
-                    DEV: console.log("Adjacency check (" + wordNew + "): No cell to the left / top")
-                }
 
                 if(possibleX + row_shift < inputGrid.length && possibleY + col_shift < inputGrid.length) {
                     notAdjacent = notAdjacent && !inputGrid[possibleX + row_shift][possibleY + col_shift].white
-                }
-                else {
-                    DEV: console.log("Adjacency check (" + wordNew + "): No cell to the right / bottom")
                 }
 
                 for (let i = 0; i < wordNew.length; i++) {
@@ -302,6 +299,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         else {
             placement = possiblePlacementsNoResize[0]
         }
+        //DEV: console.log("placement for " + possiblePlacementOptions[0].word + ":")
+        //DEV: console.log(placement)
         return placement
     }
 
@@ -345,7 +344,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 wordList.push(wordPlaced.word)
         }
 
-        DEV: console.log("Word list without " + word + ": " + wordList)
+        //DEV: console.log("Word list without " + word + ": " + wordList)
 
         // Add all the words except the blocking word
         // 
@@ -398,7 +397,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         let success = false
 
-        DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.across)
+        //DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.across)
 
         let timeout = 0
         while(!success) {
@@ -435,27 +434,30 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             }
             DEV: console.log(wordToPlace.word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")")
             success = true
+
+            if(timeout >= 3) {
+                throw new Error("You've created an infinite loop, congratulations")
+            }
         }
         catch(error) {
             timeout += 1
             if(timeout >= 3) {
                 throw new Error("You've created an infinite loop, congratulations")
             }
-            DEV: console.log("There was an error while adding " + wordToPlace.word + " to the grid, at (" + x + ", " + y + ").")
-            DEV: console.log("Grid size:" + inputGrid.length)
+            DEV: console.log("Error while adding " + wordToPlace.word + " to (" 
+                + inputGrid.length + " × " + inputGrid.length + ") grid, at (" + x + ", " + y + "):")
             DEV: console.log("Message:" + error.message)
-            DEV: console.log("Stack:" + error.stack)
+            //DEV: console.log("Stack:" + error.stack)
 
             // Resize grid if word would be out of bounds at the top / left
             if (wordToPlace.x < 0 || wordToPlace.y < 0) {
                 let shift = Math.abs(Math.min(wordToPlace.x, wordToPlace.y))
                 DEV: console.log(wordToPlace.word + " (" + wordToPlace.word + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ") must be shifted by " + shift + ".")
                 let increase = shift
-                DEV: console.log("Current grid dimensions: " + inputGrid.length)
                 let enlargedGrid = enlargeGrid(inputGrid, shift, wordToPlace)
                 inputGrid = enlargedGrid[0]
                 wordToPlace = enlargedGrid[1]
-                DEV: console.log("Grid is now of dimension " + inputGrid.length + " and its contents should have been shifted by " + shift + ".")
+                DEV: console.log("Grid is now (" + inputGrid.length + " × " + inputGrid.length + "). Contents should have been shifted by " + shift + ".")
             }
 
 
@@ -463,7 +465,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             if(wordToPlace.across) {
                 if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
                     let increase = wordToPlace.y + wordToPlace.word.length - inputGrid.length
-                    DEV: console.log("Current grid dimensions: " + inputGrid.length)
                     if(wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
                         DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
                     }
@@ -473,13 +474,12 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace)
                     inputGrid = enlargedGrid[0]
                     wordToPlace = enlargedGrid[1]
-                    DEV: console.log("Grid is now of dimension " + inputGrid.length)
+                    DEV: console.log("Grid is now (" + inputGrid.length + " × " + inputGrid.length + "). Contents should have been shifted by " + shift + ".")
                 }
             }
             else  {
                 if (wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length || wordToPlace.y - 1 >= inputGrid.length) {
                     let increase = wordToPlace.x + wordToPlace.word.length - inputGrid.length
-                    DEV: console.log("Current grid dimensions: " + inputGrid.length)
                     if(wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length) {
                         DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
                     }
@@ -489,6 +489,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace)
                     inputGrid = enlargedGrid[0]
                     wordToPlace = enlargedGrid[1]
+                    DEV: console.log("Grid is now (" + inputGrid.length + " × " + inputGrid.length + "). Contents should have been shifted by " + shift + ".")
                 }
             }
 
@@ -498,11 +499,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         try {
             wordsLeft.splice(wordsLeft.indexOf(wordToPlace.word), 1)
         } catch(error) {
-            DEV: console.log("No words left")
+            //DEV: console.log("No words left")
         }
-        DEV: console.log("Words left: " + wordsLeft)
-        DEV: console.log("Grid should be larger. In addword function:")
-        DEV: console.log(inputGrid)
         return inputGrid
 
     }
@@ -541,7 +539,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     function sortWords(): string[] {
         // Create an array of indices
         const indices = rankings.map((_, index) => index)
-        DEV: console.log("indices: " + indices)
+        //DEV: console.log("indices: " + indices)
 
         // Sort the indices based on the values in the original array
         indices.sort((a, b) => {
@@ -549,7 +547,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             if (rankings[a] > rankings[b]) return 1;
             return 0; // For equal values
         });
-        DEV: console.log("sorted indices: " + indices)
+        //DEV: console.log("sorted indices: " + indices)
 
         for (let i = 0; i < wordsOG.length; i++) {
             rankedList[i] = wordsOG[indices[i]]
@@ -568,7 +566,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         // TODO Should I shift everything towards the center?
         let biggerGrid: Cell[][] = []
-        DEV: console.log("Increasing grid size")
+        //DEV: console.log("Increasing grid size")
 
 //           try {
             for(let i = 0; i < inputGrid.length * 2; i++) {
@@ -596,14 +594,14 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         inputGrid = biggerGrid
         wordToPlace.x += shift
         wordToPlace.y += shift
-        DEV: console.log("Current grid dimensions: " + inputGrid.length)
+        //DEV: console.log("Current grid dimensions: " + inputGrid.length)
 
         return [inputGrid, wordToPlace]
 
         /** Shifts the coordinates of the placed words so they're still accurate */
         function shiftPlacedWords(placedWords: WordClue[]){
             for(let wordPlaced of placedWords) {
-                DEV: console.log("There may be an error here if you try to edit one single attribute of a damn interface structure")
+                //DEV: console.log("There may be an error here if you try to edit one single attribute of a damn interface structure")
                 wordPlaced.x = wordPlaced.x + shift
                 wordPlaced.y = wordPlaced.y + shift
             }
@@ -662,10 +660,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 }
             }
 
-        DEV: console.log("Leftmost: " + leftmost)
-        DEV: console.log("Rightmost: " + rightmost)
-        DEV: console.log("Topmost: " + topmost)
-        DEV: console.log("Bottommost: " + bottommost)
+        //DEV: console.log("Leftmost: " + leftmost)
+        //DEV: console.log("Rightmost: " + rightmost)
+        //DEV: console.log("Topmost: " + topmost)
+        //DEV: console.log("Bottommost: " + bottommost)
 
         let newSize, horizontalPadding, verticalPadding: number
 
@@ -708,18 +706,16 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         // TODO Make this function recursive
         for(let word of words) {
             let placement = selectPlacement(placeable(inputGrid, word))
-                DEV: console.log("Placement for " + word + ": " + placement.x + ", " + placement.y)
-                DEV: console.log("Placing " + word)
+                //DEV: console.log("Placing " + word + " at (" + placement.x + ", " + placement.y + ")")
             try {
                 inputGrid = addWord(inputGrid, placement)
             }
             catch (error) {
-                DEV: console.log("Something went wrong during placement of " + word + ".")
-                DEV: console.log(error.message)
-                DEV: console.log(error.stack)
+                DEV: console.log("During placement of " + word +":\n" + error.message)
+                //DEV: console.log(error.stack)
             }
-                DEV: console.log("Outside addword function:")
-                DEV: console.log(inputGrid)
+                //DEV: console.log("Outside addword function:")
+                //DEV: console.log(inputGrid)
         }
         return inputGrid
     }
@@ -779,8 +775,8 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
         // TODO Something's wrong with this
 
     for(let wordClue of wordsClues) {
-        wordClue.x -= topmost + verticalPadding
-        wordClue.y -= leftmost + horizontalPadding
+        wordClue.x = wordClue.x - topmost + verticalPadding
+        wordClue.y = wordClue.y - leftmost + horizontalPadding
         grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
 
         for(let c = 0; c < wordClue.word.length; c++) {
