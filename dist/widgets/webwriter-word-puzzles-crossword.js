@@ -2056,51 +2056,6 @@ var cluebox_styles = i`
         background-color: var(--sl-color-gray-300);
         padding: 10px;
     } 
-    table.clueboxInput tr.generateCw {
-        text-align: right;
-        margin: 1px;
-        height: 20px;
-    }
-    table.clueboxInput th.generateCw {
-        text-align: right;
-        padding: 1px;
-        padding-right: 8px;
-        margin: 1px;
-        height: auto;
-        height: 30px;
-    }
-    .generateCwButton::part(base) {
-    /* Set design tokens for height and border width */
-        padding: 0px;
-        margin: 0px;
-        --sl-input-height-small: 12px;
-        --sl-input-width-small: 20px;
-        border-radius: 0;
-        color: var(--sl-color-gray-500);
-        transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
-    }
-    .generateCwButton::part(label) {
-        --sl-input-height-small: 12px;
-        --sl-input-width-small: 20px;
-        padding: 2px;
-        margin: 0px;
-        word-wrap: normal;
-        vertical-align: top;
-        text-align: center;
-        justify-content: center;
-        color: var(--sl-color-gray-400);
-        align-content: center;
-
-    }
-    table.clueboxInput sl-icon.generateCwIcon {
-        font-size: 20px;
-        text-align: center;
-        padding: 0px;
-        justify-content: center;
-        color: var(--sl-color-gray-400);
-        align-content: center;
-        vertical-align: middle;
-    }
     table.clueboxInput > tbody {
         border: 3px solid var(--sl-color-gray-200);
     }
@@ -24451,9 +24406,6 @@ var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
 
-// node_modules/bootstrap-icons/icons/magic.svg
-var magic_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magic" viewBox="0 0 16 16">%0A  <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707zM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1zM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707zM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0z"/>%0A</svg>';
-
 // node_modules/bootstrap-icons/icons/caret-left-fill.svg
 var caret_left_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">%0A  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>%0A</svg>';
 
@@ -24542,26 +24494,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       clueBoxInput.tHead.rows[0].appendChild(th);
     }
     clueBoxInput.tHead.insertRow(0);
-    const generateCwCell = document2.createElement("th");
-    clueBoxInput.tHead.rows.item(0).appendChild(generateCwCell);
-    clueBoxInput.tHead.rows.item(0).className = "generateCw";
-    generateCwCell.className = "generateCw";
-    generateCwCell.colSpan = 2;
-    const generateCwButton = generateCwCell.appendChild(document2.createElement("sl-button"));
-    generateCwButton.className = "generateCwButton";
-    generateCwButton.id = "generateCwButton";
-    generateCwButton.setAttribute("variant", "default");
-    generateCwButton.setAttribute("size", "small");
-    generateCwButton.addEventListener("click", () => {
-      this.wordsAndClues = this.getNewWords();
-      if (this.wordsAndClues.length != 0) {
-        const genClicked = new CustomEvent("generateCw", { bubbles: true, composed: true });
-        this.dispatchEvent(genClicked);
-      }
-    });
-    const generateCwIcon = generateCwButton.appendChild(document2.createElement("sl-icon"));
-    generateCwIcon.setAttribute("src", magic_default);
-    generateCwIcon.setAttribute("class", "generateCwIcon");
     const bodyTable = clueBoxInput.createTBody();
     const buttonRow = bodyTable.insertRow();
     buttonRow.id = "buttonRow";
@@ -24610,6 +24542,16 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       bodyTable.rows[buttonRow.rowIndex - 3].cells[1].classList.add("clue-column");
     }
     return clueBoxInput;
+  }
+  /**
+   * Event handler that triggers crossword generation
+   */
+  triggerCwGeneration() {
+    this.wordsAndClues = this.getNewWords();
+    if (this.wordsAndClues.length != 0) {
+      const genClicked = new CustomEvent("generateCw", { bubbles: true, composed: true });
+      this.dispatchEvent(genClicked);
+    }
   }
   /**
    * Extracts the words from the cluebox
@@ -24705,8 +24647,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       event.stopPropagation();
       this.getNewWords();
       if (this.wordsAndClues.length != 0) {
-        const genCw = new CustomEvent("generateCw", { bubbles: true, composed: true });
-        this.dispatchEvent(genCw);
+        this.triggerCwGeneration();
       }
     } else if (event.ctrlKey)
       event.stopPropagation();
@@ -24716,7 +24657,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 ${this.clueBox} 
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueBoxInput} 
-                <sl-button @click=${() => this.hideDrawer()} slot="footer" variant="primary">Close</sl-button>
+                <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
+                <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
                 <sl-tooltip content="Show editor for words and clues">
                     <sl-button class="drawer-button" variant="default" circle @click=${() => this.showDrawer()}>

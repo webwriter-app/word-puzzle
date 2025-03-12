@@ -156,27 +156,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             clueBoxInput.tHead.rows[0].appendChild(th)
         }
         clueBoxInput.tHead.insertRow(0)
-        const generateCwCell: HTMLTableCellElement = document.createElement('th');
-        clueBoxInput.tHead.rows.item(0).appendChild(generateCwCell)
-        clueBoxInput.tHead.rows.item(0).className = "generateCw"
-        generateCwCell.className = "generateCw"
-        generateCwCell.colSpan = 2
-
-        const generateCwButton: SlButton = generateCwCell.appendChild(document.createElement('sl-button'))
-        generateCwButton.className = "generateCwButton"
-        generateCwButton.id = "generateCwButton"
-        generateCwButton.setAttribute('variant', 'default')
-        generateCwButton.setAttribute('size', 'small')
-        generateCwButton.addEventListener('click', () => {
-            this.wordsAndClues = this.getNewWords()
-            if(this.wordsAndClues.length != 0) {
-                const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true})
-                this.dispatchEvent(genClicked)
-            }
-        })
-        const generateCwIcon = generateCwButton.appendChild(document.createElement('sl-icon'))
-        generateCwIcon.setAttribute('src', wand)
-        generateCwIcon.setAttribute('class', "generateCwIcon")
 
         // Create body
         const bodyTable: HTMLTableSectionElement = clueBoxInput.createTBody()
@@ -234,24 +213,19 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             bodyTable.rows[buttonRow.rowIndex-3].cells[1].classList.add('clue-column')
         }
 
-        //<sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
-
-        
-        //const drawer: SlDrawer = document.createElement('sl-drawer')
-        //drawer.classList.add("drawer-placement-bottom")
-        //drawer.setAttribute("label", "Drawer")
-        //drawer.setAttribute("placement", "bottom")
-        //const openButton: SlDrawer = document.createElement('sl-button')
-        //drawer.nextElementSibling
-        ////openButton = drawer.nextElementSibling
-        //const closeButton = drawer.querySelector('sl-button[variant="primary"]');
-
-        //openButton.addEventListener('click', () => drawer.show());
-        //closeButton.addEventListener('click', () => drawer.hide());
-
         return clueBoxInput
     }
 
+    /**
+     * Event handler that triggers crossword generation
+     */
+    triggerCwGeneration() {
+        this.wordsAndClues = this.getNewWords()
+        if(this.wordsAndClues.length != 0) {
+            const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true})
+            this.dispatchEvent(genClicked)
+        }
+    }
 
     /**
      * Extracts the words from the cluebox
@@ -376,8 +350,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             //DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)")
             this.getNewWords()
             if(this.wordsAndClues.length != 0) {
-                const genCw = new CustomEvent("generateCw", {bubbles: true, composed: true})
-                this.dispatchEvent(genCw)
+                this.triggerCwGeneration()
             }
             //DEV: console.log("This is supposed to generate the grid though")
         }
@@ -391,7 +364,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 ${this.clueBox} 
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueBoxInput} 
-                <sl-button @click=${() => this.hideDrawer()} slot="footer" variant="primary">Close</sl-button>
+                <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
+                <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
                 <sl-tooltip content="Show editor for words and clues">
                     <sl-button class="drawer-button" variant="default" circle @click=${() => this.showDrawer()}>
@@ -403,5 +377,4 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             </div>
             `
     }
-
 }

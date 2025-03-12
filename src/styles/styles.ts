@@ -56,51 +56,6 @@ export const cluebox_styles = css`
         background-color: var(--sl-color-gray-300);
         padding: 10px;
     } 
-    table.clueboxInput tr.generateCw {
-        text-align: right;
-        margin: 1px;
-        height: 20px;
-    }
-    table.clueboxInput th.generateCw {
-        text-align: right;
-        padding: 1px;
-        padding-right: 8px;
-        margin: 1px;
-        height: auto;
-        height: 30px;
-    }
-    .generateCwButton::part(base) {
-    /* Set design tokens for height and border width */
-        padding: 0px;
-        margin: 0px;
-        --sl-input-height-small: 12px;
-        --sl-input-width-small: 20px;
-        border-radius: 0;
-        color: var(--sl-color-gray-500);
-        transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
-    }
-    .generateCwButton::part(label) {
-        --sl-input-height-small: 12px;
-        --sl-input-width-small: 20px;
-        padding: 2px;
-        margin: 0px;
-        word-wrap: normal;
-        vertical-align: top;
-        text-align: center;
-        justify-content: center;
-        color: var(--sl-color-gray-400);
-        align-content: center;
-
-    }
-    table.clueboxInput sl-icon.generateCwIcon {
-        font-size: 20px;
-        text-align: center;
-        padding: 0px;
-        justify-content: center;
-        color: var(--sl-color-gray-400);
-        align-content: center;
-        vertical-align: middle;
-    }
     table.clueboxInput > tbody {
         border: 3px solid var(--sl-color-gray-200);
     }
