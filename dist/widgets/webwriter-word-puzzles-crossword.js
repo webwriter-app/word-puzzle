@@ -2007,9 +2007,6 @@ function generateCrosswordFromList(wordsClues) {
 
 // src/styles/styles.ts
 var cluebox_styles = i`
-    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-        display: none;
-    }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -2035,10 +2032,16 @@ var cluebox_styles = i`
         /*flex-basis: content; */
     }
     .word-column {
-        width: 25%; /* Temporary width and height*/
+        width: 30%; /* Temporary width and height*/
     }
     .clue-column {
-        width: 75%; /* Temporary width and height*/
+        width: 70%; /* Temporary width and height*/
+    }
+    .button-column {
+        width: 0%; /* Temporary width and height*/
+    }
+    .minus-button {
+        font-size: 10px;
     }
     table.clueboxInput > thead {
         font-family: var(--sl-font-sans);
@@ -2105,13 +2108,33 @@ var cluebox_styles = i`
     }
     table.clueboxInput sl-icon {
         size: 100px;
-        font-size: 20px;
+        font-size: 16px;
         text-align: center;
-        padding: 10px;
+        padding: 0px;
         justify-content: center;
         color: var(--sl-color-gray-400);
         align-content: center;
         vertical-align: middle;
+    }
+    table.clueboxInput td.button-cell {
+        width: 0px;
+        height: 100%;
+        border: 0px;
+        padding: 0px;
+        justify-content: left;
+        float: right;
+        margin-right: +0.80em;
+    }
+    div.button-cell-div {
+        display: table-cell;
+        vertical-align: middle;
+        padding-bottom: 10%
+    }
+    div.sl-icon-div {
+        margin-top: 40%;
+    }
+    td.button-cell sl-button::part(base) {
+        transform: scale(0.80)
     }
     table.cluebox {
         width: 48%;
@@ -24420,6 +24443,13 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   set cluebox(_3) {
     this.#cluebox = _3;
   }
+  #clueboxInput;
+  get clueboxInput() {
+    return this.#clueboxInput;
+  }
+  set clueboxInput(_3) {
+    this.#clueboxInput = _3;
+  }
   /**
    * The list of words grouped with their clues, direction, and word number.
    */
@@ -24560,7 +24590,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    */
   getNewWords() {
     this.wordsAndClues = [];
-    const rows = this.clueBoxInput.querySelectorAll("tbody tr");
+    const rows = this.clueboxInput.querySelectorAll("tbody tr");
     let words = Array.from(rows).map(
       (row) => row.querySelector("td")?.textContent?.trim() || null
     );
@@ -24578,6 +24608,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   showDrawer() {
     this.drawer.show();
+    DEV: console.log("Content of focused cell:");
+    DEV: console.log(this.clueboxInput.tBodies[0].rows[0].cells[0].getHTML());
+    this.clueboxInput.tBodies[0].rows[0].cells[0].focus();
   }
   hideDrawer() {
     this.drawer.hide();
@@ -24653,7 +24686,40 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       event.stopPropagation();
   }
   render() {
+    const clueboxInputTemplate = x`
+        <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+            <colgroup>
+            <col class="word-column">
+            <col  class="clue-column">
+            <col  class="button-column">
+        </colgroup>
+        <thead>
+            <tr>
+                <th class="word-column">Words</th>
+                <th class="clue-column">Clues</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle>
+                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
+                        </sl-button>
+                </div>
+                </td>
+            </tr> 
+                        
+            <tr><td contenteditable></td><td contenteditable></td></tr>
+            <tr><td contenteditable></td><td contenteditable></td></tr>
+            <tr><td contenteditable></td><td contenteditable></td></tr>
+        </tbody>
+        </table>
+        `;
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
+                ${clueboxInputTemplate}
                 ${this.clueBox} 
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueBoxInput} 
@@ -24680,6 +24746,9 @@ __decorateClass([
 __decorateClass([
   e5(".cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "cluebox", 1);
+__decorateClass([
+  e5(".clueboxInput")
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueboxInput", 1);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "acrossContext", 2);

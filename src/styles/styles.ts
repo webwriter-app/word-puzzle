@@ -7,9 +7,6 @@ import { css } from "lit";
  * Styles for the crossword cluebox.
  */
 export const cluebox_styles = css`
-    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-        display: none;
-    }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -35,10 +32,16 @@ export const cluebox_styles = css`
         /*flex-basis: content; */
     }
     .word-column {
-        width: 25%; /* Temporary width and height*/
+        width: 30%; /* Temporary width and height*/
     }
     .clue-column {
-        width: 75%; /* Temporary width and height*/
+        width: 70%; /* Temporary width and height*/
+    }
+    .button-column {
+        width: 0%; /* Temporary width and height*/
+    }
+    .minus-button {
+        font-size: 10px;
     }
     table.clueboxInput > thead {
         font-family: var(--sl-font-sans);
@@ -105,13 +108,33 @@ export const cluebox_styles = css`
     }
     table.clueboxInput sl-icon {
         size: 100px;
-        font-size: 20px;
+        font-size: 16px;
         text-align: center;
-        padding: 10px;
+        padding: 0px;
         justify-content: center;
         color: var(--sl-color-gray-400);
         align-content: center;
         vertical-align: middle;
+    }
+    table.clueboxInput td.button-cell {
+        width: 0px;
+        height: 100%;
+        border: 0px;
+        padding: 0px;
+        justify-content: left;
+        float: right;
+        margin-right: +0.80em;
+    }
+    div.button-cell-div {
+        display: table-cell;
+        vertical-align: middle;
+        padding-bottom: 10%
+    }
+    div.sl-icon-div {
+        margin-top: 40%;
+    }
+    td.button-cell sl-button::part(base) {
+        transform: scale(0.80)
     }
     table.cluebox {
         width: 48%;

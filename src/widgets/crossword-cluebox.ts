@@ -64,6 +64,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     @query(".cluebox")
     accessor cluebox: HTMLTableElement
 
+    @query(".clueboxInput")
+    accessor clueboxInput: HTMLTableElement
+
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
@@ -234,7 +237,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     getNewWords() {
         this.wordsAndClues = []
-        const rows = this.clueBoxInput.querySelectorAll("tbody tr")
+        const rows = this.clueboxInput.querySelectorAll("tbody tr")
 
         let words: string[] = Array.from(rows).map(row => 
                 row.querySelector("td")?.textContent?.trim() || null
@@ -257,6 +260,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     showDrawer() {
         this.drawer.show()
+        DEV: console.log("Content of focused cell:")
+        DEV: console.log(this.clueboxInput.tBodies[0].rows[0].cells[0].getHTML())
+        this.clueboxInput.tBodies[0].rows[0].cells[0].focus()
     }
 
     hideDrawer() {
@@ -332,13 +338,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         this.requestUpdate()
         return clueBox
 
-//        function addRow(table: HTMLTableElement) {
-//            table.insertRow()
-//            table.rows[table.rows.length-1].insertCell()
-//            table.rows[table.rows.length-1].insertCell()
-//            table.rows[table.rows.length-1].cells[0].setAttribute('contenteditable', 'false')
-//            table.rows[table.rows.length-1].cells[1].setAttribute('contenteditable', 'false')
-//        }
     }
 
     /** Event handler for stopping control propagation and rendering
@@ -360,7 +359,44 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     render() {
         //DEV: console.log("rendering cluebox")
+        const clueboxInputTemplate = html`
+        <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+            <colgroup>
+            <col class="word-column">
+            <col  class="clue-column">
+            <col  class="button-column">
+        </colgroup>
+        <thead>
+            <tr>
+                <th class="word-column">Words</th>
+                <th class="clue-column">Clues</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle>
+                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                        </sl-button>
+                </div>
+                </td>
+            </tr> 
+                        
+            <tr><td contenteditable></td><td contenteditable></td></tr>
+            <tr><td contenteditable></td><td contenteditable></td></tr>
+            <tr><td contenteditable></td><td contenteditable></td></tr>
+        </tbody>
+        </table>
+        `
+        /*
+         table-cell
+        */
+
         return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
+                ${clueboxInputTemplate}
                 ${this.clueBox} 
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueBoxInput} 
