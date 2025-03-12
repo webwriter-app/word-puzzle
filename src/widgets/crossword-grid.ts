@@ -15,21 +15,11 @@ import { generateCrossword, generateCrosswordFromList } from '../lib/crossword-g
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
-// Buttons
-import { SlButton, SlIcon } from '@shoelace-style/shoelace';
-
-// Icons
-import plus from 'bootstrap-icons/icons/plus-lg.svg';
-import minus from 'bootstrap-icons/icons/dash.svg';
-// TODO Add fontawesome icon
-let eye = 'assets/fontawesome-icons/wand-magic-sparkles-solid.svg';
-
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
     "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
     }
 }
-
 
 function stopCtrlPropagation(event: KeyboardEvent): void {
         if (event.ctrlKey) {

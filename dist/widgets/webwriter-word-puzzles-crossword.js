@@ -5401,6 +5401,7 @@ setDefaultAnimation("tooltip.hide", {
 });
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.5ZRUVMLP.js
+var tooltip_default = SlTooltip;
 SlTooltip.define("sl-tooltip");
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.G7B7WU5W.js
@@ -17282,6 +17283,7 @@ setDefaultAnimation("drawer.overlay.hide", {
 });
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.BWLYJ7KT.js
+var drawer_default = SlDrawer;
 SlDrawer.define("sl-drawer");
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.LXP7GVU3.js
@@ -24479,6 +24481,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       "sl-button": button_default,
       "sl-icon": icon_default,
       "sl-alert": alert_default,
+      "sl-tooltip": tooltip_default,
+      "sl-drawer": drawer_default,
       "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
     };
   }
@@ -24582,6 +24586,17 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       bodyTable.rows[buttonRow.rowIndex - 3].cells[1].setAttribute("contenteditable", "true");
       bodyTable.rows[buttonRow.rowIndex - 3].cells[1].classList.add("clue-column");
     }
+    const drawer = document2.querySelector(".drawer-placement-bottom");
+    if (drawer) {
+      const openButton = drawer.nextElementSibling;
+      if (openButton) {
+        openButton.addEventListener("click", () => drawer.show());
+      }
+      const closeButton = drawer.querySelector('sl-button[variant="primary"]');
+      if (closeButton) {
+        closeButton.addEventListener("click", () => drawer.hide());
+      }
+    }
     return clueBoxInput;
   }
   /**
@@ -24678,10 +24693,20 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     } else if (event.ctrlKey)
       event.stopPropagation();
   }
+  renderClueboxInput() {
+    return x`
+        <sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
+        This drawer slides in from the bottom.
+        <sl-button slot="footer" variant="primary">Close</sl-button>
+        </sl-drawer>
+        <sl-button>Open Drawer</sl-button>
+`;
+  }
   render() {
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${this.clueBox}
                 ${this.clueBoxInput} 
+                ${this.renderClueboxInput()}
             </div>
             `;
   }
@@ -24765,6 +24790,9 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     return {
       "sl-button": button_default,
       "sl-icon": icon_default,
+      "sl-alert": alert_default,
+      "sl-tooltip": tooltip_default,
+      "sl-drawer": drawer_default,
       "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
       "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
     };

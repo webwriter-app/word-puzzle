@@ -12,7 +12,7 @@ import { WordClue } from './crossword-grid';
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import { SlButton, SlIcon, SlAlert } from '@shoelace-style/shoelace';
+import { SlButton, SlIcon, SlAlert, SlTooltip, SlDrawer } from '@shoelace-style/shoelace';
 
 // Icons
 import plus from 'bootstrap-icons/icons/plus-lg.svg';
@@ -305,6 +305,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         "sl-button": SlButton,
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
+        "sl-tooltip": SlTooltip,
+        "sl-drawer": SlDrawer,
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
         };
     }
@@ -422,19 +424,33 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             bodyTable.rows[buttonRow.rowIndex-3].cells[0].classList.add('word-column')
             bodyTable.rows[buttonRow.rowIndex-3].cells[1].setAttribute("contenteditable", "true");
             bodyTable.rows[buttonRow.rowIndex-3].cells[1].classList.add('clue-column')
-//           bodyTable.rows[buttonRow.rowIndex-3].cells[0].addEventListener('keydown', (e) => {
-//                if(e.ctrlKey) {
-//                    e.stopPropagation()
-//                    DEV: console.log("Should have stopped propagation")
-//                }
-//            })
-//            bodyTable.rows[buttonRow.rowIndex-3].cells[1].addEventListener('keydown', (e) => {
-//                if(e.ctrlKey) {
-//                    e.stopPropagation()
-//                    DEV: console.log("Should have stopped propagation")
-//                }
-//            })
         }
+
+        //<sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
+
+        const drawer = document.querySelector('.drawer-placement-bottom');
+        if(drawer) {
+            const openButton = drawer.nextElementSibling;
+            if(openButton) {
+                openButton.addEventListener('click', () => drawer.show());
+            }
+            const closeButton = drawer.querySelector('sl-button[variant="primary"]');
+            if(closeButton) {
+                closeButton.addEventListener('click', () => drawer.hide());
+            }
+        }
+
+        //const drawer: SlDrawer = document.createElement('sl-drawer')
+        //drawer.classList.add("drawer-placement-bottom")
+        //drawer.setAttribute("label", "Drawer")
+        //drawer.setAttribute("placement", "bottom")
+        //const openButton: SlDrawer = document.createElement('sl-button')
+        //drawer.nextElementSibling
+        ////openButton = drawer.nextElementSibling
+        //const closeButton = drawer.querySelector('sl-button[variant="primary"]');
+
+        //openButton.addEventListener('click', () => drawer.show());
+        //closeButton.addEventListener('click', () => drawer.hide());
 
         return clueBoxInput
     }
@@ -564,12 +580,23 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             event.stopPropagation()
     }
 
+    renderClueboxInput() {
+        return (html`
+        <sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
+        This drawer slides in from the bottom.
+        <sl-button slot="footer" variant="primary">Close</sl-button>
+        </sl-drawer>
+        <sl-button>Open Drawer</sl-button>
+`)
+    }
+
     
     render() {
         //DEV: console.log("rendering cluebox")
         return (html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${this.clueBox}
                 ${this.clueBoxInput} 
+                ${this.renderClueboxInput()}
             </div>
             `)
 

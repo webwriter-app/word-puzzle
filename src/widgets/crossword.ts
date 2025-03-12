@@ -8,6 +8,7 @@
 import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrosswordGrid, WordClue, defaultCell } from './crossword-grid';
 import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
@@ -17,7 +18,7 @@ import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
 // Buttons
-import { SlButton, SlIcon } from '@shoelace-style/shoelace';
+import { SlButton, SlIcon, SlAlert, SlTooltip, SlDrawer } from '@shoelace-style/shoelace';
 
 
 declare global {interface HTMLElementTagNameMap {
@@ -25,6 +26,8 @@ declare global {interface HTMLElementTagNameMap {
         "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword;
         "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
+        "sl-button": SlButton;
+        "sl-drawer": SlDrawer;
     }
 }
 
@@ -134,6 +137,9 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         return {
         "sl-button": SlButton,
         "sl-icon": SlIcon,
+        "sl-alert": SlAlert,
+        "sl-tooltip": SlTooltip,
+        "sl-drawer": SlDrawer,
         "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
         };
