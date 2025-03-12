@@ -211,7 +211,6 @@ export const cluebox_styles = css`
         overflow-wrap: anywhere;
         height: 30px;
         width: 50%;
-
     }
 `
 

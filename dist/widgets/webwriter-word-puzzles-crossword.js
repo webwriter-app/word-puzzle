@@ -2211,7 +2211,6 @@ var cluebox_styles = i`
         overflow-wrap: anywhere;
         height: 30px;
         width: 50%;
-
     }
 `;
 var grid_styles = i`
@@ -3634,7 +3633,7 @@ var computePosition = async (reference, floating, config) => {
     middlewareData
   };
 };
-async function detectOverflow(state2, options) {
+async function detectOverflow(state, options) {
   var _await$platform$isEle;
   if (options === void 0) {
     options = {};
@@ -3646,14 +3645,14 @@ async function detectOverflow(state2, options) {
     rects,
     elements,
     strategy
-  } = state2;
+  } = state;
   const {
     boundary = "clippingAncestors",
     rootBoundary = "viewport",
     elementContext = "floating",
     altBoundary = false,
     padding = 0
-  } = evaluate(options, state2);
+  } = evaluate(options, state);
   const paddingObject = getPaddingObject(padding);
   const altContext = elementContext === "floating" ? "reference" : "floating";
   const element = elements[altBoundary ? altContext : elementContext];
@@ -3693,7 +3692,7 @@ async function detectOverflow(state2, options) {
 var arrow = (options) => ({
   name: "arrow",
   options,
-  async fn(state2) {
+  async fn(state) {
     const {
       x: x3,
       y: y4,
@@ -3702,11 +3701,11 @@ var arrow = (options) => ({
       platform: platform2,
       elements,
       middlewareData
-    } = state2;
+    } = state;
     const {
       element,
       padding = 0
-    } = evaluate(options, state2) || {};
+    } = evaluate(options, state) || {};
     if (element == null) {
       return {};
     }
@@ -3759,7 +3758,7 @@ var flip = function(options) {
   return {
     name: "flip",
     options,
-    async fn(state2) {
+    async fn(state) {
       var _middlewareData$arrow, _middlewareData$flip;
       const {
         placement,
@@ -3768,7 +3767,7 @@ var flip = function(options) {
         initialPlacement,
         platform: platform2,
         elements
-      } = state2;
+      } = state;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = true,
@@ -3777,7 +3776,7 @@ var flip = function(options) {
         fallbackAxisSideDirection = "none",
         flipAlignment = true,
         ...detectOverflowOptions
-      } = evaluate(options, state2);
+      } = evaluate(options, state);
       if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3791,7 +3790,7 @@ var flip = function(options) {
         fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
       }
       const placements2 = [initialPlacement, ...fallbackPlacements];
-      const overflow = await detectOverflow(state2, detectOverflowOptions);
+      const overflow = await detectOverflow(state, detectOverflowOptions);
       const overflows = [];
       let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
       if (checkMainAxis) {
@@ -3856,19 +3855,19 @@ var flip = function(options) {
     }
   };
 };
-async function convertValueToCoords(state2, options) {
+async function convertValueToCoords(state, options) {
   const {
     placement,
     platform: platform2,
     elements
-  } = state2;
+  } = state;
   const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
   const side = getSide(placement);
   const alignment = getAlignment(placement);
   const isVertical = getSideAxis(placement) === "y";
   const mainAxisMulti = ["left", "top"].includes(side) ? -1 : 1;
   const crossAxisMulti = rtl && isVertical ? -1 : 1;
-  const rawValue = evaluate(options, state2);
+  const rawValue = evaluate(options, state);
   let {
     mainAxis,
     crossAxis,
@@ -3900,15 +3899,15 @@ var offset = function(options) {
   return {
     name: "offset",
     options,
-    async fn(state2) {
+    async fn(state) {
       var _middlewareData$offse, _middlewareData$arrow;
       const {
         x: x3,
         y: y4,
         placement,
         middlewareData
-      } = state2;
-      const diffCoords = await convertValueToCoords(state2, options);
+      } = state;
+      const diffCoords = await convertValueToCoords(state, options);
       if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3930,12 +3929,12 @@ var shift = function(options) {
   return {
     name: "shift",
     options,
-    async fn(state2) {
+    async fn(state) {
       const {
         x: x3,
         y: y4,
         placement
-      } = state2;
+      } = state;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = false,
@@ -3952,12 +3951,12 @@ var shift = function(options) {
           }
         },
         ...detectOverflowOptions
-      } = evaluate(options, state2);
+      } = evaluate(options, state);
       const coords = {
         x: x3,
         y: y4
       };
-      const overflow = await detectOverflow(state2, detectOverflowOptions);
+      const overflow = await detectOverflow(state, detectOverflowOptions);
       const crossAxis = getSideAxis(getSide(placement));
       const mainAxis = getOppositeAxis(crossAxis);
       let mainAxisCoord = coords[mainAxis];
@@ -3977,7 +3976,7 @@ var shift = function(options) {
         crossAxisCoord = clamp(min2, crossAxisCoord, max2);
       }
       const limitedCoords = limiter.fn({
-        ...state2,
+        ...state,
         [mainAxis]: mainAxisCoord,
         [crossAxis]: crossAxisCoord
       });
@@ -4002,20 +4001,20 @@ var size = function(options) {
   return {
     name: "size",
     options,
-    async fn(state2) {
+    async fn(state) {
       var _state$middlewareData, _state$middlewareData2;
       const {
         placement,
         rects,
         platform: platform2,
         elements
-      } = state2;
+      } = state;
       const {
         apply = () => {
         },
         ...detectOverflowOptions
-      } = evaluate(options, state2);
-      const overflow = await detectOverflow(state2, detectOverflowOptions);
+      } = evaluate(options, state);
+      const overflow = await detectOverflow(state, detectOverflowOptions);
       const side = getSide(placement);
       const alignment = getAlignment(placement);
       const isYAxis = getSideAxis(placement) === "y";
@@ -4036,13 +4035,13 @@ var size = function(options) {
       const maximumClippingWidth = width - overflow.left - overflow.right;
       const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
       const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-      const noShift = !state2.middlewareData.shift;
+      const noShift = !state.middlewareData.shift;
       let availableHeight = overflowAvailableHeight;
       let availableWidth = overflowAvailableWidth;
-      if ((_state$middlewareData = state2.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
+      if ((_state$middlewareData = state.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
         availableWidth = maximumClippingWidth;
       }
-      if ((_state$middlewareData2 = state2.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
+      if ((_state$middlewareData2 = state.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
         availableHeight = maximumClippingHeight;
       }
       if (noShift && !alignment) {
@@ -4057,7 +4056,7 @@ var size = function(options) {
         }
       }
       await apply({
-        ...state2,
+        ...state,
         availableWidth,
         availableHeight
       });
@@ -16028,10 +16027,10 @@ var SubmenuController = class {
       }
     }
   }
-  setSubmenuState(state2) {
+  setSubmenuState(state) {
     if (this.popupRef.value) {
-      if (this.popupRef.value.active !== state2) {
-        this.popupRef.value.active = state2;
+      if (this.popupRef.value.active !== state) {
+        this.popupRef.value.active = state;
         this.host.requestUpdate();
       }
     }
@@ -24455,16 +24454,33 @@ var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" w
 // node_modules/bootstrap-icons/icons/magic.svg
 var magic_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magic" viewBox="0 0 16 16">%0A  <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707zM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1zM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707zM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0z"/>%0A</svg>';
 
+// node_modules/bootstrap-icons/icons/caret-left-fill.svg
+var caret_left_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">%0A  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>%0A</svg>';
+
 // src/widgets/crossword-cluebox.ts
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   clueBoxInput;
   clueBox;
+  #cluebox;
+  get cluebox() {
+    return this.#cluebox;
+  }
+  set cluebox(_3) {
+    this.#cluebox = _3;
+  }
   /**
    * The list of words grouped with their clues, direction, and word number.
    */
   wordsAndClues = [];
   acrossContext;
   currentClue;
+  #drawer;
+  get drawer() {
+    return this.#drawer;
+  }
+  set drawer(_3) {
+    this.#drawer = _3;
+  }
   /**
    * @constructor
    * Some constructor I apparently thought was a good idea.
@@ -24486,7 +24502,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   static get scopedElements() {
     return {
       "sl-button": button_default,
-      "sl-icon": icon_default,
+      "sl-icon": SlIcon,
       "sl-alert": alert_default,
       "sl-tooltip": tooltip_default,
       "sl-drawer": drawer_default,
@@ -24593,17 +24609,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       bodyTable.rows[buttonRow.rowIndex - 3].cells[1].setAttribute("contenteditable", "true");
       bodyTable.rows[buttonRow.rowIndex - 3].cells[1].classList.add("clue-column");
     }
-    const drawer = document2.querySelector(".drawer-placement-bottom");
-    if (drawer) {
-      const openButton = drawer.nextElementSibling;
-      if (openButton) {
-        openButton.addEventListener("click", () => drawer.show());
-      }
-      const closeButton = drawer.querySelector('sl-button[variant="primary"]');
-      if (closeButton) {
-        closeButton.addEventListener("click", () => drawer.hide());
-      }
-    }
     return clueBoxInput;
   }
   /**
@@ -24628,6 +24633,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     DEV: console.log("Words and clues:");
     DEV: console.log(this.wordsAndClues);
     return this.wordsAndClues;
+  }
+  showDrawer() {
+    this.drawer.show();
+  }
+  hideDrawer() {
+    this.drawer.hide();
   }
   /**
    * @constructor
@@ -24700,20 +24711,20 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     } else if (event.ctrlKey)
       event.stopPropagation();
   }
-  renderClueboxInput() {
-    return x`
-        <sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
-        This drawer slides in from the bottom.
-        <sl-button slot="footer" variant="primary">Close</sl-button>
-        </sl-drawer>
-        <sl-button>Open Drawer</sl-button>
-        `;
-  }
   render() {
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
-                ${this.clueBox}
+                ${this.clueBox} 
+                <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueBoxInput} 
-                ${this.renderClueboxInput()}
+                <sl-button @click=${() => this.hideDrawer()} slot="footer" variant="primary">Close</sl-button>
+                </sl-drawer>
+                <sl-tooltip content="Show editor for words and clues">
+                    <sl-button class="drawer-button" variant="default" circle @click=${() => this.showDrawer()}>
+                        <div style="justify-content:center;padding-top:2px;">
+                            <sl-icon src=${caret_left_fill_default}></sl-icon>
+                        </div>
+                    </sl-button>
+                </sl-tooltip>
             </div>
             `;
   }
@@ -24725,11 +24736,17 @@ __decorateClass([
   n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
 __decorateClass([
+  e5(".cluebox")
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "cluebox", 1);
+__decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "acrossContext", 2);
 __decorateClass([
   n4({ type: Number, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "currentClue", 2);
+__decorateClass([
+  e5("sl-drawer")
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "drawer", 1);
 WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
   t3("webwriter-word-puzzles-crossword-cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox);

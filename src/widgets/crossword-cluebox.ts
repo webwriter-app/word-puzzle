@@ -6,19 +6,24 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 import { html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WordClue } from './crossword-grid';
 import { cluebox_styles } from '../styles/styles'
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import { SlButton, SlIcon, SlAlert, SlTooltip, SlDrawer } from '@shoelace-style/shoelace';
+import { SlButton, SlAlert, SlTooltip, SlDrawer } from '@shoelace-style/shoelace';
+import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component.js";
+
+// TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
+// @webwriter/wui
 
 // Icons
 import plus from 'bootstrap-icons/icons/plus-lg.svg';
 import minus from 'bootstrap-icons/icons/dash.svg';
 import wand from 'bootstrap-icons/icons/magic.svg';
+import caret_left from 'bootstrap-icons/icons/caret-left-fill.svg';
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
@@ -56,6 +61,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     @property({ type: HTMLDivElement, state: true, attribute: false})
     clueBox: HTMLTableElement
 
+    @query(".cluebox")
+    accessor cluebox: HTMLTableElement
+
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
@@ -73,6 +81,12 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     @property({ type: Number, state: true, attribute: false})
     currentClue: number
+
+    /**
+     * drawer
+     */
+    @query("sl-drawer")
+    accessor drawer: SlDrawer
 
     /**
      * @constructor
@@ -222,18 +236,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
         //<sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
 
-        const drawer = document.querySelector('.drawer-placement-bottom');
-        if(drawer) {
-            const openButton = drawer.nextElementSibling;
-            if(openButton) {
-                openButton.addEventListener('click', () => drawer.show());
-            }
-            const closeButton = drawer.querySelector('sl-button[variant="primary"]');
-            if(closeButton) {
-                closeButton.addEventListener('click', () => drawer.hide());
-            }
-        }
-
+        
         //const drawer: SlDrawer = document.createElement('sl-drawer')
         //drawer.classList.add("drawer-placement-bottom")
         //drawer.setAttribute("label", "Drawer")
@@ -276,6 +279,14 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         DEV: console.log(this.wordsAndClues)
 
         return this.wordsAndClues
+    }
+
+    showDrawer() {
+        this.drawer.show()
+    }
+
+    hideDrawer() {
+        this.drawer.hide()
     }
 
     /**
@@ -374,23 +385,21 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             event.stopPropagation()
     }
 
-    renderClueboxInput() {
-        return html`
-        <sl-drawer label="Drawer" placement="bottom" class="drawer-placement-bottom">
-        This drawer slides in from the bottom.
-        <sl-button slot="footer" variant="primary">Close</sl-button>
-        </sl-drawer>
-        <sl-button>Open Drawer</sl-button>
-        `
-    }
-
-    
     render() {
         //DEV: console.log("rendering cluebox")
         return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
-                ${this.clueBox}
+                ${this.clueBox} 
+                <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueBoxInput} 
-                ${this.renderClueboxInput()}
+                <sl-button @click=${() => this.hideDrawer()} slot="footer" variant="primary">Close</sl-button>
+                </sl-drawer>
+                <sl-tooltip content="Show editor for words and clues">
+                    <sl-button class="drawer-button" variant="default" circle @click=${() => this.showDrawer()}>
+                        <div style="justify-content:center;padding-top:2px;">
+                            <sl-icon src=${caret_left}></sl-icon>
+                        </div>
+                    </sl-button>
+                </sl-tooltip>
             </div>
             `
     }
