@@ -2065,7 +2065,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 box-sizing: border-box;
                 width: max-content;
                 height: max-content;
-                border: 2px solid #333333;
+                border: 2px solid var(--sl-color-gray-400);
             }
             div.cell {
                 display: grid;
@@ -2076,7 +2076,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 width: 100%;
                 min-width: 40px;
                 min-height: 40px;
-                border: 1px solid #333333;
+                border: 1px solid var(--sl-color-gray-400);
                 max-width: 40px;
                 max-height: 40px;
                 position: center;
@@ -2086,7 +2086,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 caret-color: transparent;
             }
             div.cell[black] {
-                background-color: #333333;
+                background-color: var(--sl-color-gray-400);
             }
             div.cell:focus {
                 background-color: lightblue;
@@ -24273,7 +24273,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 flex-wrap:wrap;
                 align-items: space-between;
                 justify-content:space-between;
-                margin-bottom: 5px;
+                margin-top: 10px;
                 width: 100%;
             }
             table.clueboxInput {
@@ -24290,7 +24290,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 table-layout: fixed;
                 margin-left: auto;
                 margin-right: auto;
-                margin-bottom: 5px;
                 /*flex-basis: content; */
             }
             .word-column {
@@ -24645,7 +24644,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     bodyTable.rows[0].cells[1].setAttribute("contenteditable", "false");
     for (let wordAndClue of wordsAndClues) {
       let cellColumn = 0;
-      if (wordAndClue.direction == "across")
+      if (wordAndClue.across)
         cellColumn = 0;
       else
         cellColumn = 1;
@@ -24795,8 +24794,8 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   }
   render() {
     return x`<div class="wrapper">
-                ${this.clueWidget}
                 ${this.gridWidget}
+                ${this.clueWidget}
             </div>
             `;
   }

@@ -98,7 +98,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 flex-wrap:wrap;
                 align-items: space-between;
                 justify-content:space-between;
-                margin-bottom: 5px;
+                margin-top: 10px;
                 width: 100%;
             }
             table.clueboxInput {
@@ -115,7 +115,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 table-layout: fixed;
                 margin-left: auto;
                 margin-right: auto;
-                margin-bottom: 5px;
                 /*flex-basis: content; */
             }
             .word-column {
@@ -514,7 +513,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         for(let wordAndClue of wordsAndClues) {
             let cellColumn = 0
 
-            if(wordAndClue.direction == "across")
+            if(wordAndClue.across)
                 cellColumn = 0
             else
                 cellColumn = 1

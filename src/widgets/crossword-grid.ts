@@ -197,7 +197,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 box-sizing: border-box;
                 width: max-content;
                 height: max-content;
-                border: 2px solid #333333;
+                border: 2px solid var(--sl-color-gray-400);
             }
             div.cell {
                 display: grid;
@@ -208,7 +208,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 width: 100%;
                 min-width: 40px;
                 min-height: 40px;
-                border: 1px solid #333333;
+                border: 1px solid var(--sl-color-gray-400);
                 max-width: 40px;
                 max-height: 40px;
                 position: center;
@@ -218,7 +218,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 caret-color: transparent;
             }
             div.cell[black] {
-                background-color: #333333;
+                background-color: var(--sl-color-gray-400);
             }
             div.cell:focus {
                 background-color: lightblue;

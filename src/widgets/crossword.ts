@@ -171,8 +171,8 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
 
     render() {
         return (html`<div class="wrapper">
-                ${this.clueWidget}
                 ${this.gridWidget}
+                ${this.clueWidget}
             </div>
             `)
     }
