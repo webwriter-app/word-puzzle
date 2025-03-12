@@ -2005,50 +2005,217 @@ function generateCrosswordFromList(wordsClues) {
   return grid;
 }
 
-// src/widgets/crossword-grid.ts
-function stopCtrlPropagation(event) {
-  if (event.ctrlKey) {
-    event.stopPropagation();
-    DEV: console.log("Prevented propagation of a single CTRL key sequence within widget");
-  }
-}
-function defaultCell() {
-  return {
-    white: false,
-    answer: null,
-    // NOTE Should this be here, or should 
-    number: null,
-    direction: null
-  };
-}
-var DEFAULT_DIMENSION = 9;
-var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
-  grid;
-  gridEl;
-  wordsAndClues;
-  acrossContext;
-  currentClue;
-  cur_row;
-  cur_col;
-  // @type {boolean}
-  /**
-   * @constructor
-   * Some constructor I apparently thought was a good idea.
-   * 
-   * Pretty much just makes a grid with 9x9 dimensions
-   */
-  constructor() {
-    super();
-    this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
-    this.acrossContext = null;
-  }
-  /**
-   * Styles for the crossword grid.
-   * clue-label based off of crossword-js
-   */
-  static get styles() {
-    return i`
-            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+// src/styles/styles.ts
+var cluebox_styles = i`
+    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+        display: none;
+    }
+    div {
+        display:flex;
+        flex-wrap:wrap;
+        align-items: space-between;
+        justify-content:space-between;
+        margin-top: 10px;
+        width: 100%;
+    }
+    table.clueboxInput {
+        /*Temporary width and height*/
+        /*min-width: 200px;*/
+        width: 48%;
+        min-width: 300px;
+        min-height: 200px;
+        height: fit-content;
+        border: 2px solid var(--sl-color-gray-300);
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-700);
+        background-color: var(--sl-color-gray-100);
+        table-layout: fixed;
+        margin-left: auto;
+        margin-right: auto;
+        /*flex-basis: content; */
+    }
+    .word-column {
+        width: 25%; /* Temporary width and height*/
+    }
+    .clue-column {
+        width: 75%; /* Temporary width and height*/
+    }
+    table.clueboxInput > thead {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-700);
+        background-color: var(--sl-color-gray-300);
+    }
+    table.clueboxInput > thead > tr {
+        padding: 0px;
+        margin: 0px;
+    }
+    table.clueboxInput th {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-700);
+        border-collapse: collapse;
+        background-color: var(--sl-color-gray-300);
+        padding: 10px;
+    } 
+    table.clueboxInput tr.generateCw {
+        text-align: right;
+        margin: 1px;
+        height: 20px;
+    }
+    table.clueboxInput th.generateCw {
+        text-align: right;
+        padding: 1px;
+        padding-right: 8px;
+        margin: 1px;
+        height: auto;
+        height: 30px;
+    }
+    .generateCwButton::part(base) {
+    /* Set design tokens for height and border width */
+        padding: 0px;
+        margin: 0px;
+        --sl-input-height-small: 12px;
+        --sl-input-width-small: 20px;
+        border-radius: 0;
+        color: var(--sl-color-gray-500);
+        transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
+    }
+    .generateCwButton::part(label) {
+        --sl-input-height-small: 12px;
+        --sl-input-width-small: 20px;
+        padding: 2px;
+        margin: 0px;
+        word-wrap: normal;
+        vertical-align: top;
+        text-align: center;
+        justify-content: center;
+        color: var(--sl-color-gray-400);
+        align-content: center;
+
+    }
+    table.clueboxInput sl-icon.generateCwIcon {
+        font-size: 20px;
+        text-align: center;
+        padding: 0px;
+        justify-content: center;
+        color: var(--sl-color-gray-400);
+        align-content: center;
+        vertical-align: middle;
+    }
+    table.clueboxInput > tbody {
+        border: 3px solid var(--sl-color-gray-200);
+    }
+    table.clueboxInput > tbody > tr {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-900);
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+    }
+    table.clueboxInput > tbody > tr > td {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-900);
+        border-right: 1px solid var(--sl-color-gray-200);
+        border-left: 1px solid var(--sl-color-gray-200);
+        border-bottom: 2px solid var(--sl-color-gray-200);
+        border-collapse: collapse;
+        padding: 10px;
+        align-content: center;
+        justify-content: center;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+        height: fit-content;
+    }
+    table.clueboxInput td {
+        justify-content: left;
+    }
+    table.clueboxInput td[addRow] {
+        justify-content: center;
+        align-content: center;
+        height: fit-content;
+        padding: 0px;
+        margin: 0px;
+        text-align: center;
+    }
+    table.clueboxInput td[removeRow] {
+        justify-content: center;
+        align-content: center;
+        text-align: center;
+        padding: 5px;
+    }
+    table.clueboxInput sl-button {
+        height: auto;
+        text-align: center;
+        justify-content: center;
+        align-content: center;
+        vertical-align: middle;
+    }
+    table.clueboxInput sl-icon {
+        size: 100px;
+        font-size: 20px;
+        text-align: center;
+        padding: 10px;
+        justify-content: center;
+        color: var(--sl-color-gray-400);
+        align-content: center;
+        vertical-align: middle;
+    }
+    table.cluebox {
+        width: 48%;
+        min-width: 300px;
+        height: fit-content;
+        border: 2px solid var(--sl-color-gray-300);
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-700);
+        background-color: var(--sl-color-gray-100);
+        table-layout: fixed;
+        text-align: center;
+        justify-content: center;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 5px;
+    }
+    table.cluebox > thead {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-700);
+        background-color: var(--sl-color-gray-300);
+    }
+    table.cluebox > thead > tr {
+        padding: 0px;
+        margin: 0px;
+    }
+    table.cluebox th {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-700);
+        border-collapse: collapse;
+        background-color: var(--sl-color-gray-300);
+        padding: 10px;
+    } 
+    table.cluebox > tbody {
+        border: 3px solid var(--sl-color-gray-200);
+    }
+    table.cluebox > tbody > tr {
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-900);
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+    }
+    table.cluebox td {
+        text-align: left;
+        font-family: var(--sl-font-sans);
+        color: var(--sl-color-gray-900);
+        border-right: 1px solid var(--sl-color-gray-200);
+        border-left: 1px solid var(--sl-color-gray-200);
+        border-bottom: 2px solid var(--sl-color-gray-200);
+        border-collapse: collapse;
+        padding: 10px;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+        height: 30px;
+        width: 50%;
+
+    }
+`;
+var grid_styles = i`
+    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
                 display: none;
             }
             // TODO Add different CSS for when a row / column is in focus
@@ -2115,7 +2282,51 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
                 place-self: start;
                 pointer-events: none;
             }
-            `;
+`;
+
+// src/widgets/crossword-grid.ts
+function stopCtrlPropagation(event) {
+  if (event.ctrlKey) {
+    event.stopPropagation();
+    DEV: console.log("Prevented propagation of a single CTRL key sequence within widget");
+  }
+}
+function defaultCell() {
+  return {
+    white: false,
+    answer: null,
+    // NOTE Should this be here, or should 
+    number: null,
+    direction: null
+  };
+}
+var DEFAULT_DIMENSION = 9;
+var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
+  grid;
+  gridEl;
+  wordsAndClues;
+  acrossContext;
+  currentClue;
+  cur_row;
+  cur_col;
+  // @type {boolean}
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just makes a grid with 9x9 dimensions
+   */
+  constructor() {
+    super();
+    this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
+    this.acrossContext = null;
+  }
+  /**
+   * Styles for the crossword grid.
+   * clue-label based off of crossword-js
+   */
+  static get styles() {
+    return grid_styles;
   }
   // TODO Add event listener for adding the focus class based on the clue number and direction
   /**
@@ -3928,8 +4139,8 @@ function isTopLayer(element) {
 }
 function isContainingBlock(elementOrCss) {
   const webkit = isWebKit();
-  const css = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
-  return css.transform !== "none" || css.perspective !== "none" || (css.containerType ? css.containerType !== "normal" : false) || !webkit && (css.backdropFilter ? css.backdropFilter !== "none" : false) || !webkit && (css.filter ? css.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css.contain || "").includes(value));
+  const css3 = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
+  return css3.transform !== "none" || css3.perspective !== "none" || (css3.containerType ? css3.containerType !== "normal" : false) || !webkit && (css3.backdropFilter ? css3.backdropFilter !== "none" : false) || !webkit && (css3.filter ? css3.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css3.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css3.contain || "").includes(value));
 }
 function getContainingBlock(element) {
   let currentNode = getParentNode(element);
@@ -4011,9 +4222,9 @@ function getFrameElement(win) {
 
 // node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getCssDimensions(element) {
-  const css = getComputedStyle2(element);
-  let width = parseFloat(css.width) || 0;
-  let height = parseFloat(css.height) || 0;
+  const css3 = getComputedStyle2(element);
+  let width = parseFloat(css3.width) || 0;
+  let height = parseFloat(css3.height) || 0;
   const hasOffset = isHTMLElement(element);
   const offsetWidth = hasOffset ? element.offsetWidth : width;
   const offsetHeight = hasOffset ? element.offsetHeight : height;
@@ -4107,9 +4318,9 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
     while (currentIFrame && offsetParent && offsetWin !== currentWin) {
       const iframeScale = getScale(currentIFrame);
       const iframeRect = currentIFrame.getBoundingClientRect();
-      const css = getComputedStyle2(currentIFrame);
-      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
-      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
+      const css3 = getComputedStyle2(currentIFrame);
+      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css3.paddingLeft)) * iframeScale.x;
+      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css3.paddingTop)) * iframeScale.y;
       x3 *= iframeScale.x;
       y4 *= iframeScale.y;
       width *= iframeScale.x;
@@ -24269,211 +24480,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.wordsAndClues = [];
   }
   static get styles() {
-    return i`
-            div {
-                display:flex;
-                flex-wrap:wrap;
-                align-items: space-between;
-                justify-content:space-between;
-                margin-top: 10px;
-                width: 100%;
-            }
-            table.clueboxInput {
-                /*Temporary width and height*/
-                /*min-width: 200px;*/
-                width: 48%;
-                min-width: 300px;
-                min-height: 200px;
-                height: fit-content;
-                border: 2px solid var(--sl-color-gray-300);
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-700);
-                background-color: var(--sl-color-gray-100);
-                table-layout: fixed;
-                margin-left: auto;
-                margin-right: auto;
-                /*flex-basis: content; */
-            }
-            .word-column {
-                width: 25%; /* Temporary width and height*/
-            }
-            .clue-column {
-                width: 75%; /* Temporary width and height*/
-            }
-            table.clueboxInput > thead {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-700);
-                background-color: var(--sl-color-gray-300);
-            }
-            table.clueboxInput > thead > tr {
-                padding: 0px;
-                margin: 0px;
-            }
-            table.clueboxInput th {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-700);
-                border-collapse: collapse;
-                background-color: var(--sl-color-gray-300);
-                padding: 10px;
-            } 
-            table.clueboxInput tr.generateCw {
-                text-align: right;
-                margin: 1px;
-                height: 20px;
-            }
-            table.clueboxInput th.generateCw {
-                text-align: right;
-                padding: 1px;
-                padding-right: 8px;
-                margin: 1px;
-                height: auto;
-                height: 30px;
-            }
-            .generateCwButton::part(base) {
-            /* Set design tokens for height and border width */
-                padding: 0px;
-                margin: 0px;
-                --sl-input-height-small: 12px;
-                --sl-input-width-small: 20px;
-                border-radius: 0;
-                color: var(--sl-color-gray-500);
-                transition: var(--sl-transition-medium) transform ease, var(--sl-transition-medium) border ease;
-            }
-            .generateCwButton::part(label) {
-                --sl-input-height-small: 12px;
-                --sl-input-width-small: 20px;
-                padding: 2px;
-                margin: 0px;
-                word-wrap: normal;
-                vertical-align: top;
-                text-align: center;
-                justify-content: center;
-                color: var(--sl-color-gray-400);
-                align-content: center;
-
-            }
-            table.clueboxInput sl-icon.generateCwIcon {
-                font-size: 20px;
-                text-align: center;
-                padding: 0px;
-                justify-content: center;
-                color: var(--sl-color-gray-400);
-                align-content: center;
-                vertical-align: middle;
-            }
-            table.clueboxInput > tbody {
-                border: 3px solid var(--sl-color-gray-200);
-            }
-            table.clueboxInput > tbody > tr {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-900);
-                word-wrap: break-word;
-                overflow-wrap: anywhere;
-            }
-            table.clueboxInput > tbody > tr > td {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-900);
-                border-right: 1px solid var(--sl-color-gray-200);
-                border-left: 1px solid var(--sl-color-gray-200);
-                border-bottom: 2px solid var(--sl-color-gray-200);
-                border-collapse: collapse;
-                padding: 10px;
-                align-content: center;
-                justify-content: center;
-                word-wrap: break-word;
-                overflow-wrap: anywhere;
-                height: fit-content;
-            }
-            table.clueboxInput td {
-                justify-content: left;
-            }
-            table.clueboxInput td[addRow] {
-                justify-content: center;
-                align-content: center;
-                height: fit-content;
-                padding: 0px;
-                margin: 0px;
-                text-align: center;
-            }
-            table.clueboxInput td[removeRow] {
-                justify-content: center;
-                align-content: center;
-                text-align: center;
-                padding: 5px;
-            }
-            table.clueboxInput sl-button {
-                height: auto;
-                text-align: center;
-                justify-content: center;
-                align-content: center;
-                vertical-align: middle;
-            }
-            table.clueboxInput sl-icon {
-                size: 100px;
-                font-size: 20px;
-                text-align: center;
-                padding: 10px;
-                justify-content: center;
-                color: var(--sl-color-gray-400);
-                align-content: center;
-                vertical-align: middle;
-            }
-            table.cluebox {
-                width: 48%;
-                min-width: 300px;
-                height: fit-content;
-                border: 2px solid var(--sl-color-gray-300);
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-700);
-                background-color: var(--sl-color-gray-100);
-                table-layout: fixed;
-                text-align: center;
-                justify-content: center;
-                margin-left: auto;
-                margin-right: auto;
-                margin-bottom: 5px;
-            }
-            table.cluebox > thead {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-700);
-                background-color: var(--sl-color-gray-300);
-            }
-            table.cluebox > thead > tr {
-                padding: 0px;
-                margin: 0px;
-            }
-            table.cluebox th {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-700);
-                border-collapse: collapse;
-                background-color: var(--sl-color-gray-300);
-                padding: 10px;
-            } 
-            table.cluebox > tbody {
-                border: 3px solid var(--sl-color-gray-200);
-            }
-            table.cluebox > tbody > tr {
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-900);
-                word-wrap: break-word;
-                overflow-wrap: anywhere;
-            }
-            table.cluebox td {
-                text-align: left;
-                font-family: var(--sl-font-sans);
-                color: var(--sl-color-gray-900);
-                border-right: 1px solid var(--sl-color-gray-200);
-                border-left: 1px solid var(--sl-color-gray-200);
-                border-bottom: 2px solid var(--sl-color-gray-200);
-                border-collapse: collapse;
-                padding: 10px;
-                word-wrap: break-word;
-                overflow-wrap: anywhere;
-                height: 30px;
-                width: 50%;
-
-            }
-            `;
+    return cluebox_styles;
   }
   // Registering custom elements
   static get scopedElements() {
@@ -24700,7 +24707,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
         <sl-button slot="footer" variant="primary">Close</sl-button>
         </sl-drawer>
         <sl-button>Open Drawer</sl-button>
-`;
+        `;
   }
   render() {
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">

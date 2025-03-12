@@ -11,6 +11,7 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrossword } from './crossword';
 import { generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
+import { grid_styles } from '../styles/styles'
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -169,75 +170,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * clue-label based off of crossword-js
      */
     static get styles() {
-        return css`
-            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-                display: none;
-            }
-            // TODO Add different CSS for when a row / column is in focus
-            td:focus {
-                background-color: white;
-            }
-            div.grid {
-                display: grid;
-                flex-basis: content;
-                grid-template-columns: auto;
-                grid-template-rows: auto;
-                justify-content: center;
-                align-content: center;
-                box-sizing: border-box;
-                width: max-content;
-                height: max-content;
-                border: 2px solid var(--sl-color-gray-400);
-            }
-            div.cell {
-                display: grid;
-                grid-template-columns: repeat(3, 25%, [col-start]);
-                grid-template-rows: [row1-start] 25% [row1-end row2-start] 75% [row2-end];
-                aspect-ratio: 1;
-                height: 100%;
-                width: 100%;
-                min-width: 40px;
-                min-height: 40px;
-                border: 1px solid var(--sl-color-gray-400);
-                max-width: 40px;
-                max-height: 40px;
-                position: center;
-                align-items: center;
-                text-align: center;
-                font-size: 18pt;
-                caret-color: transparent;
-            }
-            div.cell[black] {
-                background-color: var(--sl-color-gray-400);
-            }
-            div.cell:focus {
-                background-color: lightblue;
-            }
-            div.focus-clue {
-                background-color: lightskyblue;
-            }
-            .cell-letter {
-                grid-column-start: 1;
-                grid-column-end: span 100%;
-                grid-row-start: row1-start;
-                grid-row-end: span 100%;
-                height: 100%;
-                width: 100%;
-                position: center;
-                font-size: 18pt;
-            }
-            .clue-label {
-                grid-column-start: 1;
-                grid-column-end: span 25%;
-                grid-row-start: row1-start;
-                grid-row-end: span row1-end;
-                position: absolute;
-                margin: 1px 0px 0px 1px;
-                font-size: 8pt;
-                place-self: start;
-                pointer-events: none;
-            }
-            `
+        return grid_styles
     }
 
     // TODO Add event listener for adding the focus class based on the clue number and direction
