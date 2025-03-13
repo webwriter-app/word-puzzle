@@ -24432,7 +24432,6 @@ var caret_left_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/
 
 // src/widgets/crossword-cluebox.ts
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
-  clueBoxInput;
   #cluebox;
   get cluebox() {
     return this.#cluebox;
@@ -24509,8 +24508,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
         wordsAndClues.push({ word: words[i9], clueText: clues[i9] });
       }
     }
-    DEV: console.log("Words and clues:");
-    DEV: console.log(wordsAndClues);
     this.wordsAndClues = wordsAndClues;
     return this.wordsAndClues;
   }
@@ -24555,7 +24552,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * @param {Event} e Click event of the button
    */
   addRow(e13) {
-    DEV: console.log("Adding row");
     let newRow = this.clueboxInput.tBodies[0].insertRow();
     B(this.new_row_template_inner, newRow);
   }
@@ -24590,17 +24586,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       clueboxTemplateCells.push(x`<tr>`);
       clueboxTemplateCells.push(x`<td>${singleCell(this.wordsAndClues[k3])}</td><td>${singleCell(this.wordsAndClues[k3 + i9])}</td>`);
       clueboxTemplateCells.push(x`</tr>`);
-      DEV: console.log("Row " + k3 + ":");
-      DEV: console.log("Added " + k3 + " for across and " + (k3 + i9) + " for down");
     }
     let diff = Math.abs(i9 - j3);
     let start = i9 > j3 ? sharedRows : sharedRows + i9;
     for (let k3 = start; k3 < diff + start; k3++) {
-      DEV: console.log("Row " + k3 + ":");
       let cell = this.wordsAndClues[k3].across ? x`<tr><td>${singleCell(this.wordsAndClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td>${singleCell(this.wordsAndClues[k3])}</td></tr>`;
       clueboxTemplateCells.push(cell);
-      let debug = this.wordsAndClues[k3].across ? " across" : " down";
-      DEV: console.log("Added word " + k3 + debug);
     }
     function singleCell(wordClue) {
       if (wordClue != null) {
@@ -24670,9 +24661,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             `;
   }
 };
-__decorateClass([
-  n4({ type: HTMLDivElement, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBoxInput", 2);
 __decorateClass([
   e5(".cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "cluebox", 1);

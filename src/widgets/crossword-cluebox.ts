@@ -42,16 +42,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     /**
-     * The input element for the words and clues of the crossword puzzle. 
-     * 
-     * It's intended exclusively for use by crossword creators (i.e. teachers).
-     * 
-     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
-     */
-    @property({ type: HTMLDivElement, state: true, attribute: false})
-    clueBoxInput: HTMLTableElement
-
-    /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
      * This one is intended for the crossword solver (i.e. student).
@@ -61,6 +51,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     @query(".cluebox")
     accessor cluebox: HTMLTableElement
 
+    /**
+     * The input element for the words and clues of the crossword puzzle. 
+     * 
+     * It's intended exclusively for use by crossword creators (i.e. teachers).
+     * 
+     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+     */
     @query(".clueboxInput")
     accessor clueboxInput: HTMLTableElement
 
@@ -88,7 +85,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     @query("sl-drawer")
     accessor drawer: SlDrawer
-
 
     /**
      * @constructor
@@ -151,8 +147,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 wordsAndClues.push({word: words[i], clueText: clues[i]})
             }
         }
-        DEV: console.log("Words and clues:")
-        DEV: console.log(wordsAndClues)
 
         this.wordsAndClues = wordsAndClues
 
@@ -176,12 +170,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     ctrlHandler(event: KeyboardEvent): void {
         if (event.ctrlKey && event.key === "Enter") {
             event.stopPropagation()
-            //DEV: console.log("Prevented propagation of a single CTRL key sequence within widget (cluebox)")
             this.getNewWords()
             if(this.wordsAndClues.length != 0) {
                 this.triggerCwGeneration()
             }
-            //DEV: console.log("This is supposed to generate the grid though")
         }
         else if(event.ctrlKey)
             event.stopPropagation()
@@ -208,11 +200,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @param {Event} e Click event of the button
      */
     addRow(e: Event) {
-        DEV: console.log("Adding row")
         let newRow = this.clueboxInput.tBodies[0].insertRow()
 
         render(this.new_row_template_inner, newRow)
-
     }
 
     /**
@@ -257,8 +247,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             clueboxTemplateCells.push(html`<tr>`)
             clueboxTemplateCells.push(html`<td>${singleCell(this.wordsAndClues[k])}</td><td>${singleCell(this.wordsAndClues[k+i])}</td>`)
             clueboxTemplateCells.push(html`</tr>`)
-            DEV: console.log("Row " + k + ":")
-            DEV: console.log("Added " + k + " for across and " + (k + i) + " for down")
         }
 
         // Add clues remaining clues in only across / down column
@@ -266,15 +254,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         let start = i > j ? sharedRows : sharedRows + i
 
         for(let k = start; k < diff + start; k++) {
-            DEV: console.log("Row " +  k + ":")
             let cell = this.wordsAndClues[k].across ? 
                 html`<tr><td>${singleCell(this.wordsAndClues[k])}</td><td></td></tr>`
                 : 
                 html`<tr><td></td><td>${singleCell(this.wordsAndClues[k])}</td></tr>`
                 clueboxTemplateCells.push(cell)
-
-            let debug = this.wordsAndClues[k].across ? " across" : " down"
-            DEV: console.log("Added word " + k + debug)
         }
 
 
