@@ -24458,22 +24458,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.#drawer = _3;
   }
   /**
-   * Lit HTML template for adding a new row to cluebox input element.
-   * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
-   */
-  new_row_template_inner = x`
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-tooltip content="Delete row">
-                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
-                                <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
-                            </sl-button>
-                        </sl-tooltip>
-                </div>
-                </td>`;
-  /**
    * @constructor
    * 
    * Does nothing I guess
@@ -24557,16 +24541,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    * @param {Event} e Click event of the button
    */
-  addRow(e13) {
-    DEV: console.log("Adding row");
-    let newRow = this.clueboxInput.tBodies[0].insertRow();
-    B(this.new_row_template_inner, newRow);
-  }
-  /**
-   * Handler for deleting the row corresponding to the clicked button.
-   * 
-   * @param {Event} e Click event of the button
-   */
   deleteRow(e13) {
     let button = e13.target;
     const trow = button.closest("tr");
@@ -24575,17 +24549,42 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       trow.remove();
     }
   }
+  /**
+   * Handler for deleting the row corresponding to the clicked button.
+   * 
+   * @param {Event} e Click event of the button
+   */
+  addRow(e13) {
+    DEV: console.log("Adding row");
+    let newRow = this.clueboxInput.tBodies[0].insertRow();
+    B(this.new_row_template_inner, newRow);
+  }
+  /**
+   * Lit HTML template for adding a new row to cluebox input element.
+   * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
+   */
+  new_row_template_inner = x`
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-tooltip content="Delete row">
+                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
+                                <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
+                            </sl-button>
+                        </sl-tooltip>
+                </div>
+                </td>`;
   renderCluebox() {
-    let i9 = 0, j3 = 0;
+    let i9 = 0;
+    let j3 = 0;
     for (let wordClue of this.wordsAndClues) {
       if (wordClue.across) {
         i9++;
       } else
         j3++;
     }
-    DEV: console.log("Across words: " + i9 + " | Down words: " + j3);
     let sharedRows = Math.min(i9, j3);
-    DEV: console.log("Max iterations: " + sharedRows);
     const clueboxTemplateCells = [];
     for (let k3 = 0; k3 < sharedRows; k3++) {
       clueboxTemplateCells.push(x`<tr>`);
@@ -24596,12 +24595,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     }
     let diff = Math.abs(i9 - j3);
     let start = i9 > j3 ? sharedRows : sharedRows + i9;
-    for (let k3 = 0; k3 < diff; k3++) {
-      DEV: console.log("Row " + (start + k3) + ":");
-      let cell = this.wordsAndClues[start + k3].across ? x`<tr><td>${singleCell(this.wordsAndClues[start + k3])}</td><td></td></tr>` : x`<tr><td></td><td>${singleCell(this.wordsAndClues[start + k3])}</td></tr>`;
+    for (let k3 = start; k3 < diff + start; k3++) {
+      DEV: console.log("Row " + k3 + ":");
+      let cell = this.wordsAndClues[k3].across ? x`<tr><td>${singleCell(this.wordsAndClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td>${singleCell(this.wordsAndClues[k3])}</td></tr>`;
       clueboxTemplateCells.push(cell);
-      let debug = this.wordsAndClues[start + k3].across ? " across" : " down";
-      DEV: console.log("Added word " + (start + k3) + debug);
+      let debug = this.wordsAndClues[k3].across ? " across" : " down";
+      DEV: console.log("Added word " + k3 + debug);
     }
     function singleCell(wordClue) {
       if (wordClue != null) {

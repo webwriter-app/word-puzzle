@@ -5,7 +5,7 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, render } from 'lit';
+import { html, HTMLTemplateResult, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WordClue } from './crossword-grid';
@@ -89,22 +89,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     @query("sl-drawer")
     accessor drawer: SlDrawer
 
-    /**
-     * Lit HTML template for adding a new row to cluebox input element.
-     * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
-     */
-    new_row_template_inner = html`
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-tooltip content="Delete row">
-                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
-                                <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
-                            </sl-button>
-                        </sl-tooltip>
-                </div>
-                </td>`
 
     /**
      * @constructor
@@ -202,20 +186,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         else if(event.ctrlKey)
             event.stopPropagation()
     }
-
-    /**
-     * Handler for deleting the row corresponding to the clicked button.
-     * 
-     * @param {Event} e Click event of the button
-     */
-    addRow(e: Event) {
-        DEV: console.log("Adding row")
-        let newRow = this.clueboxInput.tBodies[0].insertRow()
-
-        render(this.new_row_template_inner, newRow)
-
-    }
-
+    
 
     /**
      * Handler for deleting the row corresponding to the clicked button.
@@ -231,11 +202,45 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         }
     }
 
+    /**
+     * Handler for deleting the row corresponding to the clicked button.
+     * 
+     * @param {Event} e Click event of the button
+     */
+    addRow(e: Event) {
+        DEV: console.log("Adding row")
+        let newRow = this.clueboxInput.tBodies[0].insertRow()
+
+        render(this.new_row_template_inner, newRow)
+
+    }
+
+    /**
+     * Lit HTML template for adding a new row to cluebox input element.
+     * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
+     */
+    new_row_template_inner = html`
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-tooltip content="Delete row">
+                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                                <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                            </sl-button>
+                        </sl-tooltip>
+                </div>
+                </td>`
+
+
     renderCluebox() {
-     // TODO Loop over expressions in wordsAndClues
 
+        // Count across and down clues
 
-        let i = 0, j = 0
+        /** number of across clues */
+        let i = 0
+        /** number of down clues */
+        let j = 0
         for(let wordClue of this.wordsAndClues) {
             if(wordClue.across) {
                 i++
@@ -244,14 +249,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 j++
         }
 
-        DEV: console.log("Across words: " + i + " | Down words: " + j)
-
         let sharedRows = Math.min(i, j)
-
-        DEV: console.log("Max iterations: " + sharedRows)
-
         const clueboxTemplateCells = []
 
+        // Add clues in the same row
         for(let k = 0; k < sharedRows; k++) {
             clueboxTemplateCells.push(html`<tr>`)
             clueboxTemplateCells.push(html`<td>${singleCell(this.wordsAndClues[k])}</td><td>${singleCell(this.wordsAndClues[k+i])}</td>`)
@@ -260,23 +261,29 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             DEV: console.log("Added " + k + " for across and " + (k + i) + " for down")
         }
 
+        // Add clues remaining clues in only across / down column
         let diff = Math.abs(i - j)
         let start = i > j ? sharedRows : sharedRows + i
 
-        for(let k = 0; k < diff; k++) {
-            DEV: console.log("Row " + (start + k) + ":")
-            let cell = this.wordsAndClues[start + k].across ? 
-                html`<tr><td>${singleCell(this.wordsAndClues[start + k])}</td><td></td></tr>`
+        for(let k = start; k < diff + start; k++) {
+            DEV: console.log("Row " +  k + ":")
+            let cell = this.wordsAndClues[k].across ? 
+                html`<tr><td>${singleCell(this.wordsAndClues[k])}</td><td></td></tr>`
                 : 
-                html`<tr><td></td><td>${singleCell(this.wordsAndClues[start + k])}</td></tr>`
+                html`<tr><td></td><td>${singleCell(this.wordsAndClues[k])}</td></tr>`
                 clueboxTemplateCells.push(cell)
 
-            let debug = this.wordsAndClues[start + k].across ? " across" : " down"
-            DEV: console.log("Added word " + (start + k) + debug)
+            let debug = this.wordsAndClues[k].across ? " across" : " down"
+            DEV: console.log("Added word " + k + debug)
         }
 
 
-        function singleCell(wordClue: WordClue) {
+        /**
+         * The contents of a single cell element
+         * @param {WordClue} wordClue 
+         * @returns {HTMLTemplateResult}
+         */
+        function singleCell(wordClue: WordClue): HTMLTemplateResult {
             if(wordClue != null) {
                 return html`
                         <b>${wordClue.clueNumber != null ? 

@@ -68,11 +68,17 @@ export interface Cell {
  * ```
  * */
 export interface WordClue {
+    /** The word in question */
     word: string,
+    /** The text for the clue */
     clueText?: string,
-    x?: number, // x coordinate
-    y?: number, // y coordinate
+    /** (0-indexed) starting x-coordinate of the word on the grid*/
+    x?: number, 
+    /** (0-indexed) starting y-coordinate of the word on the grid*/
+    y?: number, 
+    /** Whether the word is across or down */
     across?: boolean,
+    /** Number of the clue */
     clueNumber?: number
 }
 
