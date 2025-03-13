@@ -4117,8 +4117,8 @@ function isTopLayer(element) {
 }
 function isContainingBlock(elementOrCss) {
   const webkit = isWebKit();
-  const css3 = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
-  return css3.transform !== "none" || css3.perspective !== "none" || (css3.containerType ? css3.containerType !== "normal" : false) || !webkit && (css3.backdropFilter ? css3.backdropFilter !== "none" : false) || !webkit && (css3.filter ? css3.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css3.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css3.contain || "").includes(value));
+  const css2 = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
+  return css2.transform !== "none" || css2.perspective !== "none" || (css2.containerType ? css2.containerType !== "normal" : false) || !webkit && (css2.backdropFilter ? css2.backdropFilter !== "none" : false) || !webkit && (css2.filter ? css2.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css2.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css2.contain || "").includes(value));
 }
 function getContainingBlock(element) {
   let currentNode = getParentNode(element);
@@ -4200,9 +4200,9 @@ function getFrameElement(win) {
 
 // node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getCssDimensions(element) {
-  const css3 = getComputedStyle2(element);
-  let width = parseFloat(css3.width) || 0;
-  let height = parseFloat(css3.height) || 0;
+  const css2 = getComputedStyle2(element);
+  let width = parseFloat(css2.width) || 0;
+  let height = parseFloat(css2.height) || 0;
   const hasOffset = isHTMLElement(element);
   const offsetWidth = hasOffset ? element.offsetWidth : width;
   const offsetHeight = hasOffset ? element.offsetHeight : height;
@@ -4296,9 +4296,9 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
     while (currentIFrame && offsetParent && offsetWin !== currentWin) {
       const iframeScale = getScale(currentIFrame);
       const iframeRect = currentIFrame.getBoundingClientRect();
-      const css3 = getComputedStyle2(currentIFrame);
-      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css3.paddingLeft)) * iframeScale.x;
-      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css3.paddingTop)) * iframeScale.y;
+      const css2 = getComputedStyle2(currentIFrame);
+      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css2.paddingLeft)) * iframeScale.x;
+      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css2.paddingTop)) * iframeScale.y;
       x3 *= iframeScale.x;
       y4 *= iframeScale.y;
       width *= iframeScale.x;
@@ -24424,9 +24424,6 @@ __decorateClass2([
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.RJUO2BMU.js
 SlAnimatedImage.define("sl-animated-image");
 
-// node_modules/bootstrap-icons/icons/plus-lg.svg
-var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">%0A  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>%0A</svg>';
-
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
 
@@ -24465,15 +24462,19 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.#drawer = _3;
   }
   /**
-   * TypeScript HTML snippet for adding a new row
+   * Lit HTML template for adding a new row to cluebox input element.
+   * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
    */
-  new_row_html = `<td class="word-column" contenteditable></td>
-                <td class="clue-column" contenteditable></td>
+  new_row_template_inner = x`
+                <td contenteditable></td>
+                <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle>
-                            <div class="sl-icon-div"><sl-icon></sl-icon></div>
-                        </sl-button>
+                        <sl-tooltip content="Delete row">
+                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
+                                <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
+                            </sl-button>
+                        </sl-tooltip>
                 </div>
                 </td>`;
   /**
@@ -24484,8 +24485,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    */
   constructor() {
     super();
-    this.clueBoxInput = this.newClueBoxInput(document);
-    this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this));
     this.newClueBox(this.wordsAndClues);
     this.clueBox = this.newClueBox(this.wordsAndClues);
     this.wordsAndClues = [];
@@ -24503,88 +24502,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       "sl-drawer": drawer_default,
       "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
     };
-  }
-  /**
-   * @constructor
-   * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBoxInput | clue panel} DOM element 
-   * that will be used by a crossword creator (i.e. teacher) to add words and clues.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @returns {HTMLTableElement} the DOM element for the clue panel
-   * Source: crosswords-js
-   */
-  newClueBoxInput(document2) {
-    const clueBoxInput = document2.createElement("table");
-    clueBoxInput.classList.add("clueboxInput");
-    const colgroup = document2.createElement("colgroup");
-    const col1 = document2.createElement("col");
-    col1.style.width = "30%";
-    const col2 = document2.createElement("col");
-    col2.style.width = "70%";
-    colgroup.appendChild(col1);
-    colgroup.appendChild(col2);
-    clueBoxInput.createTHead();
-    clueBoxInput.tHead.insertRow();
-    clueBoxInput.insertBefore(colgroup, clueBoxInput.tHead);
-    const headers = ["Words", "Clues"];
-    for (const element of headers) {
-      const th = document2.createElement("th");
-      th.textContent = element;
-      if (element == "Words")
-        th.classList.add("word-column");
-      else
-        th.classList.add("clue-column");
-      clueBoxInput.tHead.rows[0].appendChild(th);
-    }
-    clueBoxInput.tHead.insertRow(0);
-    const bodyTable = clueBoxInput.createTBody();
-    const buttonRow = bodyTable.insertRow();
-    buttonRow.id = "buttonRow";
-    buttonRow.setAttribute("contenteditable", "false");
-    buttonRow.classList.add("author-only");
-    const addCell = buttonRow.insertCell(0);
-    addCell.setAttribute("addRow", "");
-    addCell.classList.add("author-only");
-    const removeCell = buttonRow.insertCell(1);
-    removeCell.setAttribute("removeRow", "");
-    removeCell.classList.add("author-only");
-    addRow();
-    addRow();
-    addRow();
-    addRow();
-    const addButton = addCell.appendChild(document2.createElement("sl-button"));
-    addButton.setAttribute("variant", "default");
-    addButton.setAttribute("size", "medium");
-    addButton.setAttribute("circle", "");
-    addButton.classList.add("author-only");
-    addButton.addEventListener("click", () => {
-      addRow();
-    });
-    const addIcon = addButton.appendChild(document2.createElement("sl-icon"));
-    addIcon.setAttribute("src", plus_lg_default);
-    addIcon.setAttribute("font-size", "20px");
-    const removeButton = removeCell.appendChild(document2.createElement("sl-button"));
-    removeButton.setAttribute("variant", "default");
-    removeButton.setAttribute("size", "medium");
-    removeButton.setAttribute("circle", "");
-    removeButton.classList.add("author-only");
-    removeButton.addEventListener("click", () => {
-      if (buttonRow.rowIndex > 3)
-        bodyTable.deleteRow(buttonRow.rowIndex - 3);
-    });
-    const removeIcon = removeButton.appendChild(document2.createElement("sl-icon"));
-    removeIcon.setAttribute("src", dash_default);
-    removeButton.classList.add("author-only");
-    function addRow() {
-      bodyTable.insertRow(buttonRow.rowIndex - 2);
-      bodyTable.rows[buttonRow.rowIndex - 3].insertCell(0);
-      bodyTable.rows[buttonRow.rowIndex - 3].insertCell(1);
-      bodyTable.rows[buttonRow.rowIndex - 3].cells[0].setAttribute("contenteditable", "true");
-      bodyTable.rows[buttonRow.rowIndex - 3].cells[0].classList.add("word-column");
-      bodyTable.rows[buttonRow.rowIndex - 3].cells[1].setAttribute("contenteditable", "true");
-      bodyTable.rows[buttonRow.rowIndex - 3].cells[1].classList.add("clue-column");
-    }
-    return clueBoxInput;
   }
   /**
    * Event handler that triggers crossword generation
@@ -24704,10 +24621,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * @param {Event} e Click event of the button
    */
   addRow(e13) {
-    const newRow = this.clueboxInput.tBodies[0].insertRow();
-    newRow.innerHTML = this.new_row_html;
-    newRow.querySelector(".minus-button").addEventListener("click", (e14) => this.deleteRow(e14));
-    newRow.querySelector("sl-icon").setAttribute("src", dash_default);
+    DEV: console.log("Adding row");
+    let newRow = this.clueboxInput.tBodies[0].insertRow();
+    B(this.new_row_template_inner, newRow);
   }
   /**
    * Handler for deleting the row corresponding to the clicked button.
@@ -24717,75 +24633,54 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   deleteRow(e13) {
     let button = e13.target;
     const trow = button.closest("tr");
-    trow.remove();
+    const tBody = trow.closest("tBody");
+    if (tBody.childElementCount > 4) {
+      trow.remove();
+    }
   }
   render() {
     const clueboxInputTemplate = x`
-        <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
-            <colgroup>
-            <col class="word-column">
-            <col  class="clue-column">
-            <col  class="button-column">
-        </colgroup>
-        <thead>
-            <tr>
-                <th class="word-column">Words</th>
-                <th class="clue-column">Clues</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.addRow(e13)}>
-                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr>
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
-                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr> 
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
-                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr> 
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
-                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr> 
-        </tbody>
-        </table>
-        `;
+            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+                <colgroup>
+                <col class="word-column">
+                <col  class="clue-column">
+                <col  class="button-column">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="word-column">Words</th>
+                    <th class="clue-column">Clues</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+            </tbody>
+            </table>
+            `;
+    const clueboxTemplate = x`
+            <table class="cluebox">
+                <colgroup>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Across</th>
+                    <th>Down</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            </table>
+            `;
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${clueboxInputTemplate}
                 ${this.clueBox} 
                 <sl-drawer contained position="relative" label="Clue input box">
-                ${this.clueBoxInput} 
+                ${this.clueboxInput} 
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
@@ -24845,7 +24740,6 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridWidget.newCrosswordGridDOM(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
-    this.clueWidget.newClueBoxInput(document);
     this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues);
     this.addEventListener("generateCw", () => {
       this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues);

@@ -5,7 +5,7 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, css } from 'lit';
+import { html, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WordClue } from './crossword-grid';
@@ -91,17 +91,20 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     @query("sl-drawer")
     accessor drawer: SlDrawer
 
-
     /**
-     * TypeScript HTML snippet for adding a new row
+     * Lit HTML template for adding a new row to cluebox input element.
+     * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
      */
-    new_row_html = `<td class="word-column" contenteditable></td>
-                <td class="clue-column" contenteditable></td>
+    new_row_template_inner = html`
+                <td contenteditable></td>
+                <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle>
-                            <div class="sl-icon-div"><sl-icon></sl-icon></div>
-                        </sl-button>
+                        <sl-tooltip content="Delete row">
+                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                                <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                            </sl-button>
+                        </sl-tooltip>
                 </div>
                 </td>`
 
@@ -113,8 +116,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     constructor() {
         super()
-        this.clueBoxInput = this.newClueBoxInput(document)
-        this.clueBoxInput.addEventListener("keydown", this.ctrlHandler.bind(this))
         this.newClueBox(this.wordsAndClues)
         this.clueBox = this.newClueBox(this.wordsAndClues)
         this.wordsAndClues = []
@@ -136,102 +137,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         };
     }
 
-    /**
-     * @constructor
-     * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBoxInput | clue panel} DOM element 
-     * that will be used by a crossword creator (i.e. teacher) to add words and clues.
-     * 
-     * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-     * @returns {HTMLTableElement} the DOM element for the clue panel
-     * Source: crosswords-js
-     */
-    newClueBoxInput(document): HTMLTableElement {
-        // Create table and header
-        //DEV: console.log("rendering cluebox");
-        const clueBoxInput: HTMLTableElement = document.createElement('table')
-        clueBoxInput.classList.add('clueboxInput')
-        const colgroup: HTMLTableColElement = document.createElement('colgroup')
-        const col1 = document.createElement('col')
-        col1.style.width = '30%'
-        const col2 = document.createElement('col')
-        col2.style.width = '70%'
-        colgroup.appendChild(col1)
-        colgroup.appendChild(col2)
-        clueBoxInput.createTHead()
-        clueBoxInput.tHead.insertRow()
-        clueBoxInput.insertBefore(colgroup, clueBoxInput.tHead)
-
-        // Add headers
-        const headers = ["Words", "Clues"]
-        for (const element of headers) {
-            const th: HTMLTableCellElement = document.createElement('th');
-            th.textContent = element;
-            if(element == "Words")
-                th.classList.add("word-column")
-            else
-                th.classList.add("clue-column")
-            clueBoxInput.tHead.rows[0].appendChild(th)
-        }
-        clueBoxInput.tHead.insertRow(0)
-
-        // Create body
-        const bodyTable: HTMLTableSectionElement = clueBoxInput.createTBody()
-        // Create button for inserting and removing rows
-        const buttonRow = bodyTable.insertRow()
-        buttonRow.id = 'buttonRow'
-        //buttonRow.classList.add('author-only')
-        buttonRow.setAttribute('contenteditable', 'false')
-        buttonRow.classList.add('author-only')
-        const addCell: HTMLTableCellElement = buttonRow.insertCell(0)
-        addCell.setAttribute('addRow', '')
-        addCell.classList.add('author-only')
-        const removeCell: HTMLTableCellElement = buttonRow.insertCell(1)
-        removeCell.setAttribute('removeRow', '')
-        removeCell.classList.add('author-only')
-
-        addRow()
-        addRow()
-        addRow()
-        addRow()
-
-        // Add button
-        const addButton: HTMLButtonElement = addCell.appendChild(document.createElement('sl-button'))
-        addButton.setAttribute('variant', 'default')
-        addButton.setAttribute('size', 'medium')
-        addButton.setAttribute('circle', '')
-        addButton.classList.add('author-only')
-        addButton.addEventListener('click', () => { addRow() })
-        const addIcon = addButton.appendChild(document.createElement('sl-icon'))
-        addIcon.setAttribute('src', plus)
-        addIcon.setAttribute('font-size', '20px')
-
-        // Remove button
-        const removeButton: HTMLButtonElement = removeCell.appendChild(document.createElement('sl-button'))
-        removeButton.setAttribute('variant', 'default')
-        removeButton.setAttribute('size', 'medium')
-        removeButton.setAttribute('circle', '')
-        removeButton.classList.add('author-only')
-        removeButton.addEventListener('click', () => {
-            //DEV: console.log("blucked. Also buttons are row ", buttonRow.rowIndex);
-            if(buttonRow.rowIndex > 3)
-                bodyTable.deleteRow(buttonRow.rowIndex-3)
-        })
-        const removeIcon = removeButton.appendChild(document.createElement('sl-icon'))
-        removeIcon.setAttribute('src', minus)
-        removeButton.classList.add('author-only')
-
-        function addRow() {
-            bodyTable.insertRow(buttonRow.rowIndex-2);
-            bodyTable.rows[buttonRow.rowIndex-3].insertCell(0);
-            bodyTable.rows[buttonRow.rowIndex-3].insertCell(1);
-            bodyTable.rows[buttonRow.rowIndex-3].cells[0].setAttribute("contenteditable", "true");
-            bodyTable.rows[buttonRow.rowIndex-3].cells[0].classList.add('word-column')
-            bodyTable.rows[buttonRow.rowIndex-3].cells[1].setAttribute("contenteditable", "true");
-            bodyTable.rows[buttonRow.rowIndex-3].cells[1].classList.add('clue-column')
-        }
-
-        return clueBoxInput
-    }
 
     /**
      * Event handler that triggers crossword generation
@@ -377,22 +282,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @param {Event} e Click event of the button
      */
     addRow(e: Event) {
-        const newRow = this.clueboxInput.tBodies[0].insertRow()
-        
-        newRow.innerHTML = this.new_row_html
+        DEV: console.log("Adding row")
+        let newRow = this.clueboxInput.tBodies[0].insertRow()
 
-        newRow.querySelector(".minus-button").addEventListener('click', (e) => this.deleteRow(e))
-        newRow.querySelector("sl-icon").setAttribute('src', minus)
-
-
-        //const buttonCell = newRow.insertCell()
-        //buttonCell.innerHTML = this.button_cell_html
-        //buttonCell.addEventListener('click', (e) => this.addRow(e))
-
-
-
-        // Add minus icon
-        // Add event listener
+        render(this.new_row_template_inner, newRow)
 
     }
 
@@ -405,85 +298,64 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     deleteRow(e: Event) {
         let button: HTMLButtonElement = (e.target)
         const trow:  HTMLTableRowElement = button.closest("tr")
-        trow.remove()
-        // TODO go 3 ancestors up and delete row
+        const tBody:  HTMLTableRowElement = trow.closest("tBody")
+        if(tBody.childElementCount > 4) {
+            trow.remove()
+        }
     }
 
     render() {
-        //DEV: console.log("rendering cluebox")
-
-        // TODO Refactor this to use the snippet from before
-
-        /*
+        /**
         * clueboxInput template
         */
         const clueboxInputTemplate = html`
-        <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
-            <colgroup>
-            <col class="word-column">
-            <col  class="clue-column">
-            <col  class="button-column">
-        </colgroup>
-        <thead>
-            <tr>
-                <th class="word-column">Words</th>
-                <th class="clue-column">Clues</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.addRow(e)}>
-                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr>
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
-                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr> 
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
-                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr> 
-            <tr>
-                <td contenteditable></td>
-                <td contenteditable></td>
-                <td class="button-cell" tabindex="-1">
-                    <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
-                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
-                        </sl-button>
-                </div>
-                </td>
-            </tr> 
-        </tbody>
-        </table>
-        `
+            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+                <colgroup>
+                <col class="word-column">
+                <col  class="clue-column">
+                <col  class="button-column">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="word-column">Words</th>
+                    <th class="clue-column">Clues</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+            </tbody>
+            </table>
+            `
+
+        /** 
+        * clueboxInput template
+        // TODO WIP make cluebox rendering declarative
+        */
+        const clueboxTemplate = html`
+            <table class="cluebox">
+                <colgroup>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Across</th>
+                    <th>Down</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            </table>
+            `
 
         return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${clueboxInputTemplate}
                 ${this.clueBox} 
                 <sl-drawer contained position="relative" label="Clue input box">
-                ${this.clueBoxInput} 
+                ${this.clueboxInput} 
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
