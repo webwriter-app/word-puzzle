@@ -24448,10 +24448,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   set clueboxInput(_3) {
     this.#clueboxInput = _3;
   }
-  /**
-   * The list of words grouped with their clues, direction, and word number.
-   */
-  wordsAndClues = [];
+  wordsAndClues = [{ word: "", across: true }];
   acrossContext;
   currentClue;
   #drawer;
@@ -24486,8 +24483,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.newClueBox(this.wordsAndClues);
-    this.clueBox = this.newClueBox(this.wordsAndClues);
-    this.wordsAndClues = [];
   }
   static get styles() {
     return cluebox_styles;
@@ -24673,12 +24668,28 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 </tr>
             </thead>
             <tbody>
+                ${this.wordsAndClues.map((wordClue) => wordClue.across ? x`
+                    <tr>
+                    <td>
+                        <b>${wordClue.clueNumber != null ? "[" + wordClue.clueNumber + "]" : ""}</b> 
+                        ${wordClue.clueText != null ? wordClue.clueText : ""}
+                    </td>
+                    <td></td>
+                    </tr>
+                    ` : x`
+                    <tr>
+                    <td></td>
+                    <td>
+                        <b>[${wordClue.clueNumber}]</b> ${wordClue.clueText}
+                    </td>
+                    </tr>
+                `)}
             </tbody>
             </table>
             `;
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${clueboxInputTemplate}
-                ${this.clueBox} 
+                ${clueboxTemplate}
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueboxInput} 
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
@@ -24707,6 +24718,9 @@ __decorateClass([
 __decorateClass([
   e5(".clueboxInput")
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueboxInput", 1);
+__decorateClass([
+  n4({ type: Array, attribute: true })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "wordsAndClues", 2);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "acrossContext", 2);

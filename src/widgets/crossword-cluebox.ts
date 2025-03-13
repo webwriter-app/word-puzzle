@@ -70,7 +70,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
-    wordsAndClues: WordClue[] = []
+    @property({type: Array, attribute: true})
+    wordsAndClues: WordClue[] = [{word: "", across: true}]
 
     /**
      * Whether the current direction is across or down.
@@ -117,8 +118,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     constructor() {
         super()
         this.newClueBox(this.wordsAndClues)
-        this.clueBox = this.newClueBox(this.wordsAndClues)
-        this.wordsAndClues = []
+        //this.clueBox = this.newClueBox(this.wordsAndClues)
+        //this.wordsAndClues = []
     }
 
     static get styles() {
@@ -330,9 +331,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             </table>
             `
 
+        // TODO
         /** 
         * clueboxInput template
-        // TODO WIP make cluebox rendering declarative
         */
         const clueboxTemplate = html`
             <table class="cluebox">
@@ -347,13 +348,33 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 </tr>
             </thead>
             <tbody>
+                ${this.wordsAndClues.map((wordClue) =>
+                wordClue.across 
+                ? html`
+                    <tr>
+                    <td>
+                        <b>${wordClue.clueNumber != null ? 
+                        "[" + wordClue.clueNumber + "]" : ""}</b> 
+                        ${wordClue.clueText != null ? wordClue.clueText : ""}
+                    </td>
+                    <td></td>
+                    </tr>
+                    ` 
+                : html`
+                    <tr>
+                    <td></td>
+                    <td>
+                        <b>[${wordClue.clueNumber}]</b> ${wordClue.clueText}
+                    </td>
+                    </tr>
+                `)}
             </tbody>
             </table>
             `
 
         return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${clueboxInputTemplate}
-                ${this.clueBox} 
+                ${clueboxTemplate}
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.clueboxInput} 
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
