@@ -90,13 +90,11 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGridDOM(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
-        //this.clueWidget.newClueBoxInput(document)
-        this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
 
         this.addEventListener("generateCw", () => {
-            //DEV: console.log("generateCw triggered")
+            DEV: console.log("generateCw triggered")
             this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
-            this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues as WordClue[])
+            this.clueWidget.requestUpdate()
         })
         this.addEventListener("set-context", (e: CustomEvent) => {
             if(e.detail.acrossContext)

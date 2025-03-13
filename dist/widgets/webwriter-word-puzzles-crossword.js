@@ -24433,7 +24433,6 @@ var caret_left_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/
 // src/widgets/crossword-cluebox.ts
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   clueBoxInput;
-  clueBox;
   #cluebox;
   get cluebox() {
     return this.#cluebox;
@@ -24476,13 +24475,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 </td>`;
   /**
    * @constructor
-   * Some constructor I apparently thought was a good idea.
    * 
-   * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   * Does nothing I guess
    */
   constructor() {
     super();
-    this.newClueBox(this.wordsAndClues);
+    this.wordsAndClues = [{ word: "", across: true }];
   }
   static get styles() {
     return cluebox_styles;
@@ -24514,7 +24512,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    */
   getNewWords() {
-    this.wordsAndClues = [];
+    let wordsAndClues = [];
     const rows = this.clueboxInput.querySelectorAll("tbody tr");
     let words = Array.from(rows).map(
       (row) => row.querySelector("td")?.textContent?.trim() || null
@@ -24524,11 +24522,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     );
     for (let i9 = 0; i9 < words.length; i9++) {
       if (words[i9] != null) {
-        this.wordsAndClues.push({ word: words[i9], clueText: clues[i9] });
+        wordsAndClues.push({ word: words[i9], clueText: clues[i9] });
       }
     }
     DEV: console.log("Words and clues:");
-    DEV: console.log(this.wordsAndClues);
+    DEV: console.log(wordsAndClues);
+    this.wordsAndClues = wordsAndClues;
     return this.wordsAndClues;
   }
   showDrawer() {
@@ -24539,63 +24538,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   hideDrawer() {
     this.drawer.hide();
-  }
-  /**
-   * @constructor
-   * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element 
-   * that will contain the clues for a puzzle solver (i.e. student) to solve.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @returns {HTMLTableElement} the DOM element for the clue panel
-   * Source: crosswords-js
-   */
-  newClueBox(wordsAndClues) {
-    const clueBox = document.createElement("table");
-    clueBox.classList.add("cluebox");
-    const headerTable = clueBox.createTHead();
-    const headerRow = headerTable.insertRow();
-    const headers = ["Across", "Down"];
-    for (let element of headers) {
-      let th = document.createElement("th");
-      th.textContent = element;
-      headerRow.appendChild(th);
-    }
-    const colgroup = document.createElement("colgroup");
-    const col1 = document.createElement("col");
-    const col2 = document.createElement("col");
-    colgroup.appendChild(col1);
-    colgroup.appendChild(col2);
-    col1.style.width = "50%";
-    col2.style.width = "50%";
-    clueBox.insertBefore(colgroup, clueBox.tHead);
-    const bodyTable = clueBox.createTBody();
-    const lastInsArray = [-1, -1];
-    bodyTable.insertRow();
-    bodyTable.rows[0].insertCell();
-    bodyTable.rows[0].insertCell();
-    bodyTable.rows[0].cells[0].setAttribute("contenteditable", "false");
-    bodyTable.rows[0].cells[1].setAttribute("contenteditable", "false");
-    for (let wordAndClue of wordsAndClues) {
-      let cellColumn = 0;
-      if (wordAndClue.across)
-        cellColumn = 0;
-      else
-        cellColumn = 1;
-      if (bodyTable.rows.length <= lastInsArray[cellColumn] + 1) {
-        bodyTable.insertRow();
-        bodyTable.rows[bodyTable.rows.length - 1].insertCell();
-        bodyTable.rows[bodyTable.rows.length - 1].insertCell();
-        bodyTable.rows[bodyTable.rows.length - 1].cells[0].setAttribute("contenteditable", "false");
-        bodyTable.rows[bodyTable.rows.length - 1].cells[1].setAttribute("contenteditable", "false");
-      }
-      if (bodyTable.rows[lastInsArray[cellColumn] + 1].cells[cellColumn].innerHTML == "") {
-        bodyTable.rows[lastInsArray[cellColumn] + 1].cells[cellColumn].innerHTML = "<b>[" + wordAndClue.clueNumber + "]</b> " + wordAndClue.clueText;
-        lastInsArray[cellColumn] += 1;
-      }
-    }
-    this.clueBox = clueBox;
-    this.requestUpdate();
-    return clueBox;
   }
   /** Event handler for stopping control propagation and rendering
    * 
@@ -24633,29 +24575,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       trow.remove();
     }
   }
-  render() {
-    const clueboxInputTemplate = x`
-            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
-                <colgroup>
-                <col class="word-column">
-                <col  class="clue-column">
-                <col  class="button-column">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th class="word-column">Words</th>
-                    <th class="clue-column">Clues</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-            </tbody>
-            </table>
-            `;
-    const clueboxTemplate = x`
+  renderCluebox() {
+    const clueboxTemplateCells = x``;
+    return x`
             <table class="cluebox">
                 <colgroup>
                 <col>
@@ -24687,11 +24609,33 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             </tbody>
             </table>
             `;
+  }
+  render() {
+    const clueboxInputTemplate = x`
+            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+                <colgroup>
+                <col class="word-column">
+                <col  class="clue-column">
+                <col  class="button-column">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="word-column">Words</th>
+                    <th class="clue-column">Clues</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+            </tbody>
+            </table>
+            `;
     return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
-                ${clueboxInputTemplate}
-                ${clueboxTemplate}
+                ${this.renderCluebox()}
                 <sl-drawer contained position="relative" label="Clue input box">
-                ${this.clueboxInput} 
+                ${clueboxInputTemplate}
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
@@ -24709,9 +24653,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
 __decorateClass([
   n4({ type: HTMLDivElement, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBoxInput", 2);
-__decorateClass([
-  n4({ type: HTMLDivElement, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueBox", 2);
 __decorateClass([
   e5(".cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "cluebox", 1);
@@ -24754,10 +24695,10 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridWidget.newCrosswordGridDOM(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
-    this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues);
     this.addEventListener("generateCw", () => {
+      DEV: console.log("generateCw triggered");
       this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues);
-      this.clueWidget.clueBox = this.clueWidget.newClueBox(this.clueWidget.wordsAndClues);
+      this.clueWidget.requestUpdate();
     });
     this.addEventListener("set-context", (e13) => {
       if (e13.detail.acrossContext)

@@ -58,9 +58,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
-    @property({ type: HTMLDivElement, state: true, attribute: false})
-    clueBox: HTMLTableElement
-
     @query(".cluebox")
     accessor cluebox: HTMLTableElement
 
@@ -111,15 +108,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     /**
      * @constructor
-     * Some constructor I apparently thought was a good idea.
      * 
-     * Pretty much just sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+     * Does nothing I guess
      */
     constructor() {
         super()
-        this.newClueBox(this.wordsAndClues)
-        //this.clueBox = this.newClueBox(this.wordsAndClues)
-        //this.wordsAndClues = []
+
+        this.wordsAndClues = [{word: "", across: true}]
     }
 
     static get styles() {
@@ -156,7 +151,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      */
     getNewWords() {
-        this.wordsAndClues = []
+        let wordsAndClues = []
         const rows = this.clueboxInput.querySelectorAll("tbody tr")
 
         let words: string[] = Array.from(rows).map(row => 
@@ -169,11 +164,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
         for (let i = 0; i < words.length; i++) {
             if(words[i] != null) {
-                this.wordsAndClues.push({word: words[i], clueText: clues[i]})
+                wordsAndClues.push({word: words[i], clueText: clues[i]})
             }
         }
         DEV: console.log("Words and clues:")
-        DEV: console.log(this.wordsAndClues)
+        DEV: console.log(wordsAndClues)
+
+        this.wordsAndClues = wordsAndClues
 
         return this.wordsAndClues
     }
@@ -187,77 +184,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     hideDrawer() {
         this.drawer.hide()
-    }
-
-    /**
-     * @constructor
-     * Build / construct the {@link WebwriterWordPuzzlesCrosswordCluebox.clueBox | clue panel} DOM element 
-     * that will contain the clues for a puzzle solver (i.e. student) to solve.
-     * 
-     * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-     * @returns {HTMLTableElement} the DOM element for the clue panel
-     * Source: crosswords-js
-     */
-    newClueBox(wordsAndClues: WordClue[]): HTMLTableElement {
-        //DEV: console.log("Generating cluebox, in theory")
-        const clueBox: HTMLTableElement = document.createElement('table')
-        clueBox.classList.add('cluebox')
-        const headerTable: HTMLTableSectionElement = clueBox.createTHead()
-        const headerRow: HTMLTableRowElement = headerTable.insertRow()
-        // Add headers
-        const headers = ["Across", "Down"]
-        for (let element of headers) {
-            let th: HTMLTableCellElement = document.createElement('th');
-            th.textContent = element;
-            headerRow.appendChild(th)
-        }
-        const colgroup: HTMLTableColElement = document.createElement('colgroup')
-        const col1 = document.createElement('col')
-        const col2 = document.createElement('col')
-        colgroup.appendChild(col1)
-        colgroup.appendChild(col2)
-        col1.style.width = '50%'
-        col2.style.width = '50%'
-        clueBox.insertBefore(colgroup, clueBox.tHead)
-
-
-        //DEV: console.log("rendering table body");
-        // Create body
-        const bodyTable: HTMLTableSectionElement = clueBox.createTBody()
-        const lastInsArray: number[] = [-1, -1]
-        bodyTable.insertRow()
-        bodyTable.rows[0].insertCell()
-        bodyTable.rows[0].insertCell()
-        bodyTable.rows[0].cells[0].setAttribute('contenteditable', 'false')
-        bodyTable.rows[0].cells[1].setAttribute('contenteditable', 'false')
-
-        for(let wordAndClue of wordsAndClues) {
-            let cellColumn = 0
-
-            if(wordAndClue.across)
-                cellColumn = 0
-            else
-                cellColumn = 1
-
-            if(bodyTable.rows.length <= lastInsArray[cellColumn] + 1) {
-                bodyTable.insertRow()
-                bodyTable.rows[bodyTable.rows.length - 1].insertCell()
-                bodyTable.rows[bodyTable.rows.length - 1].insertCell()
-                bodyTable.rows[bodyTable.rows.length - 1].cells[0].setAttribute('contenteditable', 'false')
-                bodyTable.rows[bodyTable.rows.length - 1].cells[1].setAttribute('contenteditable', 'false')
-            }
-
-            // NOTE idk if this is going to show anything useful
-            if(bodyTable.rows[lastInsArray[cellColumn]+1].cells[cellColumn].innerHTML == "") {
-                bodyTable.rows[lastInsArray[cellColumn]+1].cells[cellColumn].innerHTML = "<b>[" + wordAndClue.clueNumber + "]</b> "+ wordAndClue.clueText
-                lastInsArray[cellColumn] += 1
-            }
-        }
-
-        this.clueBox = clueBox
-        this.requestUpdate()
-        return clueBox
-
     }
 
     /** Event handler for stopping control propagation and rendering
@@ -305,37 +231,15 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         }
     }
 
-    render() {
-        /**
-        * clueboxInput template
-        */
-        const clueboxInputTemplate = html`
-            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
-                <colgroup>
-                <col class="word-column">
-                <col  class="clue-column">
-                <col  class="button-column">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th class="word-column">Words</th>
-                    <th class="clue-column">Clues</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-            </tbody>
-            </table>
-            `
+    renderCluebox() {
+     // TODO Loop over expressions in wordsAndClues
 
-        // TODO
+        const clueboxTemplateCells = html``
+
         /** 
-        * clueboxInput template
+        * cluebox template
         */
-        const clueboxTemplate = html`
+        return html`
             <table class="cluebox">
                 <colgroup>
                 <col>
@@ -372,11 +276,39 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             </table>
             `
 
+    }
+
+    render() {
+        /**
+        * clueboxInput template
+        */
+        const clueboxInputTemplate = html`
+            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+                <colgroup>
+                <col class="word-column">
+                <col  class="clue-column">
+                <col  class="button-column">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="word-column">Words</th>
+                    <th class="clue-column">Clues</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+                <tr>${this.new_row_template_inner}</tr>
+            </tbody>
+            </table>
+            `
+
+        
         return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
-                ${clueboxInputTemplate}
-                ${clueboxTemplate}
+                ${this.renderCluebox()}
                 <sl-drawer contained position="relative" label="Clue input box">
-                ${this.clueboxInput} 
+                ${clueboxInputTemplate}
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
