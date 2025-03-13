@@ -100,6 +100,23 @@ export const cluebox_styles = css`
         text-align: center;
         padding: 5px;
     }
+    table.clueboxInput th.button-header-cell {
+        width: 0px;
+        border: 0px;
+        padding: 0px;
+        justify-content: left;
+        float: right;
+        margin-right: +0.95em;
+    }
+    th.button-header-cell sl-button::part(base) {
+        transform: scale(0.80)
+    }
+    table.clueboxInput div.plus-button-div {
+        display:table-cell;
+        position: relative;
+        top: +1.4em;
+        padding-bottom: 10%
+    }
     table.clueboxInput sl-button {
         height: auto;
         text-align: center;
@@ -126,6 +143,7 @@ export const cluebox_styles = css`
         float: right;
         margin-right: +0.80em;
     }
+    
     div.button-cell-div {
         display: table-cell;
         vertical-align: middle;
@@ -151,6 +169,9 @@ export const cluebox_styles = css`
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 5px;
+    }
+    table.cluebox col {
+        width: 50%;
     }
     table.cluebox > thead {
         font-family: var(--sl-font-sans);

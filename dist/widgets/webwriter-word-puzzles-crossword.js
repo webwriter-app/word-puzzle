@@ -2100,6 +2100,23 @@ var cluebox_styles = i`
         text-align: center;
         padding: 5px;
     }
+    table.clueboxInput th.button-header-cell {
+        width: 0px;
+        border: 0px;
+        padding: 0px;
+        justify-content: left;
+        float: right;
+        margin-right: +0.95em;
+    }
+    th.button-header-cell sl-button::part(base) {
+        transform: scale(0.80)
+    }
+    table.clueboxInput div.plus-button-div {
+        display:table-cell;
+        position: relative;
+        top: +1.4em;
+        padding-bottom: 10%
+    }
     table.clueboxInput sl-button {
         height: auto;
         text-align: center;
@@ -2126,6 +2143,7 @@ var cluebox_styles = i`
         float: right;
         margin-right: +0.80em;
     }
+    
     div.button-cell-div {
         display: table-cell;
         vertical-align: middle;
@@ -2151,6 +2169,9 @@ var cluebox_styles = i`
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 5px;
+    }
+    table.cluebox col {
+        width: 50%;
     }
     table.cluebox > thead {
         font-family: var(--sl-font-sans);
@@ -24424,6 +24445,9 @@ __decorateClass2([
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.RJUO2BMU.js
 SlAnimatedImage.define("sl-animated-image");
 
+// node_modules/bootstrap-icons/icons/plus-lg.svg
+var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">%0A  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>%0A</svg>';
+
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
 
@@ -24447,6 +24471,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.#clueboxInput = _3;
   }
   wordsAndClues = [{ word: "", across: true }];
+  words = ["", "", "", ""];
+  clues = ["", "", "", ""];
   acrossContext;
   currentClue;
   #drawer;
@@ -24561,6 +24587,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    */
   new_row_template_inner = x`
                 <td contenteditable></td>
+                <td></td>
                 <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
@@ -24570,7 +24597,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                             </sl-button>
                         </sl-tooltip>
                 </div>
-                </td>`;
+                </td>
+                `;
   renderCluebox() {
     let i9 = 0;
     let j3 = 0;
@@ -24626,12 +24654,23 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
                 <colgroup>
                 <col class="word-column">
-                <col  class="clue-column">
-                <col  class="button-column">
+                <col class="button-column">
+                <col class="clue-column">
             </colgroup>
             <thead>
                 <tr>
                     <th class="word-column">Words</th>
+                    <th class="button-header-cell"> 
+                    <div class="plus-button-div">
+
+                <sl-tooltip content="Add rows">
+                        <sl-button tabindex="-1" size="small" 
+                        class="plus-button" variant="default" 
+                        circle @click=${(e13) => this.addRow(e13)}>
+                        <div class="sl-icon-div"><sl-icon src=${plus_lg_default}></sl-icon></div>
+                    </sl-button></sl-tooltip>
+                    </div>
+                    </th>
                     <th class="clue-column">Clues</th>
                 </tr>
             </thead>
@@ -24670,6 +24709,12 @@ __decorateClass([
 __decorateClass([
   n4({ type: Array, attribute: true })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "wordsAndClues", 2);
+__decorateClass([
+  n4({ type: Array, attribute: false })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "words", 2);
+__decorateClass([
+  n4({ type: Array, attribute: false })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clues", 2);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "acrossContext", 2);

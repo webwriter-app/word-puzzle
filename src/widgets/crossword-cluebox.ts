@@ -68,6 +68,18 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     wordsAndClues: WordClue[] = [{word: "", across: true}]
 
     /**
+     * The word currently in the clueboxInput element.
+     */
+    @property({type: Array, attribute: false})
+    words: string[] = ["", "", "", ""]
+
+    /**
+     * The clue currently in the clueboxInput element.
+     */
+    @property({type: Array, attribute: false})
+    clues: string[] = ["", "", "", ""]
+
+    /**
      * Whether the current direction is across or down.
      * true if across, false if down
      */
@@ -211,6 +223,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     new_row_template_inner = html`
                 <td contenteditable></td>
+                <td></td>
                 <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
@@ -220,7 +233,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                             </sl-button>
                         </sl-tooltip>
                 </div>
-                </td>`
+                </td>
+                `
 
 
     renderCluebox() {
@@ -307,16 +321,28 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         /**
         * clueboxInput template
         */
+                        
         const clueboxInputTemplate = html`
             <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
                 <colgroup>
                 <col class="word-column">
-                <col  class="clue-column">
-                <col  class="button-column">
+                <col class="button-column">
+                <col class="clue-column">
             </colgroup>
             <thead>
                 <tr>
                     <th class="word-column">Words</th>
+                    <th class="button-header-cell"> 
+                    <div class="plus-button-div">
+
+                <sl-tooltip content="Add rows">
+                        <sl-button tabindex="-1" size="small" 
+                        class="plus-button" variant="default" 
+                        circle @click=${(e) => this.addRow(e)}>
+                        <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
+                    </sl-button></sl-tooltip>
+                    </div>
+                    </th>
                     <th class="clue-column">Clues</th>
                 </tr>
             </thead>
