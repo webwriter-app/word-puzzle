@@ -234,7 +234,60 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     renderCluebox() {
      // TODO Loop over expressions in wordsAndClues
 
-        const clueboxTemplateCells = html``
+
+        let i = 0, j = 0
+        for(let wordClue of this.wordsAndClues) {
+            if(wordClue.across) {
+                i++
+            }
+            else
+                j++
+        }
+
+        DEV: console.log("Across words: " + i + " | Down words: " + j)
+
+        let sharedRows = Math.min(i, j)
+
+        DEV: console.log("Max iterations: " + sharedRows)
+
+        const clueboxTemplateCells = []
+
+        for(let k = 0; k < sharedRows; k++) {
+            clueboxTemplateCells.push(html`<tr>`)
+            clueboxTemplateCells.push(html`<td>${singleCell(this.wordsAndClues[k])}</td><td>${singleCell(this.wordsAndClues[k+i])}</td>`)
+            clueboxTemplateCells.push(html`</tr>`)
+            DEV: console.log("Row " + k + ":")
+            DEV: console.log("Added " + k + " for across and " + (k + i) + " for down")
+        }
+
+        let diff = Math.abs(i - j)
+        let start = i > j ? sharedRows : sharedRows + i
+
+        for(let k = 0; k < diff; k++) {
+            DEV: console.log("Row " + (start + k) + ":")
+            let cell = this.wordsAndClues[start + k].across ? 
+                html`<tr><td>${singleCell(this.wordsAndClues[start + k])}</td><td></td></tr>`
+                : 
+                html`<tr><td></td><td>${singleCell(this.wordsAndClues[start + k])}</td></tr>`
+                clueboxTemplateCells.push(cell)
+
+            let debug = this.wordsAndClues[start + k].across ? " across" : " down"
+            DEV: console.log("Added word " + (start + k) + debug)
+        }
+
+
+        function singleCell(wordClue: WordClue) {
+            if(wordClue != null) {
+                return html`
+                        <b>${wordClue.clueNumber != null ? 
+                        "[" + wordClue.clueNumber + "]" : ""}</b> 
+                        ${wordClue.clueText != null ? wordClue.clueText : ""}
+                    ` 
+            }
+            else {
+                return html``
+            }
+        }
 
         /** 
         * cluebox template
@@ -252,26 +305,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 </tr>
             </thead>
             <tbody>
-                ${this.wordsAndClues.map((wordClue) =>
-                wordClue.across 
-                ? html`
-                    <tr>
-                    <td>
-                        <b>${wordClue.clueNumber != null ? 
-                        "[" + wordClue.clueNumber + "]" : ""}</b> 
-                        ${wordClue.clueText != null ? wordClue.clueText : ""}
-                    </td>
-                    <td></td>
-                    </tr>
-                    ` 
-                : html`
-                    <tr>
-                    <td></td>
-                    <td>
-                        <b>[${wordClue.clueNumber}]</b> ${wordClue.clueText}
-                    </td>
-                    </tr>
-                `)}
+                ${clueboxTemplateCells}
             </tbody>
             </table>
             `

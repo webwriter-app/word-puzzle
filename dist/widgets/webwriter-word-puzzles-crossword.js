@@ -24576,7 +24576,43 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     }
   }
   renderCluebox() {
-    const clueboxTemplateCells = x``;
+    let i9 = 0, j3 = 0;
+    for (let wordClue of this.wordsAndClues) {
+      if (wordClue.across) {
+        i9++;
+      } else
+        j3++;
+    }
+    DEV: console.log("Across words: " + i9 + " | Down words: " + j3);
+    let sharedRows = Math.min(i9, j3);
+    DEV: console.log("Max iterations: " + sharedRows);
+    const clueboxTemplateCells = [];
+    for (let k3 = 0; k3 < sharedRows; k3++) {
+      clueboxTemplateCells.push(x`<tr>`);
+      clueboxTemplateCells.push(x`<td>${singleCell(this.wordsAndClues[k3])}</td><td>${singleCell(this.wordsAndClues[k3 + i9])}</td>`);
+      clueboxTemplateCells.push(x`</tr>`);
+      DEV: console.log("Row " + k3 + ":");
+      DEV: console.log("Added " + k3 + " for across and " + (k3 + i9) + " for down");
+    }
+    let diff = Math.abs(i9 - j3);
+    let start = i9 > j3 ? sharedRows : sharedRows + i9;
+    for (let k3 = 0; k3 < diff; k3++) {
+      DEV: console.log("Row " + (start + k3) + ":");
+      let cell = this.wordsAndClues[start + k3].across ? x`<tr><td>${singleCell(this.wordsAndClues[start + k3])}</td><td></td></tr>` : x`<tr><td></td><td>${singleCell(this.wordsAndClues[start + k3])}</td></tr>`;
+      clueboxTemplateCells.push(cell);
+      let debug = this.wordsAndClues[start + k3].across ? " across" : " down";
+      DEV: console.log("Added word " + (start + k3) + debug);
+    }
+    function singleCell(wordClue) {
+      if (wordClue != null) {
+        return x`
+                        <b>${wordClue.clueNumber != null ? "[" + wordClue.clueNumber + "]" : ""}</b> 
+                        ${wordClue.clueText != null ? wordClue.clueText : ""}
+                    `;
+      } else {
+        return x``;
+      }
+    }
     return x`
             <table class="cluebox">
                 <colgroup>
@@ -24590,22 +24626,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 </tr>
             </thead>
             <tbody>
-                ${this.wordsAndClues.map((wordClue) => wordClue.across ? x`
-                    <tr>
-                    <td>
-                        <b>${wordClue.clueNumber != null ? "[" + wordClue.clueNumber + "]" : ""}</b> 
-                        ${wordClue.clueText != null ? wordClue.clueText : ""}
-                    </td>
-                    <td></td>
-                    </tr>
-                    ` : x`
-                    <tr>
-                    <td></td>
-                    <td>
-                        <b>[${wordClue.clueNumber}]</b> ${wordClue.clueText}
-                    </td>
-                    </tr>
-                `)}
+                ${clueboxTemplateCells}
             </tbody>
             </table>
             `;
