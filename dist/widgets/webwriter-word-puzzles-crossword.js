@@ -2084,6 +2084,7 @@ var cluebox_styles = i`
     }
     table.clueboxInput td {
         justify-content: left;
+        min-height: 20px;
     }
     table.clueboxInput td[addRow] {
         justify-content: center;
@@ -24464,6 +24465,18 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.#drawer = _3;
   }
   /**
+   * TypeScript HTML snippet for adding a new row
+   */
+  new_row_html = `<td class="word-column" contenteditable></td>
+                <td class="clue-column" contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle>
+                            <div class="sl-icon-div"><sl-icon></sl-icon></div>
+                        </sl-button>
+                </div>
+                </td>`;
+  /**
    * @constructor
    * Some constructor I apparently thought was a good idea.
    * 
@@ -24685,6 +24698,27 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     } else if (event.ctrlKey)
       event.stopPropagation();
   }
+  /**
+   * Handler for deleting the row corresponding to the clicked button.
+   * 
+   * @param {Event} e Click event of the button
+   */
+  addRow(e13) {
+    const newRow = this.clueboxInput.tBodies[0].insertRow();
+    newRow.innerHTML = this.new_row_html;
+    newRow.querySelector(".minus-button").addEventListener("click", (e14) => this.deleteRow(e14));
+    newRow.querySelector("sl-icon").setAttribute("src", dash_default);
+  }
+  /**
+   * Handler for deleting the row corresponding to the clicked button.
+   * 
+   * @param {Event} e Click event of the button
+   */
+  deleteRow(e13) {
+    let button = e13.target;
+    const trow = button.closest("tr");
+    trow.remove();
+  }
   render() {
     const clueboxInputTemplate = x`
         <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
@@ -24705,16 +24739,45 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle>
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.addRow(e13)}>
+                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
+                        </sl-button>
+                </div>
+                </td>
+            </tr>
+            <tr>
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
                             <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
                         </sl-button>
                 </div>
                 </td>
             </tr> 
-                        
-            <tr><td contenteditable></td><td contenteditable></td></tr>
-            <tr><td contenteditable></td><td contenteditable></td></tr>
-            <tr><td contenteditable></td><td contenteditable></td></tr>
+            <tr>
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
+                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
+                        </sl-button>
+                </div>
+                </td>
+            </tr> 
+            <tr>
+                <td contenteditable></td>
+                <td contenteditable></td>
+                <td class="button-cell" tabindex="-1">
+                    <div class="button-cell-div">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e13) => this.deleteRow(e13)}>
+                            <div class="sl-icon-div"><sl-icon src=${dash_default}></sl-icon></div>
+                        </sl-button>
+                </div>
+                </td>
+            </tr> 
         </tbody>
         </table>
         `;

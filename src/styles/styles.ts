@@ -84,6 +84,7 @@ export const cluebox_styles = css`
     }
     table.clueboxInput td {
         justify-content: left;
+        min-height: 20px;
     }
     table.clueboxInput td[addRow] {
         justify-content: center;
