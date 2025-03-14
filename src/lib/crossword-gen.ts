@@ -20,31 +20,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     // TODO Figure out generation / backtracking recursively
     // TODO Make the coordinates not come out negative sometimes
 
-    // Initialization
-    //DEV: console.log("Crossword generation triggered")
-
-    /** The words in their original order. */
-    let wordsOG: string[] = [] // @type{string[]}
-    for(let wordClue of wordsClues) {
-        wordsOG.push(wordClue.word)
-    }
-
-    /** The amount of words that still must be put into the grid */
-    let wordsLeft: WordClue[] = [] 
-    for(let i = 0; i < wordsClues.length; i++) {
-        wordsLeft[i] = wordsClues[i]
-    }
-    
     // Calculate minimum dimensions of crossword
-    const minDim = wordsOG.map(word => word.length).reduce((max, len) => Math.max(max, len), 0)
-
-    let dimension: number = minDim
-
-    /** The grid currently being worked withfound so far */
-    let currentGrid: Cell[][] = []
-
-    /** The words that have been placed into the current grid */
-    let currentWordsPlaced: WordClue[] = []  // @type {string[]}
+    const minDim = wordsClues.map(word => word.word.length).reduce((max, len) => Math.max(max, len), 0)
 
     /** The best grid found so far.
      * Smallest grid with the largest amount of words placed
@@ -55,16 +32,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     /** Grid for testing adding / removing words */
     let scratchpadGrid: Cell[][] = [] // @type {Cell[][]}
     let scratchWordsPlaced: WordClue[] = []  // @type {string[]}
-
-    /** The number of words in the best grid */
-    let bestWordNr = 0 // @type{number}
-
-    for(let i = 0; i < dimension; i++) {
-        currentGrid[i] = []
-        for (let j = 0; j < dimension; j++) {
-            currentGrid[i][j] = defaultCell()
-        }
-    }
 
     // Initialize scratchpadGrid
     for(let i = 0; i < wordsClues.reduce((accumulator, currentValue) => accumulator + currentValue.word.length, 0); i++) {
@@ -85,12 +52,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     rankedList = sortWords() // @type{string[]}
 
     /** How many clues there currently are. Used to calculate next clue number.
-     * NOTE: This'll be a problem when words are removed
-     * Maybe add a function to recalculate clue numbers
      */
     let clueCount = 0 // @type{number}
 
-    /** Number of iterations until the grid is reset */
+    /** Number of iterations until the algorithm stops */
     let epoch = 500 // @type{number}
 
     // Rank the words
@@ -99,13 +64,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         i++
     }
 
-    // Add words to grid (WIP)
-
-    bestGrid = generateCrosswordGrid(currentGrid, wordsClues)
-    bestWordsPlaced = currentWordsPlaced
-    //DEV: console.log("Within generate crossword, bestWordsPlaced, before sorting:")
-    //DEV: console.log(bestWordsPlaced)
-    // currentGrid = shrinkGrid(currentGrid)
+    bestGrid = generateCrosswordGrid(scratchpadGrid, wordsClues)
+    DEV: console.log("Words and clues:")
+    DEV: console.log(wordsClues)
 
     // iterate through the cells and number them properly just in case
     clueCount = 0
@@ -162,10 +123,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * @param { WordClue } newWordClue 
      * @returns { boolean } - true if the word can be placed into G with at least one letter intersecting with another word
     */
-    function placeable(inputGrid: Cell[][], newWordClue: WordClue): WordClue[] {
-        if (currentWordsPlaced.length == 0) {
-            let possiblePlacementX = Math.floor(inputGrid.length/2 - 1);
-            let possiblePlacementY = Math.floor(inputGrid.length/2) - Math.floor(newWordClue.word.length/2);
+    function placeable(inputGrid: Cell[][], wordsCluesPl: WordClue[], newWordClue: WordClue, firstWord?: boolean): WordClue[] {
+        if (firstWord) {
+            let possiblePlacementX = Math.floor(minDim/2 - 1);
+            let possiblePlacementY = Math.floor(minDim/2) - Math.floor(newWordClue.word.length/2);
 
             let possiblePlacement: WordClue = {...newWordClue}
 
@@ -182,7 +143,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         // For every word already placed in the grid,
         // Go through all of its possible intersections with the new word
-        for (let placedWord of currentWordsPlaced) {
+        for (let placedWord of wordsCluesPl) {
             let intersections = intersecting(newWordClue.word, placedWord.word)
             let possibleDirection: string
             if (placedWord.across) {
@@ -232,19 +193,19 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 for (let i = 0; i < newWordClue.word.length; i++) {
                     if (possibleDirection == "across") {
                         if (i != intersection[0]) {
-                            if(i + possibleY >= 0 && i + possibleY < dimension) {
+                            if(i + possibleY >= 0 && i + possibleY < inputGrid.length) {
                                 // Don't place a word if there is a collision where the char isn't the same
-                                if (possibleX >= 0 && possibleX < dimension) {
+                                if (possibleX >= 0 && possibleX < inputGrid.length) {
                                     if(newWordClue.word[i] != inputGrid[possibleX][possibleY + i].answer) {
                                         noClash = noClash && !inputGrid[possibleX][possibleY + i].white
                                     }
                                 }
 
                                 // Checks for white cells above / below the word
-                                if(possibleX - 1 >= 0 && possibleX - 1 < dimension) {
+                                if(possibleX - 1 >= 0 && possibleX - 1 < inputGrid.length) {
                                     notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY + i].white
                                 }
-                                if(possibleX + 1 >= 0 && possibleX + 1 < dimension) {
+                                if(possibleX + 1 >= 0 && possibleX + 1 < inputGrid.length) {
                                     notAdjacent = notAdjacent && !inputGrid[possibleX + 1][possibleY + i].white
                                 }
                             }
@@ -252,19 +213,19 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     }
                     else {
                         if (i != intersection[0]) {
-                            if(i + possibleX >= 0 && i + possibleX < dimension) {
+                            if(i + possibleX >= 0 && i + possibleX < inputGrid.length) {
                                 // Don't place a word if there is a collision where the char isn't the same
-                                if (possibleY >= 0 && possibleY < dimension) {
+                                if (possibleY >= 0 && possibleY < inputGrid.length) {
                                     if(newWordClue.word[i] != inputGrid[possibleX + i][possibleY].answer) {
                                         noClash = noClash && !inputGrid[possibleX + i][possibleY].white
                                     }
                                 }
 
                                 // Test for adjacent squares
-                                if(possibleY - 1 >= 0 && possibleY - 1 < dimension) {
+                                if(possibleY - 1 >= 0 && possibleY - 1 < inputGrid.length) {
                                     notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY - 1].white
                                 }
-                                if(possibleY + 1 >= 0 && possibleY + 1 < dimension) {
+                                if(possibleY + 1 >= 0 && possibleY + 1 < inputGrid.length) {
                                     notAdjacent = notAdjacent && !inputGrid[possibleX + i][possibleY + 1].white
                                 }
                             }
@@ -339,6 +300,55 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     }
 
 
+    /** Local helper function for adding a word with a placement 
+     * to an existing list of words and placements,
+     * ensuring a correct grid.
+     * 
+     * @param {WordClue[]} wordsClues - the list of words and clues without the placemnet information for the new word.
+     * @param {WordClue} wordToPlace - the word with placement information.
+    */
+    function updatePlacements(wordsClues: WordClue[], wordToPlace: WordClue): void {
+        // I don't think this is iterating over chars 
+
+        let x = wordToPlace.x
+        let y = wordToPlace.y
+
+        if(wordToPlace.x < 0 || wordToPlace.y < 0) {
+            let shiftX = Math.abs(wordToPlace.x)
+            let shiftY = Math.abs(wordToPlace.y)
+            wordToPlace.x += shiftX
+            wordToPlace.y += shiftY
+            for(let wrdcl of wordsClues) {
+                if(wrdcl.x != null && wrdcl.y != null) {
+                    wrdcl.x += shiftX
+                    wrdcl.y += shiftY
+                    if(wrdcl.x == wordToPlace.x && wrdcl.y == wordToPlace.y) {
+                        wordToPlace.clueNumber = wrdcl.clueNumber
+                    }
+                }
+            }
+        }
+
+        
+        if(wordToPlace.clueNumber == null) {
+            for(let wrdcl of wordsClues) {
+                if(wrdcl.x != null && wrdcl.y != null) {
+                    if(wrdcl.x == wordToPlace.x && wrdcl.y == wordToPlace.y) {
+                        wordToPlace.clueNumber = wrdcl.clueNumber
+                    }
+                }
+            }
+            if(wordToPlace.clueNumber == null) {
+                wordToPlace.clueNumber = clueCount + 1
+                clueCount += 1
+            }
+        }
+
+        let i = wordsClues.findIndex((word) => word.word == wordToPlace.word)
+        wordsClues[i] = wordToPlace
+        return
+    }
+
     /** Helper function that determines which word would enable adding 
      * multiple more to the grid, if any.
      * 
@@ -394,130 +404,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         return
     }
 
-    /** Function for creating cells on the current grid, corresponding to the word that has been passed.
-     * Local helper function
-     * @param {string} word - the word to be added to the grid
-     * @param {number} inputX - X coordinate where the first letter of the word should be placed
-     * @param {number} inputY - Y coordinate where the first letter of the word should be placed
-     * @param {string} direction - whether the word is across or down.
-    */
-    function addWord(inputGrid: Cell[][], wordToPlace: WordClue): Cell[][] {
-        // I don't think this is iterating over chars 
-        let shift: number = 0
-
-        let x = wordToPlace.x
-        let y = wordToPlace.y
-
-        let success = false
-
-        //DEV: console.log("Placing " + wordToPlace.word + " " + wordToPlace.across)
-
-        let timeout = 0
-        while(!success) {
-        try {
-            x = wordToPlace.x
-            y = wordToPlace.y
-            // Add clue number to the cell
-            if (!inputGrid[x][y].number) {
-                inputGrid[x][y].number = clueCount + 1
-                clueCount += 1
-            }
-
-            for(let j = 0; j < wordToPlace.word.length; j++) {
-                inputGrid[x][y].answer = wordToPlace.word[j]
-                inputGrid[x][y].white = true
-                if (wordToPlace.across) {
-                    if (inputGrid[x][y].direction == "" || !inputGrid[x][y].direction || inputGrid[x][y].direction == "across") {
-                        inputGrid[x][y].direction = "across"
-                    }
-                    else {
-                        inputGrid[x][y].direction = "both"
-                    }
-                    y += 1
-                }
-                else {
-                    if (inputGrid[x][y].direction == "" || !inputGrid[x][y].direction || inputGrid[x][y].direction == "down") {
-                        inputGrid[x][y].direction = "down"
-                    }
-                    else {
-                        inputGrid[x][y].direction = "both"
-                    }
-                    x += 1
-                }
-            }
-            DEV: console.log(wordToPlace.word + " placed at (" + wordToPlace.x + ", " + wordToPlace.y + ")")
-            success = true
-
-            if(timeout >= 3) {
-                throw new Error("You've created an infinite loop, congratulations")
-            }
-        }
-        catch(error) {
-            timeout += 1
-            if(timeout >= 3) {
-                throw new Error("You've created an infinite loop, congratulations")
-            }
-            DEV: console.log("Error while adding " + wordToPlace.word + " to (" 
-                + inputGrid.length + " × " + inputGrid.length + ") grid, at (" + x + ", " + y + "):")
-            DEV: console.log("Message:" + error.message)
-            //DEV: console.log("Stack:" + error.stack)
-
-            // Resize grid if word would be out of bounds at the top / left
-            if (wordToPlace.x < 0 || wordToPlace.y < 0) {
-                let shift = Math.abs(Math.min(wordToPlace.x, wordToPlace.y))
-                DEV: console.log(wordToPlace.word + " (" + wordToPlace.word + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ") must be shifted by " + shift + ".")
-                let increase = shift
-                let enlargedGrid = enlargeGrid(inputGrid, shift, wordToPlace)
-                inputGrid = enlargedGrid[0]
-                wordToPlace = enlargedGrid[1]
-                DEV: console.log("Grid is now (" + inputGrid.length + " × " + inputGrid.length + "). Contents should have been shifted by " + shift + ".")
-            }
-
-
-            // Resize grid if word would be out of bounds at the bottom / right
-            if(wordToPlace.across) {
-                if (wordToPlace.x - 1 >= inputGrid.length || wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
-                    let increase = wordToPlace.y + wordToPlace.word.length - inputGrid.length
-                    if(wordToPlace.y + wordToPlace.word.length - 1 >= inputGrid.length) {
-                        DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
-                    }
-                    else {
-                        DEV: console.log(wordToPlace.word + " is on an out-of-bounds row (" + wordToPlace.x + ").")
-                    }
-                    let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace)
-                    inputGrid = enlargedGrid[0]
-                    wordToPlace = enlargedGrid[1]
-                    DEV: console.log("Grid is now (" + inputGrid.length + " × " + inputGrid.length + "). Contents should have been shifted by " + shift + ".")
-                }
-            }
-            else  {
-                if (wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length || wordToPlace.y - 1 >= inputGrid.length) {
-                    let increase = wordToPlace.x + wordToPlace.word.length - inputGrid.length
-                    if(wordToPlace.x + wordToPlace.word.length - 1 >= inputGrid.length) {
-                        DEV: console.log(wordToPlace.word + "is too long (" + wordToPlace.word.length + ") to be placed at (" + wordToPlace.x + ", " + wordToPlace.y + ").")
-                    }
-                    else {
-                        DEV: console.log(wordToPlace.word + " is on an out-of-bounds column (" + wordToPlace.y + ").")
-                    }
-                    let enlargedGrid = enlargeGrid(inputGrid, 0, wordToPlace)
-                    inputGrid = enlargedGrid[0]
-                    wordToPlace = enlargedGrid[1]
-                    DEV: console.log("Grid is now (" + inputGrid.length + " × " + inputGrid.length + "). Contents should have been shifted by " + shift + ".")
-                }
-            }
-
-        }
-        }
-        currentWordsPlaced.push(wordToPlace)
-        try {
-            wordsLeft.splice(wordsLeft.indexOf(wordToPlace), 1)
-        } catch(error) {
-            //DEV: console.log("No words left")
-        }
-        return inputGrid
-
-    }
-
     /** Local helper function for ranking a word to place onto the grid next.
      * This ranking strategy is independent of the grid content.
      * The wordsClues array is used
@@ -547,6 +433,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     /** Local helper function for sorting the list of words based off of their ranking,
      * in ascending order.
+     * 
+     * Uses {@link wordsClues}
      * 
      * @returns { WordClue[] } - the list of words sorted by rank in ascending order
     */
@@ -713,6 +601,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     /**
      * Helper functions for generating intermediate crossword grids.
+     * Uses {@link bestGrid} and {@link bestWordsPlaced}
      * 
      * @param {Cell[][]} inputGrid 
      * @param {WordClue[]} words
@@ -721,17 +610,20 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     function generateCrosswordGrid(inputGrid: Cell[][], wordsClues: WordClue[]): Cell[][] {
         // TODO Make this function recursive
         for(let wordClue of wordsClues) {
-            let placement = selectPlacement(placeable(inputGrid, wordClue))
-                //DEV: console.log("Placing " + word + " at (" + placement.x + ", " + placement.y + ")")
+            let placement: WordClue
+            if(wordClue == wordsClues[0]) {
+                placement = selectPlacement(placeable(inputGrid, wordsClues, wordClue, true))
+            }
+            else {
+                placement = selectPlacement(placeable(inputGrid,  wordsClues, wordClue))
+            }
             try {
-                inputGrid = addWord(inputGrid, placement)
+                updatePlacements(wordsClues, placement)
+                inputGrid = generateCrosswordFromList(wordsClues)
             }
             catch (error) {
                 DEV: console.log("During placement of " + wordClue.word +":\n" + error.message)
-                //DEV: console.log(error.stack)
             }
-                //DEV: console.log("Outside addword function:")
-                //DEV: console.log(inputGrid)
         }
         return inputGrid
     }
@@ -756,16 +648,18 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
     bottommost = wordsClues[0].x
 
     for(let wordClue of wordsClues) {
-        leftmost = leftmost > wordClue.y ? wordClue.y : leftmost
-        topmost = topmost > wordClue.x ? wordClue.x : topmost
+        if(wordClue.x != null && wordClue.y != null) {
+            leftmost = leftmost > wordClue.y ? wordClue.y : leftmost
+            topmost = topmost > wordClue.x ? wordClue.x : topmost
 
-        if(wordClue.across) {
-            rightmost = rightmost < wordClue.y + wordClue.word.length - 1 ? wordClue.y + wordClue.word.length - 1 : rightmost
-            bottommost = bottommost < wordClue.x ? wordClue.x : bottommost
-        }
-        else {
-            rightmost = rightmost < wordClue.y ? wordClue.y : rightmost
-            bottommost = bottommost < wordClue.x + wordClue.word.length - 1 ? wordClue.x + wordClue.word.length - 1 : bottommost
+            if(wordClue.across) {
+                rightmost = rightmost < wordClue.y + wordClue.word.length - 1 ? wordClue.y + wordClue.word.length - 1 : rightmost
+                bottommost = bottommost < wordClue.x ? wordClue.x : bottommost
+            }
+            else {
+                rightmost = rightmost < wordClue.y ? wordClue.y : rightmost
+                bottommost = bottommost < wordClue.x + wordClue.word.length - 1 ? wordClue.x + wordClue.word.length - 1 : bottommost
+            }
         }
     }
 
@@ -788,41 +682,43 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
             horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
         }
 
-        // TODO Something's wrong with this
-
     for(let wordClue of wordsClues) {
-        wordClue.x = wordClue.x - topmost + verticalPadding
-        wordClue.y = wordClue.y - leftmost + horizontalPadding
-        grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
-
-        for(let c = 0; c < wordClue.word.length; c++) {
-
-            grid[wordClue.x][wordClue.y].answer = wordClue.word[c]
-            let i = 0, j = 0
-
-            switch(wordClue.across) {
-                case true: 
-                    j = c
-                    break
-                default:
-                    i = c
-                    break
+        if(wordClue.x != null && wordClue.y != null) {
+            wordClue.x = wordClue.x - topmost + verticalPadding
+            wordClue.y = wordClue.y - leftmost + horizontalPadding
+            if(wordClue.clueNumber != null) {
+                grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
             }
-            grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c]
-            grid[wordClue.x + i ][wordClue.y + j].white = true
 
-            let direction = wordClue.across ? "across" : "down"
-            if(grid[wordClue.x + i ][wordClue.y + j].direction != null) {
-                let direction_opposite = !wordClue.across ? "across" : "down"
-                if(grid[wordClue.x + i ][wordClue.y + j].direction == direction_opposite) {
-                    grid[wordClue.x + i ][wordClue.y + j].direction = "both"
+            for(let c = 0; c < wordClue.word.length; c++) {
+
+                grid[wordClue.x][wordClue.y].answer = wordClue.word[c]
+                let i = 0, j = 0
+
+                switch(wordClue.across) {
+                    case true: 
+                        j = c
+                        break
+                    default:
+                        i = c
+                        break
+                }
+                grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c]
+                grid[wordClue.x + i ][wordClue.y + j].white = true
+
+                let direction = wordClue.across ? "across" : "down"
+                if(grid[wordClue.x + i ][wordClue.y + j].direction != null) {
+                    let direction_opposite = !wordClue.across ? "across" : "down"
+                    if(grid[wordClue.x + i ][wordClue.y + j].direction == direction_opposite) {
+                        grid[wordClue.x + i ][wordClue.y + j].direction = "both"
+                    }
+                    else {
+                        grid[wordClue.x + i ][wordClue.y + j].direction = direction
+                    }
                 }
                 else {
-                    grid[wordClue.x + i ][wordClue.y + j].direction = direction
+                        grid[wordClue.x + i ][wordClue.y + j].direction = direction
                 }
-            }
-            else {
-                    grid[wordClue.x + i ][wordClue.y + j].direction = direction
             }
         }
     }
