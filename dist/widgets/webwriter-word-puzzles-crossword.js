@@ -1537,7 +1537,8 @@ function generateCrossword(wordsClues) {
     rankings[i9] = rankWord(i9);
     i9++;
   }
-  bestGrid = generateCrosswordGrid(scratchpadGrid, wordsClues);
+  let crosswordGenTimeout = 0;
+  generateCrosswordGrid(wordsClues);
   DEV: console.log("Words and clues:");
   DEV: console.log(wordsClues);
   clueCount = 0;
@@ -1723,7 +1724,7 @@ function generateCrossword(wordsClues) {
     }
     let i9 = wordsClues2.findIndex((word) => word.word == wordToPlace.word);
     wordsClues2[i9] = wordToPlace;
-    return;
+    return wordsClues2;
   }
   function blockingWord(inputGrid, word) {
     let wordList = [];
@@ -1856,22 +1857,34 @@ function generateCrossword(wordsClues) {
       return newGrid;
     }
   }
-  function generateCrosswordGrid(inputGrid, wordsClues2) {
-    for (let wordClue of wordsClues2) {
-      let placement;
-      if (wordClue == wordsClues2[0]) {
-        placement = selectPlacement(placeable(inputGrid, wordsClues2, wordClue, true));
-      } else {
-        placement = selectPlacement(placeable(inputGrid, wordsClues2, wordClue));
+  function generateCrosswordGrid(wordsCluesGen) {
+    let inputGrid = generateCrosswordFromList(wordsCluesGen);
+    crosswordGenTimeout += 1;
+    if (crosswordGenTimeout == epoch) {
+      throw new Error("You've created an infinite loop during cw gen, congratulations");
+    }
+    let wordsCluesCopy = { ...wordsCluesGen };
+    let i9 = 0;
+    while (i9 < wordsCluesGen.length && (wordsCluesGen[i9].x != null && wordsCluesGen[i9].y != null)) {
+      i9++;
+    }
+    if (i9 < wordsCluesGen.length) {
+      let firstFlag = i9 == 0;
+      for (let placement of placeable(inputGrid, wordsCluesGen, wordsCluesGen[i9], firstFlag)) {
+        updatePlacements(wordsCluesGen, placement);
+        return generateCrosswordGrid(wordsCluesGen);
       }
-      try {
-        updatePlacements(wordsClues2, placement);
-        inputGrid = generateCrosswordFromList(wordsClues2);
-      } catch (error) {
-        DEV: console.log("During placement of " + wordClue.word + ":\n" + error.message);
+    } else {
+      if (bestGrid == null) {
+        bestGrid = inputGrid;
+        bestWordsPlaced = wordsCluesGen;
+        return 0;
+      } else if (bestGrid.length > inputGrid.length) {
+        bestGrid = inputGrid;
+        bestWordsPlaced = wordsCluesGen;
+        return 0;
       }
     }
-    return inputGrid;
   }
 }
 function generateCrosswordFromList(wordsClues) {

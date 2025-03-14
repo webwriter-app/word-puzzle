@@ -18,7 +18,6 @@ import { WordClue, Cell, GenerationResults, defaultCell } from '../widgets/cross
 export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     // TODO Figure out generation / backtracking recursively
-    // TODO Make the coordinates not come out negative sometimes
 
     // Calculate minimum dimensions of crossword
     const minDim = wordsClues.map(word => word.word.length).reduce((max, len) => Math.max(max, len), 0)
@@ -64,7 +63,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         i++
     }
 
-    bestGrid = generateCrosswordGrid(scratchpadGrid, wordsClues)
+    let crosswordGenTimeout = 0
+
+    generateCrosswordGrid(wordsClues)
     DEV: console.log("Words and clues:")
     DEV: console.log(wordsClues)
 
@@ -304,10 +305,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * to an existing list of words and placements,
      * ensuring a correct grid.
      * 
-     * @param {WordClue[]} wordsClues - the list of words and clues without the placemnet information for the new word.
-     * @param {WordClue} wordToPlace - the word with placement information.
+     * @param {WordClue[]} wordsClues - the list of words and clues without the placement information for the new word. THIS IS ALTERED IN PLACE
+     * @param {WordClue} wordToPlace - the word with placement information. 
     */
-    function updatePlacements(wordsClues: WordClue[], wordToPlace: WordClue): void {
+    function updatePlacements(wordsClues: WordClue[], wordToPlace: WordClue): WordClue[] {
         // I don't think this is iterating over chars 
 
         let x = wordToPlace.x
@@ -329,7 +330,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             }
         }
 
-        
         if(wordToPlace.clueNumber == null) {
             for(let wrdcl of wordsClues) {
                 if(wrdcl.x != null && wrdcl.y != null) {
@@ -346,7 +346,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         let i = wordsClues.findIndex((word) => word.word == wordToPlace.word)
         wordsClues[i] = wordToPlace
-        return
+        return wordsClues
     }
 
     /** Helper function that determines which word would enable adding 
@@ -603,31 +603,45 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * Helper functions for generating intermediate crossword grids.
      * Uses {@link bestGrid} and {@link bestWordsPlaced}
      * 
-     * @param {Cell[][]} inputGrid 
+     * @param {Cell[][]} inputGrid
      * @param {WordClue[]} words
-     * @returns {Cell[][]} 
+     * @returns {number} 0 if a grid was found, 1 otherwise
      */
-    function generateCrosswordGrid(inputGrid: Cell[][], wordsClues: WordClue[]): Cell[][] {
-        // TODO Make this function recursive
-        for(let wordClue of wordsClues) {
-            let placement: WordClue
-            if(wordClue == wordsClues[0]) {
-                placement = selectPlacement(placeable(inputGrid, wordsClues, wordClue, true))
-            }
-            else {
-                placement = selectPlacement(placeable(inputGrid,  wordsClues, wordClue))
-            }
-            try {
-                updatePlacements(wordsClues, placement)
-                inputGrid = generateCrosswordFromList(wordsClues)
-            }
-            catch (error) {
-                DEV: console.log("During placement of " + wordClue.word +":\n" + error.message)
+    function generateCrosswordGrid(wordsCluesGen: WordClue[]): number {
+
+        let inputGrid: Cell[][] = generateCrosswordFromList(wordsCluesGen)
+
+        crosswordGenTimeout += 1
+        if(crosswordGenTimeout == epoch) {
+            throw new Error("You've created an infinite loop during cw gen, congratulations")
+        }
+
+        let wordsCluesCopy = {...wordsCluesGen}
+        let i = 0
+        while(i < wordsCluesGen.length && (wordsCluesGen[i].x != null && wordsCluesGen[i].y != null)) {
+            i++
+        }
+        
+        if(i < wordsCluesGen.length) {
+            let firstFlag = i == 0
+            for(let placement of placeable(inputGrid, wordsCluesGen, wordsCluesGen[i], firstFlag)) {
+                updatePlacements(wordsCluesGen, placement)
+                return generateCrosswordGrid(wordsCluesGen)
             }
         }
-        return inputGrid
+        else {
+            if(bestGrid == null) {
+                bestGrid = inputGrid
+                bestWordsPlaced = wordsCluesGen
+                return 0
+            }
+            else if(bestGrid.length > inputGrid.length) {
+                bestGrid = inputGrid
+                bestWordsPlaced = wordsCluesGen
+                return 0
+            }
+        }
     }
-
 }
 /**
      * Generates crossword puzzle based off of a list of words with their given placements.
