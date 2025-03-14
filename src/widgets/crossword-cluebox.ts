@@ -150,8 +150,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 row.querySelector("td")?.textContent?.trim() || null
         )
 
+        // Hard-coded the row here
         let clues: string[] = Array.from(rows).map(row => 
-                row.querySelectorAll("td")[1]?.textContent?.trim() || null
+                row.querySelectorAll("td")[2]?.textContent?.trim() || null
         )
 
         for (let i = 0; i < words.length; i++) {

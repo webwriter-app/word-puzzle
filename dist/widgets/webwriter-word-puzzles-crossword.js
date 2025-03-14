@@ -24467,7 +24467,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       (row) => row.querySelector("td")?.textContent?.trim() || null
     );
     let clues = Array.from(rows).map(
-      (row) => row.querySelectorAll("td")[1]?.textContent?.trim() || null
+      (row) => row.querySelectorAll("td")[2]?.textContent?.trim() || null
     );
     for (let i9 = 0; i9 < words.length; i9++) {
       if (words[i9] != null) {
