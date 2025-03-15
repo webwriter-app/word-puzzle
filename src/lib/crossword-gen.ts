@@ -71,6 +71,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     let crosswordGenTimeout = 0
 
     generateCrosswordGrid(wordsClues)
+
+    wordsClues = bestWordsPlaced
     DEV: console.log("Words and clues:")
     DEV: console.log(wordsClues)
 
@@ -88,20 +90,20 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
     }
 
-    // Use bestWordsPlaced to access coordinates of grid, read number
-    for(let wordObj of bestWordsPlaced) {
-        // NOTE This may cause issues
-        for(let wordClue of wordsClues) {
-            if(wordObj.word == wordClue.word) {
-                wordClue.across = wordObj.across
-                wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number
-                wordClue.x = wordObj.x
-                wordClue.y = wordObj.y
-            }
-        }
-    }
+//    // Use bestWordsPlaced to access coordinates of grid, read number
+//    for(let wordObj of bestWordsPlaced) {
+//        // NOTE This may cause issues
+//        for(let wordClue of wordsClues) {
+//            if(wordObj.word == wordClue.word) {
+//                wordClue.across = wordObj.across
+//                wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number
+//                wordClue.x = wordObj.x
+//                wordClue.y = wordObj.y
+//            }
+//        }
+//    }
 
-    for(let wordClue of wordsClues) {
+    for(let wordClue of bestWordsPlaced) {
         if(!wordClue.clueText) {
             wordClue.clueText = "* No clue for this word *"
         }
@@ -112,11 +114,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     // The following changes the original order, but I don't think that's necessarily bad?
 
     // Sort words by clue number
-    wordsClues.sort((a, b) => a.clueNumber - b.clueNumber)
+    bestWordsPlaced.sort((a, b) => a.clueNumber - b.clueNumber)
     // Sort words by across / down
-    wordsClues.sort((a, b) => Number(b.across) - Number(a.across))
+    bestWordsPlaced.sort((a, b) => Number(b.across) - Number(a.across))
 
-    return {wordsAndClues: wordsClues as WordClue[], grid: bestGrid} 
+    return {wordsAndClues: bestWordsPlaced as WordClue[], grid: bestGrid} 
 
 
     // =====================================================================================
@@ -316,53 +318,106 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * @param {WordClue[]} wordsClues - the list of words and clues without the placement information for the new word. THIS IS ALTERED IN PLACE
      * @param {WordClue} wordToPlace - the word with placement information. 
     */
-    function updatePlacements(wordsClues: WordClue[], wordToPlace: WordClue, possiblePlcmnts: WordClue[]): WordClue[] {
+    function updatePlacements(wordsClues: WordClue[], possiblePlcmnts: WordClue[], p: number): WordClue[] {
         // I don't think this is iterating over chars 
         // TODO add padding here?
         // TODO Troubleshoot, something's wrong here
         // TODO change one of the args of this function to just be the index corresponding to the placement array
 
-        let x = wordToPlace.x
-        let y = wordToPlace.y
+        let x = possiblePlcmnts[p].x
+        let y = possiblePlcmnts[p].y
 
-        if(wordToPlace.x < 0 || wordToPlace.y < 0) {
-            let shiftX = Math.abs(wordToPlace.x)
-            let shiftY = Math.abs(wordToPlace.y)
-            wordToPlace.x += shiftX
-            wordToPlace.y += shiftY
-            for(let wrdcl of wordsClues) {
-                if(wrdcl.x != null && wrdcl.y != null) {
-                    wrdcl.x += shiftX
-                    wrdcl.y += shiftY
-                    if(wrdcl.x == wordToPlace.x && wrdcl.y == wordToPlace.y) {
-                        wordToPlace.clueNumber = wrdcl.clueNumber
-                    }
-                }
-            }
-            // This is fine bc the argument is a copy of the placement
-            // Shift coordinates for the rest of the placements as well
+        if(possiblePlcmnts[p].x < 0 || possiblePlcmnts[p].y < 0) {
+            let shiftX = Math.abs(possiblePlcmnts[p].x)
+            let shiftY = Math.abs(possiblePlcmnts[p].y)
+            // Shift the coordinates for the possible placements
             for(let plcmnt of possiblePlcmnts) {
                 plcmnt.x += shiftX
                 plcmnt.y += shiftY
             }
-        }
-
-        if(wordToPlace.clueNumber == null) {
+            // Shift coordinates for placed words
             for(let wrdcl of wordsClues) {
                 if(wrdcl.x != null && wrdcl.y != null) {
-                    if(wrdcl.x == wordToPlace.x && wrdcl.y == wordToPlace.y) {
-                        wordToPlace.clueNumber = wrdcl.clueNumber
+                    wrdcl.x += shiftX
+                    wrdcl.y += shiftY
+                    // Set clue number if coordinates are the same
+                    if(wrdcl.x == possiblePlcmnts[p].x && wrdcl.y == possiblePlcmnts[p].y) {
+                        possiblePlcmnts[p].clueNumber = wrdcl.clueNumber
                     }
                 }
             }
-            if(wordToPlace.clueNumber == null) {
-                wordToPlace.clueNumber = clueCount + 1
-                clueCount += 1
+        }
+
+        // Add a clue number for the placement, if it wasn't added before
+        if(possiblePlcmnts[p].clueNumber == null) {
+            possiblePlcmnts[p].clueNumber = clueCount + 1
+            clueCount += 1
+        }
+
+        // Add the placement to the list of words
+        let i = wordsClues.findIndex((word) => word.word == possiblePlcmnts[p].word)
+        wordsClues[i] = possiblePlcmnts[p]
+
+
+        // Add padding
+        let leftmost: number, rightmost: number, topmost: number, bottommost: number
+
+        leftmost = wordsClues[0].y
+        rightmost = wordsClues[0].y
+        topmost = wordsClues[0].x
+        bottommost = wordsClues[0].x
+
+        for(let wordClue of wordsClues) {
+            if(wordClue.x != null && wordClue.y != null) {
+                leftmost = leftmost > wordClue.y ? wordClue.y : leftmost
+                topmost = topmost > wordClue.x ? wordClue.x : topmost
+
+                if(wordClue.across) {
+                    if(rightmost < wordClue.y + wordClue.word.length - 1) {
+                        rightmost = wordClue.y + wordClue.word.length - 1
+                    }
+                    if(bottommost < wordClue.x) {
+                        bottommost = wordClue.x
+                    }
+                }
+                else {
+                    if(rightmost < wordClue.y) {
+                        rightmost = wordClue.y
+                    }
+                    if(bottommost < wordClue.x + wordClue.word.length - 1) {
+                        bottommost = wordClue.x + wordClue.word.length - 1
+                    }
+                }
             }
         }
 
-        let i = wordsClues.findIndex((word) => word.word == wordToPlace.word)
-        wordsClues[i] = wordToPlace
+        let horizontalPadding: number = 0, verticalPadding: number = 0
+        let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1)
+
+        if(rightmost - leftmost >= bottommost - topmost) {
+            verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2)
+        }
+        else {
+            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
+        }
+
+
+        for(let wordClue of wordsClues) {
+            if(wordClue.x != null && wordClue.y != null) {
+                wordClue.x = wordClue.x - topmost + verticalPadding
+                wordClue.y = wordClue.y - leftmost + horizontalPadding
+            }
+        }
+
+        for(let plcmnt of possiblePlcmnts) {
+            // Avoid adjusting a placement twice
+            // (Since it was most probably passed by reference)
+            if(plcmnt != possiblePlcmnts[p]) {
+                plcmnt.x = plcmnt.x - topmost + verticalPadding
+                plcmnt.y = plcmnt.y - leftmost + horizontalPadding
+            }
+        }
+
         return wordsClues
     }
 
@@ -403,9 +458,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     */
     function wraparound(grid: Cell[][], wordClue: WordClue): [Cell[][], WordClue[]] {
         // TODO
-        wordsLeft.push(wordClue)
-        rankedList.splice(rankedList.indexOf(wordClue), 1)
-        rankedList.push(wordClue)
         return
     }
 
@@ -503,13 +555,13 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         if(i < wordsCluesCopy.length) {
             let firstFlag = i == 0
             let possiblePlacementsCw = placeable(inputGrid, wordsCluesCopy, wordsCluesCopy[i], firstFlag)
-            for(let placement of possiblePlacementsCw) {
+            for(let i = 0; i < possiblePlacementsCw.length; i++) {
                 // Add word
-                updatePlacements(wordsCluesCopy, placement, possiblePlacementsCw)
+                updatePlacements(wordsCluesCopy, possiblePlacementsCw, i)
                 // Recurse
                 generateCrosswordGrid(wordsCluesCopy)
                 // Remove placement
-                removePlacement(wordsCluesCopy, placement)
+                removePlacement(wordsCluesCopy, possiblePlacementsCw[i])
             }
             // Move the word to the end of the list
             moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
@@ -540,6 +592,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         function removePlacement(wordList: WordClue[], placedW: WordClue) {
             let i = wordList.findIndex((wordL) => wordL.word == placedW.word)
             wordList[i] = {...placedW}
+            wordList[i].clueNumber = null
             wordList[i].across = null
             wordList[i].x = null
             wordList[i].y = null
@@ -574,7 +627,6 @@ interface GridAndShift {
      * @returns {Cell[][]} The crossword object
      */
 export function generateCrosswordFromList(wordsClues: WordClue[]): GridAndShift {
-    // TODO Figure out how to fix the placement stuff for this
 
     // Initialization
     DEV: console.log("Crossword generation from list triggered")
@@ -592,12 +644,20 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): GridAndShift 
             topmost = topmost > wordClue.x ? wordClue.x : topmost
 
             if(wordClue.across) {
-                rightmost = rightmost < wordClue.y + wordClue.word.length - 1 ? wordClue.y + wordClue.word.length - 1 : rightmost
-                bottommost = bottommost < wordClue.x ? wordClue.x : bottommost
+                if(rightmost < wordClue.y + wordClue.word.length - 1) {
+                    rightmost = wordClue.y + wordClue.word.length - 1
+                }
+                if(bottommost < wordClue.x) {
+                    bottommost = wordClue.x
+                }
             }
             else {
-                rightmost = rightmost < wordClue.y ? wordClue.y : rightmost
-                bottommost = bottommost < wordClue.x + wordClue.word.length - 1 ? wordClue.x + wordClue.word.length - 1 : bottommost
+                if(rightmost < wordClue.y) {
+                    rightmost = wordClue.y
+                }
+                if(bottommost < wordClue.x + wordClue.word.length - 1) {
+                    bottommost = wordClue.x + wordClue.word.length - 1
+                }
             }
         }
     }
@@ -612,19 +672,8 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): GridAndShift 
         }
     }
 
-    let horizontalPadding: number = 0, verticalPadding: number = 0
-
-        if(rightmost - leftmost >= bottommost - topmost) {
-            verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2)
-        }
-        else {
-            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
-        }
-
     for(let wordClue of wordsClues) {
         if(wordClue.x != null && wordClue.y != null) {
-            wordClue.x = wordClue.x - topmost + verticalPadding
-            wordClue.y = wordClue.y - leftmost + horizontalPadding
             if(wordClue.clueNumber != null) {
                 grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
             }
@@ -661,5 +710,5 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): GridAndShift 
         }
     }
 
-    return {grid, topmost, leftmost, horizontalPadding, verticalPadding}
+    return {grid, topmost, leftmost, horizontalPadding: 0, verticalPadding: 0}
 }

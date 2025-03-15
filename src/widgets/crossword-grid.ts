@@ -584,19 +584,18 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {WordClue[]} 
      */
-    generateCrossword(wordsClues: WordClue[]): WordClue[] {
-        let {wordsAndClues, grid} = generateCrossword(wordsClues)
+    generateCrossword(wordsCluesInput: WordClue[]): WordClue[] {
+        let {wordsAndClues, grid} = generateCrossword(wordsCluesInput)
         this.wordsAndClues = wordsAndClues
         //DEV: console.log("Grid in generateCrossword:")
         //DEV: console.log(grid)
         //DEV: console.log("WORDS AND CLUES")
         //DEV: console.log(this.wordsAndClues)
-        this.grid = generateCrosswordFromList(wordsAndClues)
+        this.grid = grid
 
         this.newCrosswordGridDOM(document)
-        this.wordsAndClues = wordsClues as WordClue[]
 
-        return wordsClues as WordClue[]
+        return wordsAndClues
     }
 
     // TODO Implement answer checking
