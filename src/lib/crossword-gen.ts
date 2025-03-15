@@ -6,7 +6,7 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 
-import { WordClue, Cell, GenerationResults, defaultCell } from '../widgets/crossword-grid'
+import { WordClue, Cell, GenerationResults, defaultCell, WebwriterWordPuzzlesCrosswordGrid } from '../widgets/crossword-grid'
 
 function deleteElement<Type>(list: Type[], element: Type): Type {
     list.splice(list.indexOf(element), 1)
@@ -104,6 +104,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     bestWordsPlaced.sort((a, b) => a.clueNumber - b.clueNumber)
     // Sort words by across / down
     bestWordsPlaced.sort((a, b) => Number(b.across) - Number(a.across))
+    DEV: console.log("bestWordsPlaced sorted by clue number and across / down:")
+    DEV: console.log(bestWordsPlaced)
 
     return {wordsAndClues: bestWordsPlaced, grid: bestGrid} 
 
@@ -335,8 +337,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             }
         }
 
+
         // Add a clue number for the placement, if it wasn't added before
         if(possiblePlcmnts[p].clueNumber == null) {
+
             possiblePlcmnts[p].clueNumber = clueCount + 1
             clueCount += 1
         }
@@ -438,28 +442,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         return
     }
 
-    /** Helper function that removes the last added word from the grid
-     * and adds it to the tail of the sorted list of words. 
-     * 
-     * @returns { [Cell[][], WordClue[]] } - the new grid and new list
-    */
-    function wraparound(grid: Cell[][], wordClue: WordClue): [Cell[][], WordClue[]] {
-        // TODO
-        return
-    }
-
-    /** Helper function that removes a word from the grid.
-     * 
-     * @returns { string } - the word that was removed.
-    */
-    function remove(grid: Cell[][], wordClue: WordClue): void {
-        // TODO
-
-        wordsLeft.push(wordClue)
-        currentWordsPlaced.splice(currentWordsPlaced.findIndex(wordR => wordR === wordClue), 1)
-        return
-    }
-
     /** Local helper function for ranking a word to place onto the grid next.
      * This ranking strategy is independent of the grid content.
      * The wordsClues array is used
@@ -526,7 +508,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      */
     function generateCrosswordGrid(wordsCluesGen: WordClue[]): number {
 
+        ///DEV: console.log("wordsCluesGen pre-generateCrosswordFromList():")
+        ///DEV: console.log(wordsCluesGen)
         let inputGrid = generateCrosswordFromList(wordsCluesGen)
+        //DEV: console.log("wordsCluesGen post-generateCrosswordFromList():")
+        //DEV: console.log(wordsCluesGen)
 
         crosswordGenTimeout += 1
         if(crosswordGenTimeout == epoch) {
@@ -546,6 +532,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             for(let i = 0; i < possiblePlacementsCw.length; i++) {
                 // Add word
                 updatePlacements(wordsCluesCopy, possiblePlacementsCw, i)
+                wordsCluesCopy = setClueNumbers(wordsCluesCopy)
                 // Recurse
                 generateCrosswordGrid(wordsCluesCopy)
                 // Remove placement
@@ -554,23 +541,28 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             // Move the word to the end of the list
             moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
         }
+        // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {
             if(bestGrid == null) {
                 bestGrid = inputGrid
+                DEV: console.log("wordsCluesCopy:")
+                DEV: console.log(wordsCluesCopy)
+                DEV: console.log("wordsCluesGen:")
+                DEV: console.log(wordsCluesGen)
                 bestWordsPlaced = wordsCluesCopy
                 DEV: console.log("New best grid:")
                 DEV: console.log(bestGrid)
                 return 0
             }
-            else if(bestGrid.length > inputGrid.length) {
+            else if(bestGrid.length > inputGrid.length && inputGrid.length != 0) {
                 bestGrid = inputGrid
                 bestWordsPlaced = wordsCluesCopy
                 DEV: console.log("New best grid:")
                 DEV: console.log(bestGrid)
                 return 0
             }
-            DEV: console.log("New grid but NOT best:")
-            DEV: console.log(inputGrid)
+            //DEV: console.log("New grid but NOT best:")
+            //DEV: console.log(inputGrid)
         }
 
         function moveWordToEnd(wordList: WordClue[], moveW: WordClue) {
@@ -584,6 +576,41 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             wordList[i].across = null
             wordList[i].x = null
             wordList[i].y = null
+        }
+
+        function setClueNumbers(wordList: WordClue[]): WordClue[]{
+            DEV: console.log("wordList beffore:")
+            DEV: console.log(wordList)
+            let wordListCopy = wordList.map(wC => ({...wC}));
+            wordListCopy.sort((a, b) => a.y - b.y)
+            wordListCopy.sort((a, b) => a.x - b.x)
+
+            let clueNr = 1
+            let priorX = -1
+            let priorY = -1
+            for(let i = 0; i < wordListCopy.length; i++) {
+                if(wordListCopy[i].x == priorX && wordListCopy[i].y == priorY) {
+                    wordListCopy[i-1].clueNumber= wordListCopy[i-1].clueNumber
+                }
+                else {
+                    wordListCopy[i].clueNumber = clueNr
+                    clueNr += 1
+                }
+                priorX = wordListCopy[i].x
+                priorY = wordListCopy[i].y
+            }
+
+            for(let wordClCpy of wordListCopy) {
+                for(let wordCl of wordList) {
+                    if(wordClCpy.word == wordCl.word) {
+                        wordCl.clueNumber = wordClCpy.clueNumber
+                    }
+                }
+            }
+
+            DEV: console.log("wordList after:")
+            DEV: console.log(wordList)
+            return wordList
         }
     }
 }
@@ -614,7 +641,7 @@ interface GridAndShift {
      * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {Cell[][]} The crossword object
      */
-export function generateCrosswordFromList(wordsClues: WordClue[]): grid {
+export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
 
     // Initialization
     DEV: console.log("Crossword generation from list triggered")

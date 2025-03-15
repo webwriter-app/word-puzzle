@@ -1566,6 +1566,8 @@ function generateCrossword(wordsClues) {
   }
   bestWordsPlaced.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
   bestWordsPlaced.sort((a5, b4) => Number(b4.across) - Number(a5.across));
+  DEV: console.log("bestWordsPlaced sorted by clue number and across / down:");
+  DEV: console.log(bestWordsPlaced);
   return { wordsAndClues: bestWordsPlaced, grid: bestGrid };
   function placeable(inputGrid, wordsCluesPl, newWordClue, firstWord) {
     if (firstWord) {
@@ -1772,14 +1774,6 @@ function generateCrossword(wordsClues) {
     generateCrosswordGrid(inputGrid, wordList);
     return;
   }
-  function wraparound(grid, wordClue) {
-    return;
-  }
-  function remove(grid, wordClue) {
-    wordsLeft.push(wordClue);
-    currentWordsPlaced.splice(currentWordsPlaced.findIndex((wordR) => wordR === wordClue), 1);
-    return;
-  }
   function rankWord(wordIndex) {
     let rank = 0;
     for (let i9 = 0; i9 < wordsClues.length; i9++) {
@@ -1825,6 +1819,7 @@ function generateCrossword(wordsClues) {
       let possiblePlacementsCw = placeable(inputGrid, wordsCluesCopy, wordsCluesCopy[i9], firstFlag);
       for (let i10 = 0; i10 < possiblePlacementsCw.length; i10++) {
         updatePlacements(wordsCluesCopy, possiblePlacementsCw, i10);
+        wordsCluesCopy = setClueNumbers(wordsCluesCopy);
         generateCrosswordGrid(wordsCluesCopy);
         removePlacement(wordsCluesCopy, possiblePlacementsCw[i10]);
       }
@@ -1832,19 +1827,21 @@ function generateCrossword(wordsClues) {
     } else {
       if (bestGrid == null) {
         bestGrid = inputGrid;
+        DEV: console.log("wordsCluesCopy:");
+        DEV: console.log(wordsCluesCopy);
+        DEV: console.log("wordsCluesGen:");
+        DEV: console.log(wordsCluesGen);
         bestWordsPlaced = wordsCluesCopy;
         DEV: console.log("New best grid:");
         DEV: console.log(bestGrid);
         return 0;
-      } else if (bestGrid.length > inputGrid.length) {
+      } else if (bestGrid.length > inputGrid.length && inputGrid.length != 0) {
         bestGrid = inputGrid;
         bestWordsPlaced = wordsCluesCopy;
         DEV: console.log("New best grid:");
         DEV: console.log(bestGrid);
         return 0;
       }
-      DEV: console.log("New grid but NOT best:");
-      DEV: console.log(inputGrid);
     }
     function moveWordToEnd(wordList, moveW) {
       wordList.push(deleteElement(wordList, moveW));
@@ -1856,6 +1853,36 @@ function generateCrossword(wordsClues) {
       wordList[i10].across = null;
       wordList[i10].x = null;
       wordList[i10].y = null;
+    }
+    function setClueNumbers(wordList) {
+      DEV: console.log("wordList beffore:");
+      DEV: console.log(wordList);
+      let wordListCopy = wordList.map((wC) => ({ ...wC }));
+      wordListCopy.sort((a5, b4) => a5.y - b4.y);
+      wordListCopy.sort((a5, b4) => a5.x - b4.x);
+      let clueNr = 1;
+      let priorX = -1;
+      let priorY = -1;
+      for (let i10 = 0; i10 < wordListCopy.length; i10++) {
+        if (wordListCopy[i10].x == priorX && wordListCopy[i10].y == priorY) {
+          wordListCopy[i10 - 1].clueNumber = wordListCopy[i10 - 1].clueNumber;
+        } else {
+          wordListCopy[i10].clueNumber = clueNr;
+          clueNr += 1;
+        }
+        priorX = wordListCopy[i10].x;
+        priorY = wordListCopy[i10].y;
+      }
+      for (let wordClCpy of wordListCopy) {
+        for (let wordCl of wordList) {
+          if (wordClCpy.word == wordCl.word) {
+            wordCl.clueNumber = wordClCpy.clueNumber;
+          }
+        }
+      }
+      DEV: console.log("wordList after:");
+      DEV: console.log(wordList);
+      return wordList;
     }
   }
 }
@@ -2224,7 +2251,7 @@ function defaultCell() {
   };
 }
 var DEFAULT_DIMENSION = 9;
-var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
+var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   grid;
   gridEl;
   wordsAndClues;
@@ -2295,6 +2322,8 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     let nextCell;
     let row = Number(currentCell.getAttribute("grid-row"));
     let col = Number(currentCell.getAttribute("grid-col"));
+    let init_row = Number(currentCell.getAttribute("grid-row"));
+    let init_col = Number(currentCell.getAttribute("grid-col"));
     let timeoutLimit = 0;
     for (let wordClue of this.wordsAndClues) {
       timeoutLimit += wordClue.word.length;
@@ -2307,23 +2336,30 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     if (this.currentClue != null) {
       clueContext = this.currentClue;
     }
+    let initialAcross = acrossContext;
+    let initialClue = clueContext;
     let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1;
     if (currentWordIndex == -1) {
       currentWordIndex = this.wordsAndClues.length - 1;
     }
-    let i9 = -1;
+    let iNextW = -1;
     let timeout = 0;
+    let pass = -1;
+    let nrow = 0;
+    let ncol = 0;
     do {
-      let nrow = row + Number(!acrossContext);
-      let ncol = col + Number(acrossContext);
+      nextWord = null;
+      nrow = row + Number(!acrossContext);
+      ncol = col + Number(acrossContext);
+      pass += row == init_row && col == init_col ? 1 : 0;
       if (this.wordsAndClues.length > 1) {
-        i9 = this.getNextWordIndex(acrossContext, clueContext);
+        iNextW = this.getNextWordIndex(acrossContext, clueContext);
       }
       if (ncol >= this.grid.length || nrow >= this.grid.length || this.grid[nrow][ncol] == null || !this.grid[nrow][ncol].white) {
-        if (i9 == -1) {
-          i9 = 0;
+        if (iNextW == -1) {
+          iNextW = 0;
         }
-        nextWord = this.wordsAndClues[i9];
+        nextWord = this.wordsAndClues[iNextW];
         row = nextWord.x;
         col = nextWord.y;
         nextCell = this.getCellDOM(row, col);
@@ -2344,7 +2380,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       if (timeout >= timeoutLimit) {
         throw new Error("You've created an infinite loop, congratulations");
       }
-    } while (i9 != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "");
+    } while (pass < 2 && nextCell.querySelector(".cell-letter").textContent !== "");
     if (nextCell.querySelector(".cell-letter").textContent == "") {
       nextCell.focus();
       this.cur_col = Number(nextCell.getAttribute("grid-row"));
@@ -2372,6 +2408,14 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     clue = this.getClueNumber(across, this.cur_row, this.cur_col);
     return { across, clue };
   }
+  /**
+   * Gets the current clue number for a cell based off of the grid object. (Not DOM)
+   * 
+   * @param {boolean} across 
+   * @param {number} x 
+   * @param {number} y 
+   * @returns 
+   */
   getClueNumber(across, x3, y4) {
     let shift_row = across ? 0 : 1;
     let shift_col = 1 - shift_row;
@@ -2593,28 +2637,28 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
 };
 __decorateClass([
   n4({ type: Array, state: true, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "grid", 2);
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "grid", 2);
 __decorateClass([
   n4({ type: HTMLDivElement, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "gridEl", 2);
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "gridEl", 2);
 __decorateClass([
   n4({ type: Array, state: true, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "wordsAndClues", 2);
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "wordsAndClues", 2);
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "acrossContext", 2);
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "acrossContext", 2);
 __decorateClass([
   n4({ type: Number, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "currentClue", 2);
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "currentClue", 2);
 __decorateClass([
   r6()
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "cur_row", 2);
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "cur_row", 2);
 __decorateClass([
   r6()
-], WebwriterWordPuzzlesCrosswordGrid.prototype, "cur_col", 2);
-WebwriterWordPuzzlesCrosswordGrid = __decorateClass([
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "cur_col", 2);
+WebwriterWordPuzzlesCrosswordGrid2 = __decorateClass([
   t3("webwriter-word-puzzles-crossword-grid")
-], WebwriterWordPuzzlesCrosswordGrid);
+], WebwriterWordPuzzlesCrosswordGrid2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.3RPBFEDE.js
 var formCollections = /* @__PURE__ */ new WeakMap();
@@ -24672,7 +24716,7 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    */
   constructor(dimension = 8) {
     super();
-    this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid();
+    this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid2();
     this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridWidget.newCrosswordGridDOM(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
@@ -24721,7 +24765,7 @@ var WebwriterWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       "sl-alert": alert_default,
       "sl-tooltip": tooltip_default,
       "sl-drawer": drawer_default,
-      "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
+      "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid2,
       "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
     };
   }

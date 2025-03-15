@@ -239,6 +239,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let nextCell: HTMLDivElement
         let row = (Number(currentCell.getAttribute("grid-row")))
         let col = (Number(currentCell.getAttribute("grid-col")))
+        let init_row = (Number(currentCell.getAttribute("grid-row")))
+        let init_col = (Number(currentCell.getAttribute("grid-col")))
 
         let timeoutLimit = 0
         for(let wordClue of this.wordsAndClues) {
@@ -255,20 +257,29 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             clueContext = this.currentClue
         }
 
+        let initialAcross = acrossContext
+        let initialClue = clueContext
+
         let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1
         if (currentWordIndex == -1) {
             currentWordIndex = this.wordsAndClues.length - 1
         }
-        let i = -1
+        let iNextW = -1
 
         let timeout = 0
+        let pass = -1
+        let nrow = 0
+        let ncol = 0
         do {
-            let nrow = row + Number(!acrossContext)
-            let ncol = col + Number(acrossContext)
+            nextWord = null
+            nrow = row + Number(!acrossContext)
+            ncol = col + Number(acrossContext)
 
+            pass += (row == init_row) && (col == init_col) ? 1 : 0
+            
             // Edge case for a one-word crossword
             if(this.wordsAndClues.length > 1) {
-                i = this.getNextWordIndex(acrossContext, clueContext)
+                iNextW = this.getNextWordIndex(acrossContext, clueContext)
             }
 
             // If going further would be out of bounds, get next word
@@ -278,10 +289,10 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 || this.grid[nrow][ncol] == null
                 // if the next cell is black
                 || !this.grid[nrow][ncol].white) {
-                if(i == -1) {
-                    i = 0
+                if(iNextW == -1) {
+                    iNextW = 0
                 }
-                nextWord = this.wordsAndClues[i]
+                nextWord = this.wordsAndClues[iNextW]
                 row = nextWord.x
                 col = nextWord.y
                 nextCell = this.getCellDOM(row, col)
@@ -308,7 +319,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 throw new Error("You've created an infinite loop, congratulations")
             }
 
-        } while(i != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "")
+            // TODO Change this condition
+        } while(pass < 2 && nextCell.querySelector(".cell-letter").textContent !== "")
 
         if(nextCell.querySelector(".cell-letter").textContent == "") {
             nextCell.focus()
@@ -347,6 +359,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         return {across, clue}
     }
 
+    /**
+     * Gets the current clue number for a cell based off of the grid object. (Not DOM)
+     * 
+     * @param {boolean} across 
+     * @param {number} x 
+     * @param {number} y 
+     * @returns 
+     */
     getClueNumber(across: boolean, x: number, y: number): number {
             let shift_row = across ? 0 : 1
             let shift_col = 1 - shift_row
