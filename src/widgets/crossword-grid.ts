@@ -239,8 +239,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let nextCell: HTMLDivElement
         let row = (Number(currentCell.getAttribute("grid-row")))
         let col = (Number(currentCell.getAttribute("grid-col")))
-        let acrossContextCur = this.acrossContext
-        let clueCur = this.currentClue
 
         let timeoutLimit = 0
         for(let wordClue of this.wordsAndClues) {
@@ -265,8 +263,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         let timeout = 0
         do {
-            let inc_row = Number(!acrossContext)
-            let inc_col = Number(acrossContext)
+            let nrow = row + Number(!acrossContext)
+            let ncol = col + Number(acrossContext)
 
             // Edge case for a one-word crossword
             if(this.wordsAndClues.length > 1) {
@@ -274,12 +272,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
 
             // If going further would be out of bounds, get next word
-            if((col + inc_col >= this.grid.length) 
-                || (row + inc_row >= this.grid.length) 
+            if((ncol >= this.grid.length) 
+                || (nrow >= this.grid.length) 
                 // if no cell is defined
-                || this.grid[row + inc_row][col + inc_col] == null
+                || this.grid[nrow][ncol] == null
                 // if the next cell is black
-                || !this.grid[row + inc_row][col + inc_col].white) {
+                || !this.grid[nrow][ncol].white) {
                 if(i == -1) {
                     i = 0
                 }
@@ -290,8 +288,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
             // otherwise, get the next cell
             else {
-                    row += inc_row
-                    col += inc_col
+                    row = nrow
+                    col = ncol
                     nextCell = this.getCellDOM(row, col)
             }
 
@@ -310,8 +308,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 throw new Error("You've created an infinite loop, congratulations")
             }
 
-            // TODO Fix this condition, it's problematic
-            // TODO Put iterating over cells of a word and the words themselves into different loops
         } while(i != currentWordIndex && nextCell.querySelector(".cell-letter").textContent !== "")
 
         if(nextCell.querySelector(".cell-letter").textContent == "") {

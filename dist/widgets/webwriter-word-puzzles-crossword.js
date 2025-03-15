@@ -2295,8 +2295,6 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     let nextCell;
     let row = Number(currentCell.getAttribute("grid-row"));
     let col = Number(currentCell.getAttribute("grid-col"));
-    let acrossContextCur = this.acrossContext;
-    let clueCur = this.currentClue;
     let timeoutLimit = 0;
     for (let wordClue of this.wordsAndClues) {
       timeoutLimit += wordClue.word.length;
@@ -2316,12 +2314,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     let i9 = -1;
     let timeout = 0;
     do {
-      let inc_row = Number(!acrossContext);
-      let inc_col = Number(acrossContext);
+      let nrow = row + Number(!acrossContext);
+      let ncol = col + Number(acrossContext);
       if (this.wordsAndClues.length > 1) {
         i9 = this.getNextWordIndex(acrossContext, clueContext);
       }
-      if (col + inc_col >= this.grid.length || row + inc_row >= this.grid.length || this.grid[row + inc_row][col + inc_col] == null || !this.grid[row + inc_row][col + inc_col].white) {
+      if (ncol >= this.grid.length || nrow >= this.grid.length || this.grid[nrow][ncol] == null || !this.grid[nrow][ncol].white) {
         if (i9 == -1) {
           i9 = 0;
         }
@@ -2330,8 +2328,8 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
         col = nextWord.y;
         nextCell = this.getCellDOM(row, col);
       } else {
-        row += inc_row;
-        col += inc_col;
+        row = nrow;
+        col = ncol;
         nextCell = this.getCellDOM(row, col);
       }
       timeout += 1;
