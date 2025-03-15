@@ -90,19 +90,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
     }
 
-//    // Use bestWordsPlaced to access coordinates of grid, read number
-//    for(let wordObj of bestWordsPlaced) {
-//        // NOTE This may cause issues
-//        for(let wordClue of wordsClues) {
-//            if(wordObj.word == wordClue.word) {
-//                wordClue.across = wordObj.across
-//                wordClue.clueNumber = bestGrid[wordObj.x][wordObj.y].number
-//                wordClue.x = wordObj.x
-//                wordClue.y = wordObj.y
-//            }
-//        }
-//    }
-
     for(let wordClue of bestWordsPlaced) {
         if(!wordClue.clueText) {
             wordClue.clueText = "* No clue for this word *"
@@ -118,7 +105,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     // Sort words by across / down
     bestWordsPlaced.sort((a, b) => Number(b.across) - Number(a.across))
 
-    return {wordsAndClues: bestWordsPlaced as WordClue[], grid: bestGrid} 
+    return {wordsAndClues: bestWordsPlaced, grid: bestGrid} 
 
 
     // =====================================================================================
@@ -539,14 +526,15 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      */
     function generateCrosswordGrid(wordsCluesGen: WordClue[]): number {
 
-        let {grid: inputGrid, topmost, leftmost, verticalPadding, horizontalPadding} = generateCrosswordFromList(wordsCluesGen)
+        let inputGrid = generateCrosswordFromList(wordsCluesGen)
 
         crosswordGenTimeout += 1
         if(crosswordGenTimeout == epoch) {
             throw new Error("You've created an infinite loop during cw gen, congratulations")
         }
 
-        let wordsCluesCopy = wordsCluesGen.slice()
+        let wordsCluesCopy = wordsCluesGen.map(wC => ({...wC}));
+
         let i = 0
         while(i < wordsCluesCopy.length && (wordsCluesCopy[i].x != null && wordsCluesCopy[i].y != null)) {
             i++
@@ -626,7 +614,7 @@ interface GridAndShift {
      * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {Cell[][]} The crossword object
      */
-export function generateCrosswordFromList(wordsClues: WordClue[]): GridAndShift {
+export function generateCrosswordFromList(wordsClues: WordClue[]): grid {
 
     // Initialization
     DEV: console.log("Crossword generation from list triggered")
@@ -710,5 +698,5 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): GridAndShift 
         }
     }
 
-    return {grid, topmost, leftmost, horizontalPadding: 0, verticalPadding: 0}
+    return grid
 }

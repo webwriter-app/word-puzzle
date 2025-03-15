@@ -1810,12 +1810,12 @@ function generateCrossword(wordsClues) {
     return rankedList;
   }
   function generateCrosswordGrid(wordsCluesGen) {
-    let { grid: inputGrid, topmost, leftmost, verticalPadding, horizontalPadding } = generateCrosswordFromList(wordsCluesGen);
+    let inputGrid = generateCrosswordFromList(wordsCluesGen);
     crosswordGenTimeout += 1;
     if (crosswordGenTimeout == epoch) {
       throw new Error("You've created an infinite loop during cw gen, congratulations");
     }
-    let wordsCluesCopy = wordsCluesGen.slice();
+    let wordsCluesCopy = wordsCluesGen.map((wC) => ({ ...wC }));
     let i9 = 0;
     while (i9 < wordsCluesCopy.length && (wordsCluesCopy[i9].x != null && wordsCluesCopy[i9].y != null)) {
       i9++;
@@ -1926,7 +1926,7 @@ function generateCrosswordFromList(wordsClues) {
       }
     }
   }
-  return { grid, topmost, leftmost, horizontalPadding: 0, verticalPadding: 0 };
+  return grid;
 }
 
 // src/styles/styles.ts
@@ -2272,6 +2272,12 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     }
     this.gridEl.addEventListener("keydown", stopCtrlPropagation);
     this.requestUpdate();
+    DEV: console.log("Updated crossword grid DOM:");
+    DEV: console.log(this.gridEl);
+    DEV: console.log("Grid object:");
+    DEV: console.log(this.grid);
+    DEV: console.log("Words and clues:");
+    DEV: console.log(this.wordsAndClues);
     return this.gridEl;
   }
   /** 
@@ -2287,10 +2293,8 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     }
     let nextWord;
     let nextCell;
-    let grid_row = Number(currentCell.getAttribute("grid-row"));
-    let grid_col = Number(currentCell.getAttribute("grid-col"));
-    let grid_row_cur = Number(currentCell.getAttribute("grid-row"));
-    let grid_col_cur = Number(currentCell.getAttribute("grid-col"));
+    let row = Number(currentCell.getAttribute("grid-row"));
+    let col = Number(currentCell.getAttribute("grid-col"));
     let acrossContextCur = this.acrossContext;
     let clueCur = this.currentClue;
     let timeoutLimit = 0;
@@ -2298,7 +2302,7 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
       timeoutLimit += wordClue.word.length;
     }
     timeoutLimit = timeoutLimit * 10;
-    let { across: acrossContext, clue: clueContext } = this.getContextFromCell(grid_row, grid_col);
+    let { across: acrossContext, clue: clueContext } = this.getContextFromCell(row, col);
     if (this.acrossContext != null) {
       acrossContext = this.acrossContext;
     }
@@ -2312,23 +2316,23 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
     let i9 = -1;
     let timeout = 0;
     do {
-      let incr_row = Number(!acrossContext);
-      let incr_col = Number(acrossContext);
+      let inc_row = Number(!acrossContext);
+      let inc_col = Number(acrossContext);
       if (this.wordsAndClues.length > 1) {
         i9 = this.getNextWordIndex(acrossContext, clueContext);
       }
-      if (grid_col + incr_col >= this.grid.length || grid_row + incr_row >= this.grid.length || this.grid[grid_row + incr_row][grid_col + incr_col] == null || !this.grid[grid_row + incr_row][grid_col + incr_col].white) {
+      if (col + inc_col >= this.grid.length || row + inc_row >= this.grid.length || this.grid[row + inc_row][col + inc_col] == null || !this.grid[row + inc_row][col + inc_col].white) {
         if (i9 == -1) {
           i9 = 0;
         }
         nextWord = this.wordsAndClues[i9];
-        grid_row = nextWord.x;
-        grid_col = nextWord.y;
-        nextCell = this.getCellDOM(grid_row, grid_col);
+        row = nextWord.x;
+        col = nextWord.y;
+        nextCell = this.getCellDOM(row, col);
       } else {
-        grid_row += incr_row;
-        grid_col += incr_col;
-        nextCell = this.getCellDOM(grid_row, grid_col);
+        row += inc_row;
+        col += inc_col;
+        nextCell = this.getCellDOM(row, col);
       }
       timeout += 1;
       if (timeout > timeoutLimit) {
@@ -2518,6 +2522,9 @@ var WebwriterWordPuzzlesCrosswordGrid = class extends WebwriterWordPuzzles {
           nextCell.focus();
         }
         break;
+      case "Backspace":
+      case "Delete":
+        cell.querySelector(".cell-letter").textContent = "";
       // Insert character
       default:
         if (isAlphaChar(e13.key)) {

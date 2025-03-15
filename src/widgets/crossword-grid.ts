@@ -95,6 +95,14 @@ export function defaultCell(): Cell {
     }
 }
 
+/**
+ * ```typescript
+ * {
+ *   wordsAndClues: WordClue[],
+ *   grid: Cell[][]
+ * }
+ * ```
+ */
 export interface GenerationResults {
     wordsAndClues: WordClue[],
     grid: Cell[][]
@@ -204,6 +212,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         //DEV: console.log("gridEl:")
         //DEV: console.log(this.gridEl)
         this.requestUpdate()
+        DEV: console.log("Updated crossword grid DOM:")
+        DEV: console.log(this.gridEl)
+        DEV: console.log("Grid object:")
+        DEV: console.log(this.grid)
+        DEV: console.log("Words and clues:")
+        DEV: console.log(this.wordsAndClues)
         return this.gridEl
     }
 
@@ -223,10 +237,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         let nextWord: WordClue
         let nextCell: HTMLDivElement
-        let grid_row = (Number(currentCell.getAttribute("grid-row")))
-        let grid_col = (Number(currentCell.getAttribute("grid-col")))
-        let grid_row_cur = (Number(currentCell.getAttribute("grid-row")))
-        let grid_col_cur = (Number(currentCell.getAttribute("grid-col")))
+        let row = (Number(currentCell.getAttribute("grid-row")))
+        let col = (Number(currentCell.getAttribute("grid-col")))
         let acrossContextCur = this.acrossContext
         let clueCur = this.currentClue
 
@@ -236,7 +248,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         }
         timeoutLimit = timeoutLimit * 10
 
-        let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(grid_row, grid_col)
+        let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(row, col)
 
         if(this.acrossContext != null) {
             acrossContext = this.acrossContext
@@ -253,33 +265,34 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         let timeout = 0
         do {
-            let incr_row = Number(!acrossContext)
-            let incr_col = Number(acrossContext)
+            let inc_row = Number(!acrossContext)
+            let inc_col = Number(acrossContext)
 
             // Edge case for a one-word crossword
             if(this.wordsAndClues.length > 1) {
                 i = this.getNextWordIndex(acrossContext, clueContext)
             }
 
-            if((grid_col + incr_col >= this.grid.length) 
-                || (grid_row + incr_row >= this.grid.length) 
-                || this.grid[grid_row + incr_row][grid_col + incr_col] == null
-                || !this.grid[grid_row + incr_row][grid_col + incr_col].white) {
-                // If going further would be out of bounds, get next word
+            // If going further would be out of bounds, get next word
+            if((col + inc_col >= this.grid.length) 
+                || (row + inc_row >= this.grid.length) 
+                // if no cell is defined
+                || this.grid[row + inc_row][col + inc_col] == null
+                // if the next cell is black
+                || !this.grid[row + inc_row][col + inc_col].white) {
                 if(i == -1) {
                     i = 0
                 }
                 nextWord = this.wordsAndClues[i]
-                grid_row = nextWord.x
-                grid_col = nextWord.y
-                nextCell = this.getCellDOM(grid_row, grid_col)
+                row = nextWord.x
+                col = nextWord.y
+                nextCell = this.getCellDOM(row, col)
             }
+            // otherwise, get the next cell
             else {
-                // If the next cell is black, get next word
-                // otherwise, get the next cell
-                    grid_row += incr_row
-                    grid_col += incr_col
-                    nextCell = this.getCellDOM(grid_row, grid_col)
+                    row += inc_row
+                    col += inc_col
+                    nextCell = this.getCellDOM(row, col)
             }
 
             timeout += 1
@@ -513,6 +526,9 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                     nextCell.focus()
                 }
                 break;
+            case "Backspace":
+            case "Delete":
+                cell.querySelector('.cell-letter').textContent = ""
             // Insert character
             default: 
                 if (isAlphaChar(e.key)) {
@@ -551,6 +567,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         this.currentClue = clueContext
 
         // Iterate to beginning of word
+        // NOTE: This may mean the context is changed even 
         if(this.acrossContext) {
             while(y > 0 && this.grid[x][y-1].white) {
                 y -= 1
