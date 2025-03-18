@@ -70,18 +70,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     _wordsAndClues: WordClue[] = [{word: "", across: true}]
 
     /**
-     * The word currently in the clueboxInput element.
-     */
-    @property({type: Array, attribute: false})
-    words: string[] = ["", "", "", ""]
-
-    /**
-     * The clue currently in the clueboxInput element.
-     */
-    @property({type: Array, attribute: false})
-    clues: string[] = ["", "", "", ""]
-
-    /**
      * Current crossword context; across and clue number
      */
     @property({ type: Object, state: true, attribute: false})
@@ -239,6 +227,77 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 </td>
                 `
 
+    renderClueboxInput() {
+        DEV: console.log("render cluebox input")
+        const clueboxInputRender = []
+
+        const clueboxButtonCell = html`<td class="button-cell" tabindex="-1">
+                <div class="button-cell-div">
+                    <sl-tooltip content="Delete row">
+                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                        </sl-button>
+                    </sl-tooltip>
+                </div>
+            </td>`
+
+        if(this._wordsAndClues != null) {
+            let i = 0
+            for(i < 0; i < this._wordsAndClues.length; i++) {
+                if(this._wordsAndClues[i].word != "") {
+                    clueboxInputRender.push(this._wordsAndClues[i].clueText != "" 
+                        ? html`<tr><td contenteditable>${this._wordsAndClues[i].word}</td>
+                        <td></td><td contenteditable>${this._wordsAndClues[i].clueText}</td>${clueboxButtonCell}</tr>`
+                        : html`<td contenteditable>${this._wordsAndClues[i].word}</td>
+                        <td></td><td contenteditable></td>
+                        ${clueboxButtonCell}</tr>`
+                        )
+                }
+                else {
+                    clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
+                }
+            }
+            // Always have at least 4 rows present
+            if(i < 4) {
+                let empty = 4 - i
+                for(empty; empty > 0; empty--) {
+                    clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
+                }
+            }
+        }
+
+        /** 
+        * cluebox template
+        */
+        return html`
+            <table class="clueboxInput" @keydown=${this.ctrlHandler}>
+                <colgroup>
+                <col class="word-column">
+                <col class="button-column">
+                <col class="clue-column">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="word-column">Words</th>
+                    <th class="button-header-cell"> 
+                    <div class="plus-button-div">
+                <sl-tooltip content="Add rows">
+                        <sl-button tabindex="-1" size="small" 
+                        class="plus-button" variant="default" 
+                        circle @click=${(e) => this.addRow(e)}>
+                        <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
+                    </sl-button></sl-tooltip>
+                    </div>
+                    </th>
+                    <th class="clue-column">Clues</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${clueboxInputRender}
+            </tbody>
+            </table>
+            `      
+    }
 
     renderCluebox() {
         // Count across and down clues
@@ -263,9 +322,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
             // Add clues in the same row
             for(let k = 0; k < sharedRows; k++) {
-                clueboxTemplateCells.push(html`<tr>`)
-                clueboxTemplateCells.push(html`<td>${singleCell(this._wordsAndClues[k])}</td><td>${singleCell(this._wordsAndClues[k+i])}</td>`)
-                clueboxTemplateCells.push(html`</tr>`)
+                clueboxTemplateCells.push(html`<tr><td>${singleCell(this._wordsAndClues[k])}</td><td>${singleCell(this._wordsAndClues[k+i])}</td></tr>`)
             }
 
             // Add clues remaining clues in only across / down column
@@ -295,7 +352,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 return html`
                         <b>${wordClue.clueNumber != null ? 
                         "[" + wordClue.clueNumber + "]" : ""}</b> 
-                        ${wordClue.clueText != null ? wordClue.clueText : ""}
+                        ${wordClue.clueText != null ? wordClue.clueText : html`<i style="color:gray;">No clue provided for this word</i>`}
                     ` 
             }
             else {
@@ -323,50 +380,18 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             </tbody>
             </table>
             `
-
+        
     }
 
     render() {
         /**
         * clueboxInput template
         */
-        const clueboxInputTemplate = html`
-            <table class="clueboxInput" @keydown=${this.ctrlHandler}>
-                <colgroup>
-                <col class="word-column">
-                <col class="button-column">
-                <col class="clue-column">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th class="word-column">Words</th>
-                    <th class="button-header-cell"> 
-                    <div class="plus-button-div">
-                <sl-tooltip content="Add rows">
-                        <sl-button tabindex="-1" size="small" 
-                        class="plus-button" variant="default" 
-                        circle @click=${(e) => this.addRow(e)}>
-                        <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
-                    </sl-button></sl-tooltip>
-                    </div>
-                    </th>
-                    <th class="clue-column">Clues</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-                <tr>${this.new_row_template_inner}</tr>
-            </tbody>
-            </table>
-            `
-
-        
+                
         return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
                 ${this.renderCluebox()}
                 <sl-drawer contained position="relative" label="Clue input box">
-                ${clueboxInputTemplate}
+                ${this.renderClueboxInput()}
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>

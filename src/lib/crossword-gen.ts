@@ -92,7 +92,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     for(let wordClue of bestWordsPlaced) {
         if(!wordClue.clueText) {
-            wordClue.clueText = "* No clue for this word *"
+//            wordClue.clueText = "* No clue for this word *"
         }
         if(!(wordClue.clueText && (wordClue.across != null) && wordClue.clueNumber && wordClue.word))
             DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
