@@ -8,6 +8,7 @@
 import { html, HTMLTemplateResult, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
+import { setWordsClues, setContext } from './crossword';
 import { WordClue } from './crossword-grid';
 import { cluebox_styles } from '../styles/styles'
 
@@ -64,8 +65,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
-    @property({type: Array, attribute: true})
-    wordsAndClues: WordClue[] = [{word: "", across: true}]
+    @property({type: Array, attribute: false})
+    _wordsAndClues: WordClue[] = [{word: "", across: true}]
 
     /**
      * The word currently in the clueboxInput element.
@@ -105,8 +106,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     constructor() {
         super()
-
-        this.wordsAndClues = [{word: "", across: true}]
+        this._wordsAndClues = [{word: "", across: true}]
     }
 
     static get styles() {
@@ -130,8 +130,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * Event handler that triggers crossword generation
      */
     triggerCwGeneration() {
-        this.wordsAndClues = this.getNewWords()
-        if(this.wordsAndClues.length != 0) {
+        this._wordsAndClues = this.getNewWords()
+        if(this._wordsAndClues.length != 0) {
             const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true})
             this.dispatchEvent(genClicked)
         }
@@ -161,9 +161,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             }
         }
 
-        this.wordsAndClues = wordsAndClues
+        this._wordsAndClues = wordsAndClues
 
-        return this.wordsAndClues
+        return this._wordsAndClues
     }
 
     showDrawer() {
@@ -184,7 +184,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         if (event.ctrlKey && event.key === "Enter") {
             event.stopPropagation()
             this.getNewWords()
-            if(this.wordsAndClues.length != 0) {
+            if(this._wordsAndClues.length != 0) {
                 this.triggerCwGeneration()
             }
         }
@@ -246,7 +246,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         let i = 0
         /** number of down clues */
         let j = 0
-        for(let wordClue of this.wordsAndClues) {
+        for(let wordClue of this._wordsAndClues) {
             if(wordClue.across) {
                 i++
             }
@@ -260,7 +260,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         // Add clues in the same row
         for(let k = 0; k < sharedRows; k++) {
             clueboxTemplateCells.push(html`<tr>`)
-            clueboxTemplateCells.push(html`<td>${singleCell(this.wordsAndClues[k])}</td><td>${singleCell(this.wordsAndClues[k+i])}</td>`)
+            clueboxTemplateCells.push(html`<td>${singleCell(this._wordsAndClues[k])}</td><td>${singleCell(this._wordsAndClues[k+i])}</td>`)
             clueboxTemplateCells.push(html`</tr>`)
         }
 
@@ -269,10 +269,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         let start = i > j ? sharedRows : sharedRows + i
 
         for(let k = start; k < diff + start; k++) {
-            let cell = this.wordsAndClues[k].across ? 
-                html`<tr><td>${singleCell(this.wordsAndClues[k])}</td><td></td></tr>`
+            let cell = this._wordsAndClues[k].across ? 
+                html`<tr><td>${singleCell(this._wordsAndClues[k])}</td><td></td></tr>`
                 : 
-                html`<tr><td></td><td>${singleCell(this.wordsAndClues[k])}</td></tr>`
+                html`<tr><td></td><td>${singleCell(this._wordsAndClues[k])}</td></tr>`
                 clueboxTemplateCells.push(cell)
         }
 

@@ -31,16 +31,43 @@ declare global {interface HTMLElementTagNameMap {
     }
 }
 
-//export function stopCtrlPropagation(event: KeyboardEvent): void {
-//        if (event.ctrlKey) {
-//            event.stopPropagation()
-//            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
-//        }
-//    }
+
+/**
+ * Dispatches an event to update the current words and clues.
+ * 
+ * @param {number} clue the updated clue number
+ */
+export function setWordsClues(wordsClues: WordClue[]): void {
+    let setWordsClues = new CustomEvent("set-words-clues", {bubbles: true, composed: true, detail: wordsClues})
+    this.dispatchEvent(setWordsClues)
+}
 
 
-// NOTE Almost all methods within this class are from / based on the crosswords-js module
+/**
+ * Data type for the crossword context.
+ * 
+ * ```typescript
+ * {
+ *   across: boolean,
+ *   clue: number
+ * }
+ * ```
+ */
+export interface CrosswordContext {
+    across: boolean,
+    clue: number
+}
 
+/**
+     * Dispatches an event to change the current clue and direction context.
+     * 
+     * @param {number} clue the updated clue number
+     * @param {boolean} across whether the updated direction is across
+     */
+export function setContext(context: CrosswordContext): void {
+    let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: context})
+    this.dispatchEvent(setContext)
+}
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
@@ -49,6 +76,14 @@ declare global {interface HTMLElementTagNameMap {
  */
 @customElement("webwriter-word-puzzles-crossword")
 export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
+
+    /**
+     * The list of words grouped with their clues, direction, and word number.
+     */
+    @property({ type: Array, state: true, attribute: true, reflect: true})
+    wordsAndClues: WordClue[]
+
+
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
@@ -108,8 +143,6 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             this.gridWidget.acrossContext = this.acrossContext
             this.clueWidget.acrossContext = this.acrossContext
         })
-
-        this.toggleDirection = this.toggleDirection.bind(this)
     }
     /**
      * Styles
@@ -141,17 +174,6 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
         "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
         };
-    }
-
-    toggleDirection(): void {
-        this.acrossContext = !this.acrossContext
-        this.gridWidget.acrossContext = this.acrossContext
-        this.clueWidget.acrossContext = this.acrossContext
-        DEV: console.log("Direction toggled")
-    }
-
-    setCurrentClue(clue: number): void {
-        this.currentClue = clue
     }
 
     /**

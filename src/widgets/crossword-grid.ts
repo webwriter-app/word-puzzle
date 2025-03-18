@@ -9,7 +9,7 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterWordPuzzlesCrossword } from './crossword';
+import { WebwriterWordPuzzlesCrossword, setContext, CrosswordContext, setWordsClues } from './crossword';
 import { generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
@@ -155,6 +155,13 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     currentClue: number
 
     /**
+     * TODO Replace current context vars
+     * 
+     */
+    @property({ type: Object, state: true, attribute: false})
+    _crosswordContext
+
+    /**
      * Current row
      */
     @state()
@@ -176,7 +183,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     constructor() {
         super()
         this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
-        this.acrossContext = null
+        this._crosswordContext = {across: null, clue: null}
     }
 
     /**
@@ -250,11 +257,11 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(row, col)
 
-        if(this.acrossContext != null) {
-            acrossContext = this.acrossContext
+        if(this._crosswordContext.across != null) {
+            acrossContext = this._crosswordContext.across
         }
-        if(this.currentClue != null) {
-            clueContext = this.currentClue
+        if(this._crosswordContext.clue != null) {
+            clueContext = this._crosswordContext.clue
         }
 
         let initialAcross = acrossContext
@@ -328,7 +335,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             this.cur_row = Number(nextCell.getAttribute("grid-col"))
             // Update context only if another word was chosen
             if(nextWord) {
-                this.setContext((nextWord.across), nextWord.clueNumber)
+                setContext(this._crosswordContext)
             }
         }
         else {
@@ -342,12 +349,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let across: boolean
         let clue
 
-        if(this.acrossContext == null) {
+        if(this._crosswordContext == null) {
             across = (cell.getAttribute("direction") == "across" || cell.getAttribute("direction") == "both")
         }
         else {
             if(cell.getAttribute("direction") == "both") {
-                across = this.acrossContext
+                across = this._crosswordContext.across
             }
             else  {
                 across = cell.getAttribute("direction") == "across"
@@ -380,7 +387,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             return this.grid[x][y].number
         }
 
-    /** Function for getting a cell based on its location in the DOM grid. 
+    /** Function for getting a cell based on its location in the DOM grid.
      * 
      * @param {number} row the row number, 1-indexed
      * @param {number} col the column number, 1-indexed
@@ -500,17 +507,17 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             // Go to next clue
             case "Tab":
                 e.stopPropagation()
-                let nextWord  = this.wordsAndClues[this.getNextWordIndex(this.acrossContext, this.currentClue)]
+                let nextWord  = this.wordsAndClues[this.getNextWordIndex(this._crosswordContext.across, this._crosswordContext.clue)]
                 row = nextWord.x
                 col = nextWord.y
-                this.setContext((nextWord.across), nextWord.clueNumber)
+                setContext(this._crosswordContext)
                 nextCell = this.getCellDOM(row, col)
                 nextCell.focus()
                 break;
             // Change direction context if the current cell goes in both directions
             case " ":
                 if(cell.getAttribute("direction") == "both") {
-                    this.setContext(!this.acrossContext, this.getClueNumber(!this.acrossContext, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))))
+                    setContext({across: !this._crosswordContext.across, clue: this.getClueNumber(!this._crosswordContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col")))})
                 }
                 break;
             // NAVIGATION ========================================================
@@ -576,15 +583,15 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(this.cur_row, this.cur_col)
 
         // This is ideally not supposed to happen if a cell is already currently selected
-        //if (this.acrossContext == null) {
-            this.acrossContext = acrossContext
+        //if (this._crosswordContext.acrossContext == null) {
+            this._crosswordContext.across = acrossContext
         //}
 
-        this.currentClue = clueContext
+        this._crosswordContext.clue = clueContext
 
         // Iterate to beginning of word
         // NOTE: This may mean the context is changed even 
-        if(this.acrossContext) {
+        if(this._crosswordContext.acrossContext) {
             while(y > 0 && this.grid[x][y-1].white) {
                 y -= 1
             }
@@ -595,22 +602,13 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
         }
         //DEV: console.log("Word beginning (0-indexed): (" + x + ", " + y + ")")
-        this.setContext(this.acrossContext, this.currentClue)
+        setContext(this._crosswordContext)
     }
 
 
-    /**
-     * Dispatches an event to change the current clue and direction context.
-     * 
-     * @param {number} clue the updated clue number
-     * @param {boolean} across whether the updated direction is across
-     */
-    setContext(across: boolean, clue: number): void {
-        let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: {clue: clue, acrossContext: across}})
-        this.dispatchEvent(setContext)
-    }
+    
 
-    /**
+        /**
      * Generates crossword puzzle based off of words in the clue box, without given coordinates.
      * Calls the function in crossword-gen
      * 
