@@ -2379,11 +2379,21 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
       this.cur_col = Number(nextCell.getAttribute("grid-row"));
       this.cur_row = Number(nextCell.getAttribute("grid-col"));
       if (nextWord) {
-        setContext(this._crosswordContext);
+        this.setContext(this._crosswordContext);
       }
     } else {
       currentCell.blur();
     }
+  }
+  /**
+       * Dispatches an event to change the current clue and direction context.
+       * 
+       * @param {number} clue the updated clue number
+       * @param {boolean} across whether the updated direction is across
+       */
+  setContext(context) {
+    let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
+    this.dispatchEvent(setContext2);
   }
   getContextFromCell(row, col) {
     let cell = this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
@@ -2518,14 +2528,14 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
         let nextWord = this._wordsAndClues[this.getNextWordIndex(this._crosswordContext.across, this._crosswordContext.clue)];
         row = nextWord.x;
         col = nextWord.y;
-        setContext(this._crosswordContext);
+        this.setContext(this._crosswordContext);
         nextCell = this.getCellDOM(row, col);
         nextCell.focus();
         break;
       // Change direction context if the current cell goes in both directions
       case " ":
         if (cell.getAttribute("direction") == "both") {
-          setContext({ across: !this._crosswordContext.across, clue: this.getClueNumber(!this._crosswordContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))) });
+          this.setContext({ across: !this._crosswordContext.across, clue: this.getClueNumber(!this._crosswordContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))) });
         }
         break;
       // NAVIGATION ========================================================
@@ -2593,7 +2603,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
         x3 -= 1;
       }
     }
-    setContext(this._crosswordContext);
+    this.setContext(this._crosswordContext);
   }
   /**
    * Dispatches an event to update the current words and clues.
@@ -2621,6 +2631,8 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   // TODO Implement answer checking
   // It should compare the text content of the cell with the answer in this.grid 
   render() {
+    this.grid = generateCrosswordFromList(this._wordsAndClues);
+    this.newCrosswordGridDOM(document);
     return x`<div>
                 ${this.gridEl}
             </div>
@@ -3600,7 +3612,7 @@ var computePosition = async (reference, floating, config) => {
     middlewareData
   };
 };
-async function detectOverflow(state, options) {
+async function detectOverflow(state3, options) {
   var _await$platform$isEle;
   if (options === void 0) {
     options = {};
@@ -3612,14 +3624,14 @@ async function detectOverflow(state, options) {
     rects,
     elements,
     strategy
-  } = state;
+  } = state3;
   const {
     boundary = "clippingAncestors",
     rootBoundary = "viewport",
     elementContext = "floating",
     altBoundary = false,
     padding = 0
-  } = evaluate(options, state);
+  } = evaluate(options, state3);
   const paddingObject = getPaddingObject(padding);
   const altContext = elementContext === "floating" ? "reference" : "floating";
   const element = elements[altBoundary ? altContext : elementContext];
@@ -3659,7 +3671,7 @@ async function detectOverflow(state, options) {
 var arrow = (options) => ({
   name: "arrow",
   options,
-  async fn(state) {
+  async fn(state3) {
     const {
       x: x3,
       y: y4,
@@ -3668,11 +3680,11 @@ var arrow = (options) => ({
       platform: platform2,
       elements,
       middlewareData
-    } = state;
+    } = state3;
     const {
       element,
       padding = 0
-    } = evaluate(options, state) || {};
+    } = evaluate(options, state3) || {};
     if (element == null) {
       return {};
     }
@@ -3725,7 +3737,7 @@ var flip = function(options) {
   return {
     name: "flip",
     options,
-    async fn(state) {
+    async fn(state3) {
       var _middlewareData$arrow, _middlewareData$flip;
       const {
         placement,
@@ -3734,7 +3746,7 @@ var flip = function(options) {
         initialPlacement,
         platform: platform2,
         elements
-      } = state;
+      } = state3;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = true,
@@ -3743,7 +3755,7 @@ var flip = function(options) {
         fallbackAxisSideDirection = "none",
         flipAlignment = true,
         ...detectOverflowOptions
-      } = evaluate(options, state);
+      } = evaluate(options, state3);
       if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3757,7 +3769,7 @@ var flip = function(options) {
         fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
       }
       const placements2 = [initialPlacement, ...fallbackPlacements];
-      const overflow = await detectOverflow(state, detectOverflowOptions);
+      const overflow = await detectOverflow(state3, detectOverflowOptions);
       const overflows = [];
       let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
       if (checkMainAxis) {
@@ -3822,19 +3834,19 @@ var flip = function(options) {
     }
   };
 };
-async function convertValueToCoords(state, options) {
+async function convertValueToCoords(state3, options) {
   const {
     placement,
     platform: platform2,
     elements
-  } = state;
+  } = state3;
   const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
   const side = getSide(placement);
   const alignment = getAlignment(placement);
   const isVertical = getSideAxis(placement) === "y";
   const mainAxisMulti = ["left", "top"].includes(side) ? -1 : 1;
   const crossAxisMulti = rtl && isVertical ? -1 : 1;
-  const rawValue = evaluate(options, state);
+  const rawValue = evaluate(options, state3);
   let {
     mainAxis,
     crossAxis,
@@ -3866,15 +3878,15 @@ var offset = function(options) {
   return {
     name: "offset",
     options,
-    async fn(state) {
+    async fn(state3) {
       var _middlewareData$offse, _middlewareData$arrow;
       const {
         x: x3,
         y: y4,
         placement,
         middlewareData
-      } = state;
-      const diffCoords = await convertValueToCoords(state, options);
+      } = state3;
+      const diffCoords = await convertValueToCoords(state3, options);
       if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3896,12 +3908,12 @@ var shift = function(options) {
   return {
     name: "shift",
     options,
-    async fn(state) {
+    async fn(state3) {
       const {
         x: x3,
         y: y4,
         placement
-      } = state;
+      } = state3;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = false,
@@ -3918,12 +3930,12 @@ var shift = function(options) {
           }
         },
         ...detectOverflowOptions
-      } = evaluate(options, state);
+      } = evaluate(options, state3);
       const coords = {
         x: x3,
         y: y4
       };
-      const overflow = await detectOverflow(state, detectOverflowOptions);
+      const overflow = await detectOverflow(state3, detectOverflowOptions);
       const crossAxis = getSideAxis(getSide(placement));
       const mainAxis = getOppositeAxis(crossAxis);
       let mainAxisCoord = coords[mainAxis];
@@ -3943,7 +3955,7 @@ var shift = function(options) {
         crossAxisCoord = clamp(min2, crossAxisCoord, max2);
       }
       const limitedCoords = limiter.fn({
-        ...state,
+        ...state3,
         [mainAxis]: mainAxisCoord,
         [crossAxis]: crossAxisCoord
       });
@@ -3968,20 +3980,20 @@ var size = function(options) {
   return {
     name: "size",
     options,
-    async fn(state) {
+    async fn(state3) {
       var _state$middlewareData, _state$middlewareData2;
       const {
         placement,
         rects,
         platform: platform2,
         elements
-      } = state;
+      } = state3;
       const {
         apply = () => {
         },
         ...detectOverflowOptions
-      } = evaluate(options, state);
-      const overflow = await detectOverflow(state, detectOverflowOptions);
+      } = evaluate(options, state3);
+      const overflow = await detectOverflow(state3, detectOverflowOptions);
       const side = getSide(placement);
       const alignment = getAlignment(placement);
       const isYAxis = getSideAxis(placement) === "y";
@@ -4002,13 +4014,13 @@ var size = function(options) {
       const maximumClippingWidth = width - overflow.left - overflow.right;
       const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
       const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-      const noShift = !state.middlewareData.shift;
+      const noShift = !state3.middlewareData.shift;
       let availableHeight = overflowAvailableHeight;
       let availableWidth = overflowAvailableWidth;
-      if ((_state$middlewareData = state.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
+      if ((_state$middlewareData = state3.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
         availableWidth = maximumClippingWidth;
       }
-      if ((_state$middlewareData2 = state.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
+      if ((_state$middlewareData2 = state3.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
         availableHeight = maximumClippingHeight;
       }
       if (noShift && !alignment) {
@@ -4023,7 +4035,7 @@ var size = function(options) {
         }
       }
       await apply({
-        ...state,
+        ...state3,
         availableWidth,
         availableHeight
       });
@@ -15994,10 +16006,10 @@ var SubmenuController = class {
       }
     }
   }
-  setSubmenuState(state) {
+  setSubmenuState(state3) {
     if (this.popupRef.value) {
-      if (this.popupRef.value.active !== state) {
-        this.popupRef.value.active = state;
+      if (this.popupRef.value.active !== state3) {
+        this.popupRef.value.active = state3;
         this.host.requestUpdate();
       }
     }
@@ -24694,7 +24706,7 @@ __decorateClass([
   n5({ type: Array, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clues", 2);
 __decorateClass([
-  r7()
+  n5({ type: Object, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_crosswordContext", 2);
 __decorateClass([
   e6("sl-drawer")
@@ -24708,7 +24720,7 @@ function setContext(context) {
   let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
   this.dispatchEvent(setContext2);
 }
-var WebwriterWordPuzzlesCrossword2 = class extends LitElementWw {
+var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   /**
    * @constructor
    * Constructor for the crossword puzzle
@@ -24722,6 +24734,7 @@ var WebwriterWordPuzzlesCrossword2 = class extends LitElementWw {
     this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridWidget.newCrosswordGridDOM(document);
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
+    this.setWordsCluesChildren(this._wordsAndClues);
     this.addEventListener("generateCw", () => {
       if (this.counter == null) {
         this.counter = 0;
@@ -24813,7 +24826,6 @@ var WebwriterWordPuzzlesCrossword2 = class extends LitElementWw {
   }
   render() {
     this.setWordsCluesChildren(this._wordsAndClues);
-    this.generateCrossword();
     return x`<div class="wrapper">
                 ${this.gridWidget}
                 ${this.clueWidget}
@@ -24823,24 +24835,24 @@ var WebwriterWordPuzzlesCrossword2 = class extends LitElementWw {
 };
 __decorateClass([
   n5({ type: Array, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrossword2.prototype, "_wordsAndClues", 1);
+], WebwriterWordPuzzlesCrossword.prototype, "_wordsAndClues", 1);
 __decorateClass([
   n5({ type: Number, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrossword2.prototype, "counter", 1);
+], WebwriterWordPuzzlesCrossword.prototype, "counter", 1);
 __decorateClass([
   e6("webwriter-word-puzzles-crossword-grid")
-], WebwriterWordPuzzlesCrossword2.prototype, "gridWidget", 2);
+], WebwriterWordPuzzlesCrossword.prototype, "gridWidget", 2);
 __decorateClass([
   e6("webwriter-word-puzzles-crossword-cluebox")
-], WebwriterWordPuzzlesCrossword2.prototype, "clueWidget", 2);
+], WebwriterWordPuzzlesCrossword.prototype, "clueWidget", 2);
 __decorateClass([
-  r7()
-], WebwriterWordPuzzlesCrossword2.prototype, "_crosswordContext", 2);
-WebwriterWordPuzzlesCrossword2 = __decorateClass([
+  n5({ type: Object, state: true, attribute: false })
+], WebwriterWordPuzzlesCrossword.prototype, "_crosswordContext", 2);
+WebwriterWordPuzzlesCrossword = __decorateClass([
   t4("webwriter-word-puzzles-crossword")
-], WebwriterWordPuzzlesCrossword2);
+], WebwriterWordPuzzlesCrossword);
 export {
-  WebwriterWordPuzzlesCrossword2 as WebwriterWordPuzzlesCrossword,
+  WebwriterWordPuzzlesCrossword,
   setContext
 };
 /*! Bundled license information:

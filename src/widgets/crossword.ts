@@ -31,10 +31,6 @@ declare global {interface HTMLElementTagNameMap {
     }
 }
 
-
-
-
-
 /**
  * Data type for the crossword context.
  * 
@@ -69,7 +65,6 @@ export function setContext(context: CrosswordContext): void {
 @customElement("webwriter-word-puzzles-crossword")
 export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
-    
     /**
      * @constructor
      * Constructor for the crossword puzzle
@@ -83,6 +78,8 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGridDOM(document)
         this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
+
+        this.setWordsCluesChildren(this._wordsAndClues)
 
         this.addEventListener("generateCw", () => {
             if(this.counter == null) {
@@ -137,7 +134,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     /**
      * Current crossword context; across and clue number
      */
-    @state()
+    @property({ type: Object, state: true, attribute: false})
     _crosswordContext: CrosswordContext
 
 
@@ -199,7 +196,6 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
     render() {
         this.setWordsCluesChildren(this._wordsAndClues)
-        this.generateCrossword()
         return (html`<div class="wrapper">
                 ${this.gridWidget}
                 ${this.clueWidget}

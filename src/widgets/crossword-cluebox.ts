@@ -83,7 +83,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * Current crossword context; across and clue number
      */
-    @state()
+    @property({ type: Object, state: true, attribute: false})
     _crosswordContext: CrosswordContext
 
     /**
