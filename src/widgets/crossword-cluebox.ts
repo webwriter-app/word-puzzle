@@ -6,9 +6,9 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 import { html, HTMLTemplateResult, render } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { setWordsClues, setContext } from './crossword';
+import { CrosswordContext } from './crossword';
 import { WordClue } from './crossword-grid';
 import { cluebox_styles } from '../styles/styles'
 
@@ -81,17 +81,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     clues: string[] = ["", "", "", ""]
 
     /**
-     * Whether the current direction is across or down.
-     * true if across, false if down
+     * Current crossword context; across and clue number
      */
-    @property({ type: Boolean, state: true, attribute: false})
-    acrossContext: boolean
-
-    /**
-     * The clue the current selection corresponds to.
-     */
-    @property({ type: Number, state: true, attribute: false})
-    currentClue: number
+    @state()
+    _crosswordContext: CrosswordContext
 
     /**
      * drawer
@@ -106,7 +99,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     constructor() {
         super()
-        this._wordsAndClues = [{word: "", across: true}]
     }
 
     static get styles() {
@@ -125,12 +117,22 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         };
     }
 
+    /**
+     * Dispatches an event to update the current words and clues.
+     * 
+     * @param {number} clue the updated clue number
+     */
+    setWordsClues(wordsClues: WordClue[]): void {
+        let setWordsClues = new CustomEvent("set-words-clues", {bubbles: true, composed: true, detail: wordsClues})
+        this.dispatchEvent(setWordsClues)
+    }
+
 
     /**
      * Event handler that triggers crossword generation
      */
     triggerCwGeneration() {
-        this._wordsAndClues = this.getNewWords()
+        this.getNewWords()
         if(this._wordsAndClues.length != 0) {
             const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true})
             this.dispatchEvent(genClicked)
@@ -138,8 +140,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     }
 
     /**
-     * Extracts the words from the cluebox
-     * This works
+     * Extracts the words from the cluebox.
+     * Calls {@link setWordsClues}
      * 
      */
     getNewWords() {
@@ -161,8 +163,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             }
         }
 
-        this._wordsAndClues = wordsAndClues
-
+        this.setWordsClues(wordsAndClues)
         return this._wordsAndClues
     }
 
@@ -239,41 +240,47 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
 
     renderCluebox() {
-
         // Count across and down clues
 
         /** number of across clues */
         let i = 0
         /** number of down clues */
         let j = 0
-        for(let wordClue of this._wordsAndClues) {
-            if(wordClue.across) {
-                i++
-            }
-            else
-                j++
-        }
 
-        let sharedRows = Math.min(i, j)
         const clueboxTemplateCells = []
 
-        // Add clues in the same row
-        for(let k = 0; k < sharedRows; k++) {
-            clueboxTemplateCells.push(html`<tr>`)
-            clueboxTemplateCells.push(html`<td>${singleCell(this._wordsAndClues[k])}</td><td>${singleCell(this._wordsAndClues[k+i])}</td>`)
-            clueboxTemplateCells.push(html`</tr>`)
+        if(this._wordsAndClues != null) {
+            for(let wordClue of this._wordsAndClues) {
+                if(wordClue.across) {
+                    i++
+                }
+                else
+                    j++
+            }
+
+            let sharedRows = Math.min(i, j)
+
+            // Add clues in the same row
+            for(let k = 0; k < sharedRows; k++) {
+                clueboxTemplateCells.push(html`<tr>`)
+                clueboxTemplateCells.push(html`<td>${singleCell(this._wordsAndClues[k])}</td><td>${singleCell(this._wordsAndClues[k+i])}</td>`)
+                clueboxTemplateCells.push(html`</tr>`)
+            }
+
+            // Add clues remaining clues in only across / down column
+            let diff = Math.abs(i - j)
+            let start = i > j ? sharedRows : sharedRows + i
+
+            for(let k = start; k < diff + start; k++) {
+                let cell = this._wordsAndClues[k].across ? 
+                    html`<tr><td>${singleCell(this._wordsAndClues[k])}</td><td></td></tr>`
+                    : 
+                    html`<tr><td></td><td>${singleCell(this._wordsAndClues[k])}</td></tr>`
+                    clueboxTemplateCells.push(cell)
+            }
         }
-
-        // Add clues remaining clues in only across / down column
-        let diff = Math.abs(i - j)
-        let start = i > j ? sharedRows : sharedRows + i
-
-        for(let k = start; k < diff + start; k++) {
-            let cell = this._wordsAndClues[k].across ? 
-                html`<tr><td>${singleCell(this._wordsAndClues[k])}</td><td></td></tr>`
-                : 
-                html`<tr><td></td><td>${singleCell(this._wordsAndClues[k])}</td></tr>`
-                clueboxTemplateCells.push(cell)
+        else {
+                clueboxTemplateCells.push(html`<tr><td></td><td></td></tr>`)
         }
 
 

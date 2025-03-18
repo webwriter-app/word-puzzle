@@ -32,15 +32,7 @@ declare global {interface HTMLElementTagNameMap {
 }
 
 
-/**
- * Dispatches an event to update the current words and clues.
- * 
- * @param {number} clue the updated clue number
- */
-export function setWordsClues(wordsClues: WordClue[]): void {
-    let setWordsClues = new CustomEvent("set-words-clues", {bubbles: true, composed: true, detail: wordsClues})
-    this.dispatchEvent(setWordsClues)
-}
+
 
 
 /**
@@ -75,14 +67,56 @@ export function setContext(context: CrosswordContext): void {
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @customElement("webwriter-word-puzzles-crossword")
-export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
+export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
+    
     /**
+     * @constructor
+     * Constructor for the crossword puzzle
+     * 
+     * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+     * Dispatches an event to generate the crossword grid
+     */
+    constructor(dimension: number = 8) {
+        super()
+        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
+        this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
+        this.gridWidget.newCrosswordGridDOM(document)
+        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
+
+        this.addEventListener("generateCw", () => {
+            if(this.counter == null) {
+                this.counter = 0
+            }
+            this.counter += 1
+            DEV: console.log("Counter: " + this.counter)
+            DEV: console.log("generateCw triggered")
+            this.clueWidget._wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget._wordsAndClues)
+            this.clueWidget.requestUpdate()
+        })
+        this.addEventListener("set-context", (e: CustomEvent) => {
+            this.counter += 1
+            if(e.detail.acrossContext)
+                DEV: console.log("set-context: across, clue " + e.detail.clue)
+            else
+                DEV: console.log("set-context: down, clue " + e.detail.clue)
+            this._crosswordContext = e.detail
+            this.gridWidget._crosswordContext = this._crosswordContext
+            this.clueWidget._crosswordContext = this._crosswordContext
+        })
+        this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
+    }
+/**
      * The list of words grouped with their clues, direction, and word number.
      */
-    @property({ type: Array, state: true, attribute: true, reflect: true})
-    wordsAndClues: WordClue[]
+    @property({ type: Array, attribute: true, reflect: true})
+    accessor _wordsAndClues: WordClue[]
 
+    /**
+     * A counter just to test persistence
+     */
+    @property({ type: Number, attribute: true, reflect: true})
+    private accessor counter: number
 
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
@@ -101,48 +135,19 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
     private clueWidget: WebwriterWordPuzzlesCrosswordCluebox
 
     /**
-     * Current context; direction. true = across, false = down.
+     * Current crossword context; across and clue number
      */
     @state()
-    acrossContext: boolean = true // @type {boolean}
+    _crosswordContext: CrosswordContext
 
-    /**
-     * Current context; clue number.
-     */
-    @state()
-    currentClue!: number // @type {boolean}
 
-    /**
-     * @constructor
-     * Constructor for the crossword puzzle
-     * 
-     * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
-     * Dispatches an event to generate the crossword grid
-     */
-    constructor(dimension: number = 8) {
-        super()
-        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
-        this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
-        this.gridWidget.newCrosswordGridDOM(document)
-        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
-
-        this.addEventListener("generateCw", () => {
-            DEV: console.log("generateCw triggered")
-            this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget.wordsAndClues)
-            this.clueWidget.requestUpdate()
-        })
-        this.addEventListener("set-context", (e: CustomEvent) => {
-            if(e.detail.acrossContext)
-                DEV: console.log("set-context: across, clue " + e.detail.clue)
-            else
-                DEV: console.log("set-context: down, clue " + e.detail.clue)
-            this.currentClue = e.detail.clue
-            this.acrossContext = e.detail.acrossContext
-            this.gridWidget.currentClue = this.currentClue
-            this.clueWidget.currentClue = this.currentClue
-            this.gridWidget.acrossContext = this.acrossContext
-            this.clueWidget.acrossContext = this.acrossContext
-        })
+    setWordsCluesChildren(wordsClues: WordClue[]) {
+        DEV: console.log("Setting words and clues in children.")
+        this._wordsAndClues = wordsClues
+        this.gridWidget._wordsAndClues = wordsClues
+        this.clueWidget._wordsAndClues = wordsClues
+        DEV: console.log("this._wordsAndClues:")
+        DEV: console.log(this._wordsAndClues)
     }
     /**
      * Styles
@@ -184,18 +189,17 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
      */
     protected generateCrossword() {
         // Initialization
-        let wordsAndClues = this.clueWidget.getNewWords()
-        let wordsOG: string[] = []
-        for(let wordAndClue of wordsAndClues) {
-            wordsOG.push(wordAndClue.word)
+        if(this.counter == null) {
+            this.counter = 0
         }
 
-        this.clueWidget.wordsAndClues = this.gridWidget.generateCrossword(wordsAndClues)
-//        this.clueWidget.generateClueBox(wordsAndClues as WordClue[])
+        this.gridWidget.generateCrossword(this._wordsAndClues)
     }
 
 
     render() {
+        this.setWordsCluesChildren(this._wordsAndClues)
+        this.generateCrossword()
         return (html`<div class="wrapper">
                 ${this.gridWidget}
                 ${this.clueWidget}
@@ -203,4 +207,3 @@ export class WebwriterWordPuzzlesCrossword extends WebwriterWordPuzzles {
             `)
     }
 }
-

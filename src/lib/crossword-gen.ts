@@ -579,8 +579,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
 
         function setClueNumbers(wordList: WordClue[]): WordClue[]{
-            DEV: console.log("wordList beffore:")
-            DEV: console.log(wordList)
+            //DEV: console.log("wordList beffore:")
+            //DEV: console.log(wordList)
             let wordListCopy = wordList.map(wC => ({...wC}));
             wordListCopy.sort((a, b) => a.y - b.y)
             wordListCopy.sort((a, b) => a.x - b.x)
@@ -608,8 +608,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 }
             }
 
-            DEV: console.log("wordList after:")
-            DEV: console.log(wordList)
+            //DEV: console.log("wordList after:")
+            //DEV: console.log(wordList)
             return wordList
         }
     }
