@@ -42,6 +42,7 @@ declare global {interface HTMLElementTagNameMap {
 export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
+    localize = null
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
@@ -329,9 +330,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         /**
         * clueboxInput template
         */
-                        
         const clueboxInputTemplate = html`
-            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+            <table class="clueboxInput" @keydown=${this.ctrlHandler}>
                 <colgroup>
                 <col class="word-column">
                 <col class="button-column">
@@ -342,7 +342,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                     <th class="word-column">Words</th>
                     <th class="button-header-cell"> 
                     <div class="plus-button-div">
-
                 <sl-tooltip content="Add rows">
                         <sl-button tabindex="-1" size="small" 
                         class="plus-button" variant="default" 
@@ -371,14 +370,16 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
-                <sl-tooltip content="Show editor for words and clues">
-                    <sl-button class="drawer-button" variant="default" circle @click=${() => this.showDrawer()}>
-                        <div style="justify-content:center;padding-top:2px;">
-                            <sl-icon src=${caret_left}></sl-icon>
-                        </div>
-                    </sl-button>
-                </sl-tooltip>
-            </div>
+                    <div style="width:0px; height:0px;">
+                    <sl-tooltip content="Show editor for words and clues" >
+                        <sl-button class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
+                            <div style="justify-content:center;padding-top:2px;">
+                                <sl-icon src=${caret_left}></sl-icon>
+                            </div>
+                        </sl-button>
+                    </sl-tooltip>
+                    </div>
+                </div>
             `
     }
 }

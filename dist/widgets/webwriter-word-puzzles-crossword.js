@@ -1954,6 +1954,9 @@ function generateCrosswordFromList(wordsClues) {
 
 // src/styles/styles.ts
 var cluebox_styles = i`
+    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+            display: none;
+        }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -2162,72 +2165,72 @@ var cluebox_styles = i`
 `;
 var grid_styles = i`
     :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-                display: none;
-            }
-            // TODO Add different CSS for when a row / column is in focus
-            td:focus {
-                background-color: white;
-            }
-            div.grid {
-                display: grid;
-                flex-basis: content;
-                grid-template-columns: auto;
-                grid-template-rows: auto;
-                justify-content: center;
-                align-content: center;
-                box-sizing: border-box;
-                width: max-content;
-                height: max-content;
-                border: 2px solid var(--sl-color-gray-400);
-            }
-            div.cell {
-                display: grid;
-                grid-template-columns: repeat(3, 25%, [col-start]);
-                grid-template-rows: [row1-start] 25% [row1-end row2-start] 75% [row2-end];
-                aspect-ratio: 1;
-                height: 100%;
-                width: 100%;
-                min-width: 40px;
-                min-height: 40px;
-                border: 1px solid var(--sl-color-gray-400);
-                max-width: 40px;
-                max-height: 40px;
-                position: center;
-                align-items: center;
-                text-align: center;
-                font-size: 18pt;
-                caret-color: transparent;
-            }
-            div.cell[black] {
-                background-color: var(--sl-color-gray-400);
-            }
-            div.cell:focus {
-                background-color: lightblue;
-            }
-            div.focus-clue {
-                background-color: lightskyblue;
-            }
-            .cell-letter {
-                grid-column-start: 1;
-                grid-column-end: span 100%;
-                grid-row-start: row1-start;
-                grid-row-end: span 100%;
-                height: 100%;
-                width: 100%;
-                position: center;
-                font-size: 18pt;
-            }
-            .clue-label {
-                grid-column-start: 1;
-                grid-column-end: span 25%;
-                grid-row-start: row1-start;
-                grid-row-end: span row1-end;
-                position: absolute;
-                margin: 1px 0px 0px 1px;
-                font-size: 8pt;
-                place-self: start;
-                pointer-events: none;
-            }
+            display: none;
+        }
+        // TODO Add different CSS for when a row / column is in focus
+        td:focus {
+            background-color: white;
+        }
+        div.grid {
+            display: grid;
+            flex-basis: content;
+            grid-template-columns: auto;
+            grid-template-rows: auto;
+            justify-content: center;
+            align-content: center;
+            box-sizing: border-box;
+            width: max-content;
+            height: max-content;
+            border: 2px solid var(--sl-color-gray-400);
+        }
+        div.cell {
+            display: grid;
+            grid-template-columns: repeat(3, 25%, [col-start]);
+            grid-template-rows: [row1-start] 25% [row1-end row2-start] 75% [row2-end];
+            aspect-ratio: 1;
+            height: 100%;
+            width: 100%;
+            min-width: 40px;
+            min-height: 40px;
+            border: 1px solid var(--sl-color-gray-400);
+            max-width: 40px;
+            max-height: 40px;
+            position: center;
+            align-items: center;
+            text-align: center;
+            font-size: 18pt;
+            caret-color: transparent;
+        }
+        div.cell[black] {
+            background-color: var(--sl-color-gray-400);
+        }
+        div.cell:focus {
+            background-color: lightblue;
+        }
+        div.focus-clue {
+            background-color: lightskyblue;
+        }
+        .cell-letter {
+            grid-column-start: 1;
+            grid-column-end: span 100%;
+            grid-row-start: row1-start;
+            grid-row-end: span 100%;
+            height: 100%;
+            width: 100%;
+            position: center;
+            font-size: 18pt;
+        }
+        .clue-label {
+            grid-column-start: 1;
+            grid-column-end: span 25%;
+            grid-row-start: row1-start;
+            grid-row-end: span row1-end;
+            position: absolute;
+            margin: 1px 0px 0px 1px;
+            font-size: 8pt;
+            place-self: start;
+            pointer-events: none;
+        }
 `;
 
 // src/widgets/crossword-grid.ts
@@ -24435,6 +24438,8 @@ var caret_left_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/
 
 // src/widgets/crossword-cluebox.ts
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
+  // All methods have the same names as in crosswords-js
+  localize = null;
   #cluebox;
   get cluebox() {
     return this.#cluebox;
@@ -24641,7 +24646,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   render() {
     const clueboxInputTemplate = x`
-            <table class="clueboxInput author-only" @keydown=${this.ctrlHandler}>
+            <table class="clueboxInput" @keydown=${this.ctrlHandler}>
                 <colgroup>
                 <col class="word-column">
                 <col class="button-column">
@@ -24652,7 +24657,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                     <th class="word-column">Words</th>
                     <th class="button-header-cell"> 
                     <div class="plus-button-div">
-
                 <sl-tooltip content="Add rows">
                         <sl-button tabindex="-1" size="small" 
                         class="plus-button" variant="default" 
@@ -24679,14 +24683,16 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
-                <sl-tooltip content="Show editor for words and clues">
-                    <sl-button class="drawer-button" variant="default" circle @click=${() => this.showDrawer()}>
-                        <div style="justify-content:center;padding-top:2px;">
-                            <sl-icon src=${caret_left_fill_default}></sl-icon>
-                        </div>
-                    </sl-button>
-                </sl-tooltip>
-            </div>
+                    <div style="width:0px; height:0px;">
+                    <sl-tooltip content="Show editor for words and clues" >
+                        <sl-button class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
+                            <div style="justify-content:center;padding-top:2px;">
+                                <sl-icon src=${caret_left_fill_default}></sl-icon>
+                            </div>
+                        </sl-button>
+                    </sl-tooltip>
+                    </div>
+                </div>
             `;
   }
 };
@@ -24792,6 +24798,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
                 display: none;
             }
             div.wrapper {
+                min-height: 300px;
                 width: 100%;
                 align-content: left;
                 justify-content: space-around;

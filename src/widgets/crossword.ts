@@ -156,6 +156,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
                 display: none;
             }
             div.wrapper {
+                min-height: 300px;
                 width: 100%;
                 align-content: left;
                 justify-content: space-around;
