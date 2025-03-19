@@ -77,7 +77,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
         this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridWidget.newCrosswordGridDOM(document)
-        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox
+        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox()
 
         this.setWordsCluesChildren(this._wordsAndClues)
 
@@ -191,6 +191,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     render() {
         // this.isContentEditable gives inconsistent results; it's undefined sometimes, 
         // so the attribute contenteditable is checked directly
+        DEV: console.log("does this have the attribute contenteditable? " + this.hasAttribute("contenteditable"))
         if(!this.hasAttribute("contenteditable")) {
             DEV: console.log("Preview mode on")
             this.clueWidget._preview = true

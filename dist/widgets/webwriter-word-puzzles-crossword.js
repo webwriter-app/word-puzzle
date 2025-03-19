@@ -24499,9 +24499,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    * Does nothing I guess
    */
-  constructor(parent) {
+  constructor() {
     super();
-    this._parent = parent;
   }
   static get styles() {
     return cluebox_styles;
@@ -24647,7 +24646,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   onPreviewToggle(previewActive) {
     DEV: console.log("Preview processing for crossword-cluebox");
     if (previewActive) {
-      for (let elem of document.querySelectorAll(".author-only")) {
+      for (let elem of this.querySelectorAll(".author-only")) {
         elem.setAttribute("nopreview", "");
       }
     } else {
@@ -24772,8 +24771,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             `;
   }
   render() {
-    DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"));
-    this.onPreviewToggle(this._parent.hasAttribute("contenteditable"));
     return x`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
                 <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
@@ -24917,6 +24914,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     return newValue != oldValue;
   }
   render() {
+    DEV: console.log("does this have the attribute contenteditable? " + this.hasAttribute("contenteditable"));
     if (!this.hasAttribute("contenteditable")) {
       DEV: console.log("Preview mode on");
       this.clueWidget._preview = true;

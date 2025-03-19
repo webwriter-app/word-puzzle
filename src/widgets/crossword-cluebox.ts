@@ -95,9 +95,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * Does nothing I guess
      */
-    constructor(parent: WebwriterWordPuzzlesCrossword) {
+    constructor() {
         super()
-        this._parent = parent
     }
 
     static get styles() {
@@ -265,7 +264,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     onPreviewToggle(previewActive: boolean): void {
         DEV: console.log("Preview processing for crossword-cluebox")
         if (previewActive) {
-                for(let elem of document.querySelectorAll(".author-only")) {
+                for(let elem of this.querySelectorAll(".author-only")) {
                     elem.setAttribute("nopreview","")
                 }
             }
@@ -438,8 +437,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         /**
         * clueboxInput template
         */
-        DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
-        this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
+        //DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
+        //this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
                 
         return html`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
