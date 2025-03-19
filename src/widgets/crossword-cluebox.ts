@@ -72,7 +72,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * Current crossword context; across and clue number
      */
-    @property({ type: Object, state: true, attribute: false})
+    @property({ type: Object, state: true, attribute: false, 
+        hasChanged(newVal: CrosswordContext, oldVal: CrosswordContext): boolean 
+        {return this.highlightContext(newVal, oldVal)}})
     _crosswordContext: CrosswordContext
 
     /**
@@ -180,6 +182,25 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         }
         else if(event.ctrlKey)
             event.stopPropagation()
+    }
+
+    // TODO Execute upon context changing
+    /**
+     * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context.
+     * 
+     * @param newContext 
+     * @param oldContext 
+     * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
+     */
+    highlightContext(newContext: CrosswordContext, oldContext: CrosswordContext): boolean{
+        DEV: console.log("Context being highlighted")
+        const oldCellDir = oldContext.across ? "across" : "down"
+        const newCellDir = newContext.across ? "across" : "down"
+        const oldCell = this.cluebox.querySelector('table.cluebox td[clue="' + oldContext.clue + '"][' + oldCellDir + ']')
+        oldCell.removeAttribute("current")
+        const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + newContext.clue + '"][' + newCellDir + ']')
+        newCell.setAttribute("current", "")
+        return false
     }
     
 
@@ -322,7 +343,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
             // Add clues in the same row
             for(let k = 0; k < sharedRows; k++) {
-                clueboxTemplateCells.push(html`<tr><td>${singleCell(this._wordsAndClues[k])}</td><td>${singleCell(this._wordsAndClues[k+i])}</td></tr>`)
+                clueboxTemplateCells.push(html`<tr><td clue="${this._wordsAndClues[k].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k])}</td><td clue="${this._wordsAndClues[k+i].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k+i])}</td></tr>`)
             }
 
             // Add clues remaining clues in only across / down column
@@ -331,9 +352,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
             for(let k = start; k < diff + start; k++) {
                 let cell = this._wordsAndClues[k].across ? 
-                    html`<tr><td>${singleCell(this._wordsAndClues[k])}</td><td></td></tr>`
+                    html`<tr><td clue="${this._wordsAndClues[k].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k])}</td><td></td></tr>`
                     : 
-                    html`<tr><td></td><td>${singleCell(this._wordsAndClues[k])}</td></tr>`
+                    html`<tr><td></td><td clue="${this._wordsAndClues[k].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k])}</td></tr>`
                     clueboxTemplateCells.push(cell)
             }
         }
@@ -347,7 +368,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
          * @param {WordClue} wordClue 
          * @returns {HTMLTemplateResult}
          */
-        function singleCell(wordClue: WordClue): HTMLTemplateResult {
+        function clueboxCellContents(wordClue: WordClue): HTMLTemplateResult {
             if(wordClue != null) {
                 return html`
                         <b>${wordClue.clueNumber != null ? 

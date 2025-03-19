@@ -2161,6 +2161,9 @@ var cluebox_styles = i`
         height: 30px;
         width: 50%;
     }
+    table.cluebox td[current] {
+        background-color: "#BFC933";
+    }
 `;
 var grid_styles = i`
     :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
@@ -24547,6 +24550,24 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     } else if (event.ctrlKey)
       event.stopPropagation();
   }
+  // TODO Execute upon context changing
+  /**
+   * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context.
+   * 
+   * @param newContext 
+   * @param oldContext 
+   * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
+   */
+  highlightContext(newContext, oldContext) {
+    DEV: console.log("Context being highlighted");
+    const oldCellDir = oldContext.across ? "across" : "down";
+    const newCellDir = newContext.across ? "across" : "down";
+    const oldCell = this.cluebox.querySelector('table.cluebox td[clue="' + oldContext.clue + '"][' + oldCellDir + "]");
+    oldCell.removeAttribute("current");
+    const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + newContext.clue + '"][' + newCellDir + "]");
+    newCell.setAttribute("current", "");
+    return false;
+  }
   /**
    * Handler for deleting the row corresponding to the clicked button.
    * 
@@ -24662,18 +24683,18 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       }
       let sharedRows = Math.min(i9, j3);
       for (let k3 = 0; k3 < sharedRows; k3++) {
-        clueboxTemplateCells.push(x`<tr><td>${singleCell(this._wordsAndClues[k3])}</td><td>${singleCell(this._wordsAndClues[k3 + i9])}</td></tr>`);
+        clueboxTemplateCells.push(x`<tr><td clue="${this._wordsAndClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k3])}</td><td clue="${this._wordsAndClues[k3 + i9].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k3 + i9])}</td></tr>`);
       }
       let diff = Math.abs(i9 - j3);
       let start = i9 > j3 ? sharedRows : sharedRows + i9;
       for (let k3 = start; k3 < diff + start; k3++) {
-        let cell = this._wordsAndClues[k3].across ? x`<tr><td>${singleCell(this._wordsAndClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td>${singleCell(this._wordsAndClues[k3])}</td></tr>`;
+        let cell = this._wordsAndClues[k3].across ? x`<tr><td clue="${this._wordsAndClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td clue="${this._wordsAndClues[k3].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k3])}</td></tr>`;
         clueboxTemplateCells.push(cell);
       }
     } else {
       clueboxTemplateCells.push(x`<tr><td></td><td></td></tr>`);
     }
-    function singleCell(wordClue) {
+    function clueboxCellContents(wordClue) {
       if (wordClue != null) {
         return x`
                         <b>${wordClue.clueNumber != null ? "[" + wordClue.clueNumber + "]" : ""}</b> 
@@ -24732,7 +24753,14 @@ __decorateClass([
   n5({ type: Array, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_wordsAndClues", 2);
 __decorateClass([
-  n5({ type: Object, state: true, attribute: false })
+  n5({
+    type: Object,
+    state: true,
+    attribute: false,
+    hasChanged(newVal, oldVal) {
+      return this.highlightContext(newVal, oldVal);
+    }
+  })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_crosswordContext", 2);
 __decorateClass([
   e6("sl-drawer")

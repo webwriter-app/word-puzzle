@@ -215,6 +215,9 @@ export const cluebox_styles = css`
         height: 30px;
         width: 50%;
     }
+    table.cluebox td[current] {
+        background-color: "#BFC933";
+    }
 `
 
 /**
