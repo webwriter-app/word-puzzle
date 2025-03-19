@@ -341,6 +341,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         else {
             // Blur if there are no empty cells
             currentCell.blur()
+            this.setContext({across: null, clue: null})
         }
     }
 

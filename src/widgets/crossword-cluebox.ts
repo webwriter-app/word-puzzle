@@ -72,9 +72,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * Current crossword context; across and clue number
      */
-    @property({ type: Object, state: true, attribute: false, 
-        hasChanged(newVal: CrosswordContext, oldVal: CrosswordContext): boolean 
-        {return this.highlightContext(newVal, oldVal)}})
+    @property({ type: Object, state: true, attribute: false })
     _crosswordContext: CrosswordContext
 
     /**
@@ -192,15 +190,16 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @param oldContext 
      * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
      */
-    highlightContext(newContext: CrosswordContext, oldContext: CrosswordContext): boolean{
+    highlightContext(context: CrosswordContext): void {
         DEV: console.log("Context being highlighted")
-        const oldCellDir = oldContext.across ? "across" : "down"
-        const newCellDir = newContext.across ? "across" : "down"
-        const oldCell = this.cluebox.querySelector('table.cluebox td[clue="' + oldContext.clue + '"][' + oldCellDir + ']')
-        oldCell.removeAttribute("current")
-        const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + newContext.clue + '"][' + newCellDir + ']')
-        newCell.setAttribute("current", "")
-        return false
+        if(this.cluebox.querySelector('table.cluebox td[current]') != null) {
+            this.cluebox.querySelector('table.cluebox td[current]').removeAttribute("current")
+        }
+        if(context.across != null && context.clue != null) {
+            const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + context.clue + '"][' + (context.across ? "across" : "down") + ']')
+            newCell.setAttribute("current", "")
+        }
+        return
     }
     
 

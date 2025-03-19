@@ -2162,7 +2162,8 @@ var cluebox_styles = i`
         width: 50%;
     }
     table.cluebox td[current] {
-        background-color: "#BFC933";
+        background-color: #E7F1CD;
+        font-weight: bold;
     }
 `;
 var grid_styles = i`
@@ -2388,6 +2389,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
       }
     } else {
       currentCell.blur();
+      this.setContext({ across: null, clue: null });
     }
   }
   /**
@@ -24558,15 +24560,16 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * @param oldContext 
    * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
    */
-  highlightContext(newContext, oldContext) {
+  highlightContext(context) {
     DEV: console.log("Context being highlighted");
-    const oldCellDir = oldContext.across ? "across" : "down";
-    const newCellDir = newContext.across ? "across" : "down";
-    const oldCell = this.cluebox.querySelector('table.cluebox td[clue="' + oldContext.clue + '"][' + oldCellDir + "]");
-    oldCell.removeAttribute("current");
-    const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + newContext.clue + '"][' + newCellDir + "]");
-    newCell.setAttribute("current", "");
-    return false;
+    if (this.cluebox.querySelector("table.cluebox td[current]") != null) {
+      this.cluebox.querySelector("table.cluebox td[current]").removeAttribute("current");
+    }
+    if (context.across != null && context.clue != null) {
+      const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + context.clue + '"][' + (context.across ? "across" : "down") + "]");
+      newCell.setAttribute("current", "");
+    }
+    return;
   }
   /**
    * Handler for deleting the row corresponding to the clicked button.
@@ -24753,14 +24756,7 @@ __decorateClass([
   n5({ type: Array, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_wordsAndClues", 2);
 __decorateClass([
-  n5({
-    type: Object,
-    state: true,
-    attribute: false,
-    hasChanged(newVal, oldVal) {
-      return this.highlightContext(newVal, oldVal);
-    }
-  })
+  n5({ type: Object, state: true, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_crosswordContext", 2);
 __decorateClass([
   e6("sl-drawer")
@@ -24808,6 +24804,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
       this._crosswordContext = e13.detail;
       this.gridWidget._crosswordContext = this._crosswordContext;
       this.clueWidget._crosswordContext = this._crosswordContext;
+      this.clueWidget.highlightContext(this._crosswordContext);
     });
     this.addEventListener("set-words-clues", (e13) => this.setWordsCluesChildren(e13.detail));
   }

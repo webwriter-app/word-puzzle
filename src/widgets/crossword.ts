@@ -100,6 +100,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
             this._crosswordContext = e.detail
             this.gridWidget._crosswordContext = this._crosswordContext
             this.clueWidget._crosswordContext = this._crosswordContext
+            this.clueWidget.highlightContext(this._crosswordContext)
         })
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
     }
