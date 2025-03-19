@@ -18,7 +18,7 @@ import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
 // Buttons
-import { SlButton, SlIcon, SlAlert, SlTooltip, SlDrawer } from '@shoelace-style/shoelace';
+import { SlButton, SlIcon, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
 
 
 declare global {interface HTMLElementTagNameMap {
@@ -173,7 +173,6 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         "sl-button": SlButton,
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
-        "sl-tooltip": SlTooltip,
         "sl-drawer": SlDrawer,
         "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,

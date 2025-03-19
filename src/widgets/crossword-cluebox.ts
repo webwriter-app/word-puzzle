@@ -14,7 +14,7 @@ import { cluebox_styles } from '../styles/styles'
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import { SlButton, SlAlert, SlTooltip, SlDrawer } from '@shoelace-style/shoelace';
+import { SlButton, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component.js";
 
 // TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
@@ -99,7 +99,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         "sl-button": SlButton,
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
-        "sl-tooltip": SlTooltip,
         "sl-drawer": SlDrawer,
         "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
         };
@@ -164,6 +163,15 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     hideDrawer() {
         this.drawer.hide()
+    }
+
+    drawerKeyHandler(event: KeyboardEvent): void {
+        DEV: console.log("Drawer handler")
+        this.ctrlHandler(event)
+        if (event.key === "Escape") {
+            event.stopPropagation()
+            this.hideDrawer()
+        }
     }
 
     /** Event handler for stopping control propagation and rendering
@@ -237,11 +245,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-tooltip content="Delete row">
-                            <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
-                                <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
-                            </sl-button>
-                        </sl-tooltip>
+                        <sl-button title="Delete row" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                        </sl-button>
                 </div>
                 </td>
                 `
@@ -252,11 +258,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
         const clueboxButtonCell = html`<td class="button-cell" tabindex="-1">
                 <div class="button-cell-div">
-                    <sl-tooltip content="Delete row">
-                        <sl-button tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                        <sl-button title="Delete row" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
                             <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
                         </sl-button>
-                    </sl-tooltip>
                 </div>
             </td>`
 
@@ -300,12 +304,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                     <th class="word-column">Words</th>
                     <th class="button-header-cell"> 
                     <div class="plus-button-div">
-                <sl-tooltip content="Add rows">
-                        <sl-button tabindex="-1" size="small" 
+                        <sl-button title="Add rows" tabindex="-1" size="small" 
                         class="plus-button" variant="default" 
                         circle @click=${(e) => this.addRow(e)}>
                         <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
-                    </sl-button></sl-tooltip>
+                    </sl-button>
                     </div>
                     </th>
                     <th class="clue-column">Clues</th>
@@ -409,9 +412,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 
         return html`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
-                <sl-drawer contained position="relative" label="Clue input box">
+                <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
-                <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
+                <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
                     <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
