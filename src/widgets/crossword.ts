@@ -82,17 +82,11 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         this.setWordsCluesChildren(this._wordsAndClues)
 
         this.addEventListener("generateCw", () => {
-            if(this.counter == null) {
-                this.counter = 0
-            }
-            this.counter += 1
-            DEV: console.log("Counter: " + this.counter)
             DEV: console.log("generateCw triggered")
             this.clueWidget._wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget._wordsAndClues)
             this.clueWidget.requestUpdate()
         })
         this.addEventListener("set-context", (e: CustomEvent) => {
-            this.counter += 1
             if(e.detail.acrossContext)
                 DEV: console.log("set-context: across, clue " + e.detail.clue)
             else
@@ -110,11 +104,6 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     @property({ type: Array, attribute: true, reflect: true})
     accessor _wordsAndClues: WordClue[]
 
-    /**
-     * A counter just to test persistence
-     */
-    @property({ type: Number, attribute: true, reflect: true})
-    private accessor counter: number
 
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
@@ -187,15 +176,32 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      */
     protected generateCrossword() {
         // Initialization
-        if(this.counter == null) {
-            this.counter = 0
-        }
-
         this.gridWidget.generateCrossword(this._wordsAndClues)
+    }
+
+    onPreviewToggle(newValue: boolean, oldValue: boolean): boolean {
+        if(newValue != oldValue) {
+            this.gridWidget._preview = newValue
+            this.clueWidget._preview = newValue
+        }
+        return newValue != oldValue
     }
 
 
     render() {
+        // this.isContentEditable gives inconsistent results; it's undefined sometimes, 
+        // so the attribute contenteditable is checked directly
+        if(!this.hasAttribute("contenteditable")) {
+            DEV: console.log("Preview mode on")
+            this.clueWidget._preview = true
+            this.clueWidget.onPreviewToggle(true)
+        }
+        else {
+            DEV: console.log("Preview mode off")
+            this.clueWidget._preview = false
+            this.clueWidget.onPreviewToggle(false)
+        }
+
         this.setWordsCluesChildren(this._wordsAndClues)
         return (html`<div class="wrapper">
                 ${this.gridWidget}

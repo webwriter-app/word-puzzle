@@ -8,7 +8,7 @@
 import { html, HTMLTemplateResult, render } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { CrosswordContext } from './crossword';
+import { CrosswordContext, WebwriterWordPuzzlesCrossword } from './crossword';
 import { WordClue } from './crossword-grid';
 import { cluebox_styles } from '../styles/styles'
 
@@ -42,6 +42,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     localize = null
+
+    /**
+     * Whether the current display is a preview
+     */
+    @property({ type: Boolean, state: true, attribute: false })
+    _preview: boolean = false
+
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
@@ -61,6 +68,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     @query(".clueboxInput")
     accessor clueboxInput: HTMLTableElement
+
+    @property({ type: Object, attribute: false })
+    _parent: WebwriterWordPuzzlesCrossword
 
     /**
      * The list of words grouped with their clues, direction, and word number.
@@ -85,8 +95,9 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * Does nothing I guess
      */
-    constructor() {
+    constructor(parent: WebwriterWordPuzzlesCrossword) {
         super()
+        this._parent = parent
     }
 
     static get styles() {
@@ -251,6 +262,19 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 </div>
                 </td>
                 `
+    onPreviewToggle(previewActive: boolean): void {
+        DEV: console.log("Preview processing for crossword-cluebox")
+        if (previewActive) {
+                for(let elem of document.querySelectorAll(".author-only")) {
+                    elem.setAttribute("nopreview","")
+                }
+            }
+        else {
+            for(let elem of document.querySelectorAll("[nopreview]")) {
+                elem.removeAttribute("nopreview")
+            }
+        }
+    }
 
     renderClueboxInput() {
         DEV: console.log("render cluebox input")
@@ -287,7 +311,12 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                     clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
                 }
             }
+        } else {
+            for(let i = 0; i < 4; i++) {
+                clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
+            }
         }
+
 
         /** 
         * cluebox template
@@ -409,6 +438,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         /**
         * clueboxInput template
         */
+        DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
+        this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
                 
         return html`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
@@ -417,7 +448,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
-                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
+                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
                         <div style="justify-content:center;padding-top:2px;">
                             <sl-icon src=${pencil_square}></sl-icon>
                         </div>

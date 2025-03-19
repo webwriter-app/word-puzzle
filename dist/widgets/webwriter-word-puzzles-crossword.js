@@ -1953,6 +1953,12 @@ function generateCrosswordFromList(wordsClues) {
 
 // src/styles/styles.ts
 var cluebox_styles = i`
+    [nopreview] {
+        display: none;
+    }
+    .hide-preview {
+        display: none;
+    }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -2263,6 +2269,7 @@ function defaultCell() {
 }
 var DEFAULT_DIMENSION = 9;
 var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
+  _preview = false;
   grid;
   gridEl;
   _wordsAndClues;
@@ -2655,6 +2662,16 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
             `;
   }
 };
+__decorateClass([
+  n5({
+    type: Boolean,
+    state: true,
+    attribute: false,
+    hasChanged(newValue, oldValue) {
+      return this.onPreviewToggle(newValue, oldValue);
+    }
+  })
+], WebwriterWordPuzzlesCrosswordGrid2.prototype, "_preview", 2);
 __decorateClass([
   n5({ type: Array, state: true, attribute: true, reflect: true })
 ], WebwriterWordPuzzlesCrosswordGrid2.prototype, "grid", 2);
@@ -24452,6 +24469,7 @@ var pencil_square_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/20
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   // All methods have the same names as in crosswords-js
   localize = null;
+  _preview = false;
   #cluebox;
   get cluebox() {
     return this.#cluebox;
@@ -24466,6 +24484,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   set clueboxInput(_3) {
     this.#clueboxInput = _3;
   }
+  _parent;
   _wordsAndClues = [{ word: "", across: true }];
   _crosswordContext;
   #drawer;
@@ -24480,8 +24499,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * 
    * Does nothing I guess
    */
-  constructor() {
+  constructor(parent) {
     super();
+    this._parent = parent;
   }
   static get styles() {
     return cluebox_styles;
@@ -24624,6 +24644,18 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 </div>
                 </td>
                 `;
+  onPreviewToggle(previewActive) {
+    DEV: console.log("Preview processing for crossword-cluebox");
+    if (previewActive) {
+      for (let elem of document.querySelectorAll(".author-only")) {
+        elem.setAttribute("nopreview", "");
+      }
+    } else {
+      for (let elem of document.querySelectorAll("[nopreview]")) {
+        elem.removeAttribute("nopreview");
+      }
+    }
+  }
   renderClueboxInput() {
     DEV: console.log("render cluebox input");
     const clueboxInputRender = [];
@@ -24653,6 +24685,10 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
         for (empty; empty > 0; empty--) {
           clueboxInputRender.push(x`<tr>${this.new_row_template_inner}</tr>`);
         }
+      }
+    } else {
+      for (let i9 = 0; i9 < 4; i9++) {
+        clueboxInputRender.push(x`<tr>${this.new_row_template_inner}</tr>`);
       }
     }
     return x`
@@ -24736,6 +24772,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             `;
   }
   render() {
+    DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"));
+    this.onPreviewToggle(this._parent.hasAttribute("contenteditable"));
     return x`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
                 <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
@@ -24743,7 +24781,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
-                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
+                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
                         <div style="justify-content:center;padding-top:2px;">
                             <sl-icon src=${pencil_square_default}></sl-icon>
                         </div>
@@ -24753,11 +24791,17 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
 };
 __decorateClass([
+  n5({ type: Boolean, state: true, attribute: false })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_preview", 2);
+__decorateClass([
   e6(".cluebox")
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "cluebox", 1);
 __decorateClass([
   e6(".clueboxInput")
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueboxInput", 1);
+__decorateClass([
+  n5({ type: Object, attribute: false })
+], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_parent", 2);
 __decorateClass([
   n5({ type: Array, attribute: false })
 ], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_wordsAndClues", 2);
@@ -24792,17 +24836,11 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
     this.setWordsCluesChildren(this._wordsAndClues);
     this.addEventListener("generateCw", () => {
-      if (this.counter == null) {
-        this.counter = 0;
-      }
-      this.counter += 1;
-      DEV: console.log("Counter: " + this.counter);
       DEV: console.log("generateCw triggered");
       this.clueWidget._wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget._wordsAndClues);
       this.clueWidget.requestUpdate();
     });
     this.addEventListener("set-context", (e13) => {
-      this.counter += 1;
       if (e13.detail.acrossContext)
         DEV: console.log("set-context: across, clue " + e13.detail.clue);
       else
@@ -24820,13 +24858,6 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   }
   set _wordsAndClues(_3) {
     this.#_wordsAndClues = _3;
-  }
-  #counter;
-  get counter() {
-    return this.#counter;
-  }
-  set counter(_3) {
-    this.#counter = _3;
   }
   gridWidget;
   clueWidget;
@@ -24876,12 +24907,25 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword() {
-    if (this.counter == null) {
-      this.counter = 0;
-    }
     this.gridWidget.generateCrossword(this._wordsAndClues);
   }
+  onPreviewToggle(newValue, oldValue) {
+    if (newValue != oldValue) {
+      this.gridWidget._preview = newValue;
+      this.clueWidget._preview = newValue;
+    }
+    return newValue != oldValue;
+  }
   render() {
+    if (!this.hasAttribute("contenteditable")) {
+      DEV: console.log("Preview mode on");
+      this.clueWidget._preview = true;
+      this.clueWidget.onPreviewToggle(true);
+    } else {
+      DEV: console.log("Preview mode off");
+      this.clueWidget._preview = false;
+      this.clueWidget.onPreviewToggle(false);
+    }
     this.setWordsCluesChildren(this._wordsAndClues);
     return x`<div class="wrapper">
                 ${this.gridWidget}
@@ -24893,9 +24937,6 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
 __decorateClass([
   n5({ type: Array, attribute: true, reflect: true })
 ], WebwriterWordPuzzlesCrossword.prototype, "_wordsAndClues", 1);
-__decorateClass([
-  n5({ type: Number, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrossword.prototype, "counter", 1);
 __decorateClass([
   e6("webwriter-word-puzzles-crossword-grid")
 ], WebwriterWordPuzzlesCrossword.prototype, "gridWidget", 2);

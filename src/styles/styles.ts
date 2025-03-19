@@ -7,6 +7,12 @@ import { css } from "lit";
  * Styles for the crossword cluebox.
  */
 export const cluebox_styles = css`
+    [nopreview] {
+        display: none;
+    }
+    .hide-preview {
+        display: none;
+    }
     div {
         display:flex;
         flex-wrap:wrap;

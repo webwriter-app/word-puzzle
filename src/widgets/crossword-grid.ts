@@ -120,7 +120,14 @@ const DEFAULT_DIMENSION: number = 9
 export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
-    // TODO Add a skeleton for the grid while the crossword is being created?
+    /**
+     * Whether the current display is a preview
+     */
+    @property({ type: Boolean, state: true, attribute: false, 
+        hasChanged(newValue: boolean, oldValue: boolean): boolean 
+            {return this.onPreviewToggle(newValue, oldValue)} })
+    _preview: boolean = false
+
 
     @property({ type: Array, state: true, attribute: true, reflect: true})
     grid: Cell[][]
@@ -136,7 +143,6 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
     /**
      * The list of words grouped with their clues, direction, and word number.
-     * TODO attr. candidate
      */
     @property({ type: Array, state: true, attribute: true, reflect: true})
     _wordsAndClues: WordClue[]
