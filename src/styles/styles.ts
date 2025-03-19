@@ -7,9 +7,6 @@ import { css } from "lit";
  * Styles for the crossword cluebox.
  */
 export const cluebox_styles = css`
-    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-            display: none;
-        }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -18,6 +15,14 @@ export const cluebox_styles = css`
         margin-top: 10px;
         width: 100%;
     }
+    div.cw-cluebox-wrapper {
+            display:flex;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:center;
+            margin-top: 20px;
+            width: 100%;
+        }
     table.clueboxInput {
         /*Temporary width and height*/
         /*min-width: 200px;*/
@@ -42,6 +47,10 @@ export const cluebox_styles = css`
     }
     .button-column {
         width: 0%; /* Temporary width and height*/
+    }
+    #button-drawer{
+        position: absolute;
+        margin-top: -0.6em;
     }
     .minus-button {
         font-size: 10px;

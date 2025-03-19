@@ -23,8 +23,7 @@ import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component
 // Icons
 import plus from 'bootstrap-icons/icons/plus-lg.svg';
 import minus from 'bootstrap-icons/icons/dash.svg';
-import wand from 'bootstrap-icons/icons/magic.svg';
-import caret_left from 'bootstrap-icons/icons/caret-left-fill.svg';
+import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
@@ -408,22 +407,18 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         * clueboxInput template
         */
                 
-        return html`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
+        return html`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
-                    <div style="width:0px; height:0px;">
-                    <sl-tooltip content="Show editor for words and clues" >
-                        <sl-button class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
-                            <div style="justify-content:center;padding-top:2px;">
-                                <sl-icon src=${caret_left}></sl-icon>
-                            </div>
-                        </sl-button>
-                    </sl-tooltip>
-                    </div>
+                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
+                        <div style="justify-content:center;padding-top:2px;">
+                            <sl-icon src=${pencil_square}></sl-icon>
+                        </div>
+                    </sl-button>
                 </div>
             `
     }

@@ -1953,9 +1953,6 @@ function generateCrosswordFromList(wordsClues) {
 
 // src/styles/styles.ts
 var cluebox_styles = i`
-    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-            display: none;
-        }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -1964,6 +1961,14 @@ var cluebox_styles = i`
         margin-top: 10px;
         width: 100%;
     }
+    div.cw-cluebox-wrapper {
+            display:flex;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:center;
+            margin-top: 20px;
+            width: 100%;
+        }
     table.clueboxInput {
         /*Temporary width and height*/
         /*min-width: 200px;*/
@@ -1988,6 +1993,10 @@ var cluebox_styles = i`
     }
     .button-column {
         width: 0%; /* Temporary width and height*/
+    }
+    #button-drawer{
+        position: absolute;
+        margin-top: -0.6em;
     }
     .minus-button {
         font-size: 10px;
@@ -24437,8 +24446,8 @@ var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
 
-// node_modules/bootstrap-icons/icons/caret-left-fill.svg
-var caret_left_fill_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">%0A  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>%0A</svg>';
+// node_modules/bootstrap-icons/icons/pencil-square.svg
+var pencil_square_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">%0A  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>%0A  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>%0A</svg>';
 
 // src/widgets/crossword-cluebox.ts
 var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
@@ -24726,22 +24735,18 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             `;
   }
   render() {
-    return x`<div style="display:flex;flex-wrap:wrap;justify-content:center;">
+    return x`<div class="cw-cluebox-wrapper">
                 ${this.renderCluebox()}
                 <sl-drawer contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
                 <sl-button slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
                 </sl-drawer>
-                    <div style="width:0px; height:0px;">
-                    <sl-tooltip content="Show editor for words and clues" >
-                        <sl-button class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
-                            <div style="justify-content:center;padding-top:2px;">
-                                <sl-icon src=${caret_left_fill_default}></sl-icon>
-                            </div>
-                        </sl-button>
-                    </sl-tooltip>
-                    </div>
+                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button" nopreview variant="default" circle @click=${() => this.showDrawer()}>
+                        <div style="justify-content:center;padding-top:2px;">
+                            <sl-icon src=${pencil_square_default}></sl-icon>
+                        </div>
+                    </sl-button>
                 </div>
             `;
   }
