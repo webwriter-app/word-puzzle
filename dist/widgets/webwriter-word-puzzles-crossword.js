@@ -1976,6 +1976,9 @@ var crossword_styles = i`
     :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
                 display: none;
             }
+            :host  {
+                overflow-x: auto;
+            }
             div.wrapper {
                 aspect-ratio: 16 / 9;
                 width: 100%;
@@ -2153,11 +2156,12 @@ var cluebox_styles = i`
         transform: scale(0.80)
     }
     table.cluebox {
-        width: 48%;
+        width: 80%;
         min-width: 300px;
         height: fit-content;
         border: 2px solid var(--sl-color-gray-300);
         font-family: var(--sl-font-sans);
+        font-size: smaller;
         color: var(--sl-color-gray-700);
         background-color: var(--sl-color-gray-100);
         table-layout: fixed;
@@ -2166,6 +2170,7 @@ var cluebox_styles = i`
         margin-left: auto;
         margin-right: auto;
         margin-bottom: 5px;
+        line-height: normal;
     }
     table.cluebox col {
         width: 50%;
@@ -2206,7 +2211,7 @@ var cluebox_styles = i`
         padding: 10px;
         word-wrap: break-word;
         overflow-wrap: anywhere;
-        height: 30px;
+        height: 1em;
         width: 50%;
     }
     table.cluebox td[current] {
@@ -2218,7 +2223,9 @@ var grid_styles = i`
     :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
             display: none;
         }
-        // TODO Add different CSS for when a row / column is in focus
+        :host  {
+            overflow: auto;
+        }
         td:focus {
             background-color: white;
         }
