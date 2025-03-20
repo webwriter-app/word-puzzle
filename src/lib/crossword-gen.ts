@@ -70,7 +70,13 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     let crosswordGenTimeout = 0
 
-    generateCrosswordGrid(wordsClues)
+    try {
+        generateCrosswordGrid(wordsClues, 0)
+    }
+    catch(error) {
+        DEV: console.log("Reached end of epoch")
+        DEV: console.log(error.message)
+    }
 
     //DEV: console.log("Words and clues:")
     //DEV: console.log(wordsClues)
@@ -507,7 +513,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * @param {WordClue[]} words
      * @returns {number} 0 if a grid was found, 1 otherwise - EDIT THIS
      */
-    function generateCrosswordGrid(wordsCluesGen: WordClue[]): number {
+    function generateCrosswordGrid(wordsCluesGen: WordClue[], depth: number): number {
 
         ///DEV: console.log("wordsCluesGen pre-generateCrosswordFromList():")
         ///DEV: console.log(wordsCluesGen)
@@ -515,9 +521,25 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         //DEV: console.log("wordsCluesGen post-generateCrosswordFromList():")
         //DEV: console.log(wordsCluesGen)
 
+        // Return immediately if inputGrid is larger than the bestGrid
+        if(bestGrid != null) {
+            if(inputGrid.length > bestGrid.length) {
+                return 1
+            }
+        }
+        DEV: console.log("Depth: " + depth)
+
         crosswordGenTimeout += 1
         if(crosswordGenTimeout == epoch) {
             throw new Error("Epoch reached")
+        }
+
+        // Limit recursion based on depth and number of possible combinations
+        let wordsPlaced = nrWordsPlaced(wordsCluesGen)
+        let wordsLeft = wordsCluesGen.length - nrWordsPlaced(wordsCluesGen)
+
+        if(wordsLeft > 0 && depth - wordsPlaced > (wordsLeft * (wordsLeft - 1)) / 2) {
+            return 1
         }
 
         let wordsCluesCopy = wordsCluesGen.map(wC => ({...wC}));
@@ -530,23 +552,18 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         if(i < wordsCluesCopy.length) {
             let firstFlag = i == 0
             let possiblePlacementsCw = placeable(inputGrid, wordsCluesCopy, wordsCluesCopy[i], firstFlag)
-            if(possiblePlacementsCw.length == 0) {
-                moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
-                generateCrosswordGrid(wordsCluesCopy)
-            }
-            else {
                 for(let i = 0; i < possiblePlacementsCw.length; i++) {
                     // Add word
                     updatePlacements(wordsCluesCopy, possiblePlacementsCw, i)
                     wordsCluesCopy = setClueNumbers(wordsCluesCopy)
                     // Recurse
-                    generateCrosswordGrid(wordsCluesCopy)
+                    generateCrosswordGrid(wordsCluesCopy, depth + 1)
                     // Remove placement
                     removePlacement(wordsCluesCopy, possiblePlacementsCw[i])
                 }
-                // Move the word to the end of the list
+                // Move the word to the end of the list, generate again at this level
                 moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
-            }
+                generateCrosswordGrid(wordsCluesCopy, depth + 1)
         }
         // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {
