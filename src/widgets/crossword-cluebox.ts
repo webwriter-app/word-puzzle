@@ -166,8 +166,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     showDrawer() {
         this.drawer.show()
-        DEV: console.log("Content of focused cell:")
-        DEV: console.log(this.clueboxInput.tBodies[0].rows[0].cells[0].getHTML())
         this.clueboxInput.tBodies[0].rows[0].cells[0].focus()
     }
 
@@ -176,7 +174,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     }
 
     drawerKeyHandler(event: KeyboardEvent): void {
-        DEV: console.log("Drawer handler")
+        //DEV: console.log("Drawer handler")
         this.ctrlHandler(event)
         if (event.key === "Escape") {
             event.stopPropagation()
@@ -208,7 +206,6 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
      */
     highlightContext(context: CrosswordContext): void {
-        DEV: console.log("Context being highlighted")
         if(this.cluebox.querySelector('table.cluebox td[current]') != null) {
             this.cluebox.querySelector('table.cluebox td[current]').removeAttribute("current")
         }
@@ -271,7 +268,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
     }
 
     renderClueboxInput() {
-        DEV: console.log("render cluebox input")
+        //DEV: console.log("render cluebox input")
         const clueboxInputRender = []
 
         const clueboxButtonCell = html`<td class="button-cell" tabindex="-1">

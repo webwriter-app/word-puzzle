@@ -1544,8 +1544,6 @@ function generateCrossword(wordsClues) {
   let crosswordGenTimeout = 0;
   generateCrosswordGrid(wordsClues);
   wordsClues = bestWordsPlaced;
-  DEV: console.log("Words and clues:");
-  DEV: console.log(wordsClues);
   clueCount = 0;
   for (let i9 = 0; i9 < bestGrid.length; i9++) {
     let previousNumber = 0;
@@ -1560,8 +1558,8 @@ function generateCrossword(wordsClues) {
   for (let wordClue of bestWordsPlaced) {
     if (!wordClue.clueText) {
     }
-    if (!(wordClue.clueText && wordClue.across != null && wordClue.clueNumber && wordClue.word))
-      DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word);
+    if (!(wordClue.clueText && wordClue.across != null && wordClue.clueNumber && wordClue.word)) {
+    }
   }
   bestWordsPlaced.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
   bestWordsPlaced.sort((a5, b4) => Number(b4.across) - Number(a5.across));
@@ -1826,10 +1824,6 @@ function generateCrossword(wordsClues) {
     } else {
       if (bestGrid == null) {
         bestGrid = inputGrid;
-        DEV: console.log("wordsCluesCopy:");
-        DEV: console.log(wordsCluesCopy);
-        DEV: console.log("wordsCluesGen:");
-        DEV: console.log(wordsCluesGen);
         bestWordsPlaced = wordsCluesCopy;
         DEV: console.log("New best grid:");
         DEV: console.log(bestGrid);
@@ -2268,7 +2262,6 @@ var grid_styles = i`
 function stopCtrlPropagation(event) {
   if (event.ctrlKey) {
     event.stopPropagation();
-    DEV: console.log("Prevented propagation of a single CTRL key sequence within widget");
   }
 }
 function defaultCell() {
@@ -2331,8 +2324,6 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
     }
     this.gridEl.addEventListener("keydown", stopCtrlPropagation);
     this.requestUpdate();
-    DEV: console.log("Updated crossword grid DOM:");
-    DEV: console.log(this.gridEl);
     return this.gridEl;
   }
   /** 
@@ -24571,15 +24562,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   showDrawer() {
     this.drawer.show();
-    DEV: console.log("Content of focused cell:");
-    DEV: console.log(this.clueboxInput.tBodies[0].rows[0].cells[0].getHTML());
     this.clueboxInput.tBodies[0].rows[0].cells[0].focus();
   }
   hideDrawer() {
     this.drawer.hide();
   }
   drawerKeyHandler(event) {
-    DEV: console.log("Drawer handler");
     this.ctrlHandler(event);
     if (event.key === "Escape") {
       event.stopPropagation();
@@ -24608,7 +24596,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
    */
   highlightContext(context) {
-    DEV: console.log("Context being highlighted");
     if (this.cluebox.querySelector("table.cluebox td[current]") != null) {
       this.cluebox.querySelector("table.cluebox td[current]").removeAttribute("current");
     }
@@ -24661,7 +24648,6 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     this.requestUpdate();
   }
   renderClueboxInput() {
-    DEV: console.log("render cluebox input");
     const clueboxInputRender = [];
     const clueboxButtonCell = x`<td class="button-cell" tabindex="-1">
                 <div class="button-cell-div">
@@ -24869,12 +24855,9 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   clueWidget;
   _crosswordContext;
   setWordsCluesChildren(wordsClues) {
-    DEV: console.log("Setting words and clues in children.");
     this._wordsAndClues = wordsClues;
     this.gridWidget._wordsAndClues = wordsClues;
     this.clueWidget._wordsAndClues = wordsClues;
-    DEV: console.log("this._wordsAndClues:");
-    DEV: console.log(this._wordsAndClues);
   }
   /**
    * Styles

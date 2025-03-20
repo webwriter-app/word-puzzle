@@ -137,12 +137,12 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
 
 
     setWordsCluesChildren(wordsClues: WordClue[]) {
-        DEV: console.log("Setting words and clues in children.")
+        //DEV: console.log("Setting words and clues in children.")
         this._wordsAndClues = wordsClues
         this.gridWidget._wordsAndClues = wordsClues
         this.clueWidget._wordsAndClues = wordsClues
-        DEV: console.log("this._wordsAndClues:")
-        DEV: console.log(this._wordsAndClues)
+        //DEV: console.log("this._wordsAndClues:")
+        //DEV: console.log(this._wordsAndClues)
     }
     /**
      * Styles

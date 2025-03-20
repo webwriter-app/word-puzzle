@@ -73,8 +73,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     generateCrosswordGrid(wordsClues)
 
     wordsClues = bestWordsPlaced
-    DEV: console.log("Words and clues:")
-    DEV: console.log(wordsClues)
+    //DEV: console.log("Words and clues:")
+    //DEV: console.log(wordsClues)
 
     // iterate through the cells and number them properly just in case
     clueCount = 0
@@ -94,8 +94,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         if(!wordClue.clueText) {
 //            wordClue.clueText = "* No clue for this word *"
         }
-        if(!(wordClue.clueText && (wordClue.across != null) && wordClue.clueNumber && wordClue.word))
-            DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
+        if(!(wordClue.clueText && (wordClue.across != null) && wordClue.clueNumber && wordClue.word)) {
+            //DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
+        }
     }
 
     // The following changes the original order, but I don't think that's necessarily bad?
@@ -545,10 +546,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         else {
             if(bestGrid == null) {
                 bestGrid = inputGrid
-                DEV: console.log("wordsCluesCopy:")
-                DEV: console.log(wordsCluesCopy)
-                DEV: console.log("wordsCluesGen:")
-                DEV: console.log(wordsCluesGen)
+                // DEV: console.log("wordsCluesCopy:")
+                // DEV: console.log(wordsCluesCopy)
+                // DEV: console.log("wordsCluesGen:")
+                // DEV: console.log(wordsCluesGen)
                 bestWordsPlaced = wordsCluesCopy
                 DEV: console.log("New best grid:")
                 DEV: console.log(bestGrid)

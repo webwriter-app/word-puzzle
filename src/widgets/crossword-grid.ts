@@ -25,7 +25,7 @@ declare global {interface HTMLElementTagNameMap {
 function stopCtrlPropagation(event: KeyboardEvent): void {
         if (event.ctrlKey) {
             event.stopPropagation()
-            DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
+            //DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
         }
     }
 
@@ -225,8 +225,8 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         //DEV: console.log("gridEl:")
         //DEV: console.log(this.gridEl)
         this.requestUpdate()
-        DEV: console.log("Updated crossword grid DOM:")
-        DEV: console.log(this.gridEl)
+        //DEV: console.log("Updated crossword grid DOM:")
+        //DEV: console.log(this.gridEl)
         //DEV: console.log("Grid object:")
         //DEV: console.log(this.grid)
         //DEV: console.log("Words and clues:")
