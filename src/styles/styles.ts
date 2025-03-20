@@ -3,6 +3,21 @@
  */
 import { css } from "lit";
 
+
+export const crossword_styles = css`
+    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+                display: none;
+            }
+            div.wrapper {
+                aspect-ratio: 16 / 9;
+                width: 100%;
+                align-content: left;
+                justify-content: space-around;
+                display: flex;
+                flex-wrap: wrap;
+            }
+`
+
 /**
  * Styles for the crossword cluebox.
  */

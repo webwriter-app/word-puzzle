@@ -5,13 +5,15 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, css } from 'lit';
+import { html, css, PropertyValues } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzlesCrosswordGrid, WordClue, defaultCell } from './crossword-grid';
 import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
+
+import { crossword_styles } from '../styles/styles'
 
 
 // Shoelace
@@ -98,6 +100,10 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         })
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
     }
+
+    protected firstUpdated(_changedProperties: PropertyValues): void {
+        
+    }
 /**
      * The list of words grouped with their clues, direction, and word number.
      */
@@ -141,19 +147,7 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * 
      */
     static get styles() {
-        return css`
-            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-                display: none;
-            }
-            div.wrapper {
-                min-height: 300px;
-                width: 100%;
-                align-content: left;
-                justify-content: space-around;
-                display: flex;
-                flex-wrap: wrap;
-            }
-            `
+        return crossword_styles
     }
 
     // Registering custom elements
