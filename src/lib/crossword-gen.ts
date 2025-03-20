@@ -72,7 +72,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
     generateCrosswordGrid(wordsClues)
 
-    wordsClues = bestWordsPlaced
     //DEV: console.log("Words and clues:")
     //DEV: console.log(wordsClues)
 
@@ -107,6 +106,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     bestWordsPlaced.sort((a, b) => Number(b.across) - Number(a.across))
     DEV: console.log("bestWordsPlaced sorted by clue number and across / down:")
     DEV: console.log(bestWordsPlaced)
+
+    wordsClues = bestWordsPlaced
+    DEV: console.log(bestGrid)
 
     return {wordsAndClues: bestWordsPlaced, grid: bestGrid} 
 
@@ -310,9 +312,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     */
     function updatePlacements(wordsClues: WordClue[], possiblePlcmnts: WordClue[], p: number): WordClue[] {
         // I don't think this is iterating over chars 
-        // TODO add padding here?
         // TODO Troubleshoot, something's wrong here
-        // TODO change one of the args of this function to just be the index corresponding to the placement array
 
         let x = possiblePlcmnts[p].x
         let y = possiblePlcmnts[p].y
@@ -505,7 +505,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * 
      * @param {Cell[][]} inputGrid
      * @param {WordClue[]} words
-     * @returns {number} 0 if a grid was found, 1 otherwise
+     * @returns {number} 0 if a grid was found, 1 otherwise - EDIT THIS
      */
     function generateCrosswordGrid(wordsCluesGen: WordClue[]): number {
 
@@ -556,14 +556,33 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 return 0
             }
             else if(bestGrid.length > inputGrid.length && inputGrid.length != 0) {
-                bestGrid = inputGrid
-                bestWordsPlaced = wordsCluesCopy
-                DEV: console.log("New best grid:")
-                DEV: console.log(bestGrid)
-                return 0
+                if(nrWordsPlaced(bestWordsPlaced) <= nrWordsPlaced(wordsCluesCopy)) {
+                    bestGrid = inputGrid
+                    bestWordsPlaced = wordsCluesCopy
+                    DEV: console.log("New best grid:")
+                    DEV: console.log(bestGrid)
+                    return 0
+                }
+                else {
+                    return 1
+                }
             }
             //DEV: console.log("New grid but NOT best:")
             //DEV: console.log(inputGrid)
+        }
+
+        /**
+         * Returns the number of words placed
+         * @param wordList 
+         * @returns {number} Number of words placed
+         */
+        function nrWordsPlaced(wordList: WordClue[]): number {
+            let nrPlacedWords = 0
+            for(let wordClue of wordList) {
+                nrPlacedWords += wordClue.x != null && !isNaN(wordClue.x)
+                    && wordClue.y != null && !isNaN(wordClue.y) ? 1 : 0
+            }
+            return nrPlacedWords
         }
 
         function moveWordToEnd(wordList: WordClue[], moveW: WordClue) {
@@ -580,6 +599,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
 
         function setClueNumbers(wordList: WordClue[]): WordClue[]{
+            DEV: console.log("Setting clue numbers")
             //DEV: console.log("wordList beffore:")
             //DEV: console.log(wordList)
             let wordListCopy = wordList.map(wC => ({...wC}));
@@ -587,18 +607,14 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             wordListCopy.sort((a, b) => a.x - b.x)
 
             let clueNr = 1
-            let priorX = -1
-            let priorY = -1
             for(let i = 0; i < wordListCopy.length; i++) {
-                if(wordListCopy[i].x == priorX && wordListCopy[i].y == priorY) {
-                    wordListCopy[i-1].clueNumber= wordListCopy[i-1].clueNumber
+                if(i != 0 && wordListCopy[i].x == wordListCopy[i-1].x && wordListCopy[i].y == wordListCopy[i-1].y) {
+                    wordListCopy[i].clueNumber = wordListCopy[i-1].clueNumber
                 }
                 else {
                     wordListCopy[i].clueNumber = clueNr
                     clueNr += 1
                 }
-                priorX = wordListCopy[i].x
-                priorY = wordListCopy[i].y
             }
 
             for(let wordClCpy of wordListCopy) {
@@ -654,6 +670,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
     topmost = wordsClues[0].x
     bottommost = wordsClues[0].x
 
+    // Shifting words and clues
     for(let wordClue of wordsClues) {
         if(wordClue.x != null && wordClue.y != null) {
             leftmost = leftmost > wordClue.y ? wordClue.y : leftmost
@@ -689,7 +706,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
     }
 
     for(let wordClue of wordsClues) {
-        if(wordClue.x != null && wordClue.y != null) {
+        if(wordClue.x != null && wordClue.y != null && !isNaN(wordClue.x) && !isNaN(wordClue.y)) {
             if(wordClue.clueNumber != null) {
                 grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
             }

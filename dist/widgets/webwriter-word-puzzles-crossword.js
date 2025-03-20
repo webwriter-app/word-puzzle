@@ -1543,7 +1543,6 @@ function generateCrossword(wordsClues) {
   }
   let crosswordGenTimeout = 0;
   generateCrosswordGrid(wordsClues);
-  wordsClues = bestWordsPlaced;
   clueCount = 0;
   for (let i9 = 0; i9 < bestGrid.length; i9++) {
     let previousNumber = 0;
@@ -1565,6 +1564,8 @@ function generateCrossword(wordsClues) {
   bestWordsPlaced.sort((a5, b4) => Number(b4.across) - Number(a5.across));
   DEV: console.log("bestWordsPlaced sorted by clue number and across / down:");
   DEV: console.log(bestWordsPlaced);
+  wordsClues = bestWordsPlaced;
+  DEV: console.log(bestGrid);
   return { wordsAndClues: bestWordsPlaced, grid: bestGrid };
   function placeable(inputGrid, wordsCluesPl, newWordClue, firstWord) {
     if (firstWord) {
@@ -1829,12 +1830,23 @@ function generateCrossword(wordsClues) {
         DEV: console.log(bestGrid);
         return 0;
       } else if (bestGrid.length > inputGrid.length && inputGrid.length != 0) {
-        bestGrid = inputGrid;
-        bestWordsPlaced = wordsCluesCopy;
-        DEV: console.log("New best grid:");
-        DEV: console.log(bestGrid);
-        return 0;
+        if (nrWordsPlaced(bestWordsPlaced) <= nrWordsPlaced(wordsCluesCopy)) {
+          bestGrid = inputGrid;
+          bestWordsPlaced = wordsCluesCopy;
+          DEV: console.log("New best grid:");
+          DEV: console.log(bestGrid);
+          return 0;
+        } else {
+          return 1;
+        }
       }
+    }
+    function nrWordsPlaced(wordList) {
+      let nrPlacedWords = 0;
+      for (let wordClue of wordList) {
+        nrPlacedWords += wordClue.x != null && !isNaN(wordClue.x) && wordClue.y != null && !isNaN(wordClue.y) ? 1 : 0;
+      }
+      return nrPlacedWords;
     }
     function moveWordToEnd(wordList, moveW) {
       wordList.push(deleteElement(wordList, moveW));
@@ -1848,21 +1860,18 @@ function generateCrossword(wordsClues) {
       wordList[i10].y = null;
     }
     function setClueNumbers(wordList) {
+      DEV: console.log("Setting clue numbers");
       let wordListCopy = wordList.map((wC) => ({ ...wC }));
       wordListCopy.sort((a5, b4) => a5.y - b4.y);
       wordListCopy.sort((a5, b4) => a5.x - b4.x);
       let clueNr = 1;
-      let priorX = -1;
-      let priorY = -1;
       for (let i10 = 0; i10 < wordListCopy.length; i10++) {
-        if (wordListCopy[i10].x == priorX && wordListCopy[i10].y == priorY) {
-          wordListCopy[i10 - 1].clueNumber = wordListCopy[i10 - 1].clueNumber;
+        if (i10 != 0 && wordListCopy[i10].x == wordListCopy[i10 - 1].x && wordListCopy[i10].y == wordListCopy[i10 - 1].y) {
+          wordListCopy[i10].clueNumber = wordListCopy[i10 - 1].clueNumber;
         } else {
           wordListCopy[i10].clueNumber = clueNr;
           clueNr += 1;
         }
-        priorX = wordListCopy[i10].x;
-        priorY = wordListCopy[i10].y;
       }
       for (let wordClCpy of wordListCopy) {
         for (let wordCl of wordList) {
@@ -1912,7 +1921,7 @@ function generateCrosswordFromList(wordsClues) {
     }
   }
   for (let wordClue of wordsClues) {
-    if (wordClue.x != null && wordClue.y != null) {
+    if (wordClue.x != null && wordClue.y != null && !isNaN(wordClue.x) && !isNaN(wordClue.y)) {
       if (wordClue.clueNumber != null) {
         grid[wordClue.x][wordClue.y].number = wordClue.clueNumber;
       }
