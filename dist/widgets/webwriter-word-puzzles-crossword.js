@@ -1838,7 +1838,7 @@ function generateCrossword(wordsClues) {
         removePlacement(wordsCluesCopy, possiblePlacementsCw[i10]);
       }
       moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
-      generateCrosswordGrid(wordsCluesCopy, depth + 1);
+      generateCrosswordGrid(wordsCluesCopy, depth);
     } else {
       if (bestGrid == null) {
         bestGrid = inputGrid;
@@ -1883,7 +1883,7 @@ function generateCrossword(wordsClues) {
       wordListCopy.sort((a5, b4) => a5.x - b4.x);
       let clueNr = 1;
       for (let i10 = 0; i10 < wordListCopy.length; i10++) {
-        if (i10 != 0 && wordListCopy[i10].x == wordListCopy[i10 - 1].x && wordListCopy[i10].y == wordListCopy[i10 - 1].y) {
+        if (i10 != 0 && wordListCopy[i10].x == wordListCopy[i10 - 1].x && wordListCopy[i10].y == wordListCopy[i10 - 1].y && wordListCopy[i10].x != null) {
           wordListCopy[i10].clueNumber = wordListCopy[i10 - 1].clueNumber;
         } else {
           wordListCopy[i10].clueNumber = clueNr;

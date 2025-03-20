@@ -563,7 +563,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 }
                 // Move the word to the end of the list, generate again at this level
                 moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
-                generateCrosswordGrid(wordsCluesCopy, depth + 1)
+                // Don't add to the depth since no word was added?
+                generateCrosswordGrid(wordsCluesCopy, depth)
         }
         // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {
@@ -631,7 +632,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
             let clueNr = 1
             for(let i = 0; i < wordListCopy.length; i++) {
-                if(i != 0 && wordListCopy[i].x == wordListCopy[i-1].x && wordListCopy[i].y == wordListCopy[i-1].y) {
+                if(i != 0 && wordListCopy[i].x == wordListCopy[i-1].x && wordListCopy[i].y == wordListCopy[i-1].y && wordListCopy[i].x != null) {
                     wordListCopy[i].clueNumber = wordListCopy[i-1].clueNumber
                 }
                 else {
