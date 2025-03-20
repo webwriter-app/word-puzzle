@@ -1805,7 +1805,7 @@ function generateCrossword(wordsClues) {
     let inputGrid = generateCrosswordFromList(wordsCluesGen);
     crosswordGenTimeout += 1;
     if (crosswordGenTimeout == epoch) {
-      throw new Error("You've created an infinite loop during cw gen, congratulations");
+      throw new Error("Epoch reached");
     }
     let wordsCluesCopy = wordsCluesGen.map((wC) => ({ ...wC }));
     let i9 = 0;
@@ -1815,13 +1815,18 @@ function generateCrossword(wordsClues) {
     if (i9 < wordsCluesCopy.length) {
       let firstFlag = i9 == 0;
       let possiblePlacementsCw = placeable(inputGrid, wordsCluesCopy, wordsCluesCopy[i9], firstFlag);
-      for (let i10 = 0; i10 < possiblePlacementsCw.length; i10++) {
-        updatePlacements(wordsCluesCopy, possiblePlacementsCw, i10);
-        wordsCluesCopy = setClueNumbers(wordsCluesCopy);
+      if (possiblePlacementsCw.length == 0) {
+        moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
         generateCrosswordGrid(wordsCluesCopy);
-        removePlacement(wordsCluesCopy, possiblePlacementsCw[i10]);
+      } else {
+        for (let i10 = 0; i10 < possiblePlacementsCw.length; i10++) {
+          updatePlacements(wordsCluesCopy, possiblePlacementsCw, i10);
+          wordsCluesCopy = setClueNumbers(wordsCluesCopy);
+          generateCrosswordGrid(wordsCluesCopy);
+          removePlacement(wordsCluesCopy, possiblePlacementsCw[i10]);
+        }
+        moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
       }
-      moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
     } else {
       if (bestGrid == null) {
         bestGrid = inputGrid;

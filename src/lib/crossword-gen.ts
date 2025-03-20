@@ -517,7 +517,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         crosswordGenTimeout += 1
         if(crosswordGenTimeout == epoch) {
-            throw new Error("You've created an infinite loop during cw gen, congratulations")
+            throw new Error("Epoch reached")
         }
 
         let wordsCluesCopy = wordsCluesGen.map(wC => ({...wC}));
@@ -530,17 +530,23 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         if(i < wordsCluesCopy.length) {
             let firstFlag = i == 0
             let possiblePlacementsCw = placeable(inputGrid, wordsCluesCopy, wordsCluesCopy[i], firstFlag)
-            for(let i = 0; i < possiblePlacementsCw.length; i++) {
-                // Add word
-                updatePlacements(wordsCluesCopy, possiblePlacementsCw, i)
-                wordsCluesCopy = setClueNumbers(wordsCluesCopy)
-                // Recurse
+            if(possiblePlacementsCw.length == 0) {
+                moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
                 generateCrosswordGrid(wordsCluesCopy)
-                // Remove placement
-                removePlacement(wordsCluesCopy, possiblePlacementsCw[i])
             }
-            // Move the word to the end of the list
-            moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
+            else {
+                for(let i = 0; i < possiblePlacementsCw.length; i++) {
+                    // Add word
+                    updatePlacements(wordsCluesCopy, possiblePlacementsCw, i)
+                    wordsCluesCopy = setClueNumbers(wordsCluesCopy)
+                    // Recurse
+                    generateCrosswordGrid(wordsCluesCopy)
+                    // Remove placement
+                    removePlacement(wordsCluesCopy, possiblePlacementsCw[i])
+                }
+                // Move the word to the end of the list
+                moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
+            }
         }
         // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {
