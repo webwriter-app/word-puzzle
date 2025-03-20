@@ -261,18 +261,13 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 </div>
                 </td>
                 `
-    onPreviewToggle(previewActive: boolean): void {
-        DEV: console.log("Preview processing for crossword-cluebox")
-        if (previewActive) {
-                for(let elem of this.querySelectorAll(".author-only")) {
-                    elem.setAttribute("nopreview","")
-                }
-            }
-        else {
-            for(let elem of document.querySelectorAll("[nopreview]")) {
-                elem.removeAttribute("nopreview")
-            }
-        }
+    onPreviewToggle(contenteditable: boolean): void {
+        //DEV: console.log("Preview processing for crossword-cluebox")
+        this._preview = !contenteditable
+        //DEV: console.log("this._preview:")
+        //DEV: console.log(this._preview)
+
+        this.requestUpdate()
     }
 
     renderClueboxInput() {
@@ -439,10 +434,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         */
         //DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
         //this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
-                
-        return html`<div class="cw-cluebox-wrapper">
-                ${this.renderCluebox()}
-                <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
+        const edit_button = html`<sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
                 <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
@@ -452,7 +444,11 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                             <sl-icon src=${pencil_square}></sl-icon>
                         </div>
                     </sl-button>
-                </div>
+`
+                
+        return html`<div class="cw-cluebox-wrapper">
+                ${this.renderCluebox()}
+                ${!this._preview ? edit_button : html``}</div>
             `
     }
 }

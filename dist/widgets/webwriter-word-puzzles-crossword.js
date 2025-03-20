@@ -1952,6 +1952,19 @@ function generateCrosswordFromList(wordsClues) {
 }
 
 // src/styles/styles.ts
+var crossword_styles = i`
+    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
+                display: none;
+            }
+            div.wrapper {
+                aspect-ratio: 16 / 9;
+                width: 100%;
+                align-content: left;
+                justify-content: space-around;
+                display: flex;
+                flex-wrap: wrap;
+            }
+`;
 var cluebox_styles = i`
     [nopreview] {
         display: none;
@@ -4150,8 +4163,8 @@ function isTopLayer(element) {
 }
 function isContainingBlock(elementOrCss) {
   const webkit = isWebKit();
-  const css2 = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
-  return css2.transform !== "none" || css2.perspective !== "none" || (css2.containerType ? css2.containerType !== "normal" : false) || !webkit && (css2.backdropFilter ? css2.backdropFilter !== "none" : false) || !webkit && (css2.filter ? css2.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css2.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css2.contain || "").includes(value));
+  const css3 = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
+  return css3.transform !== "none" || css3.perspective !== "none" || (css3.containerType ? css3.containerType !== "normal" : false) || !webkit && (css3.backdropFilter ? css3.backdropFilter !== "none" : false) || !webkit && (css3.filter ? css3.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css3.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css3.contain || "").includes(value));
 }
 function getContainingBlock(element) {
   let currentNode = getParentNode(element);
@@ -4233,9 +4246,9 @@ function getFrameElement(win) {
 
 // node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getCssDimensions(element) {
-  const css2 = getComputedStyle2(element);
-  let width = parseFloat(css2.width) || 0;
-  let height = parseFloat(css2.height) || 0;
+  const css3 = getComputedStyle2(element);
+  let width = parseFloat(css3.width) || 0;
+  let height = parseFloat(css3.height) || 0;
   const hasOffset = isHTMLElement(element);
   const offsetWidth = hasOffset ? element.offsetWidth : width;
   const offsetHeight = hasOffset ? element.offsetHeight : height;
@@ -4329,9 +4342,9 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
     while (currentIFrame && offsetParent && offsetWin !== currentWin) {
       const iframeScale = getScale(currentIFrame);
       const iframeRect = currentIFrame.getBoundingClientRect();
-      const css2 = getComputedStyle2(currentIFrame);
-      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css2.paddingLeft)) * iframeScale.x;
-      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css2.paddingTop)) * iframeScale.y;
+      const css3 = getComputedStyle2(currentIFrame);
+      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css3.paddingLeft)) * iframeScale.x;
+      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css3.paddingTop)) * iframeScale.y;
       x3 *= iframeScale.x;
       y4 *= iframeScale.y;
       width *= iframeScale.x;
@@ -24643,17 +24656,9 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                 </div>
                 </td>
                 `;
-  onPreviewToggle(previewActive) {
-    DEV: console.log("Preview processing for crossword-cluebox");
-    if (previewActive) {
-      for (let elem of this.querySelectorAll(".author-only")) {
-        elem.setAttribute("nopreview", "");
-      }
-    } else {
-      for (let elem of document.querySelectorAll("[nopreview]")) {
-        elem.removeAttribute("nopreview");
-      }
-    }
+  onPreviewToggle(contenteditable) {
+    this._preview = !contenteditable;
+    this.requestUpdate();
   }
   renderClueboxInput() {
     DEV: console.log("render cluebox input");
@@ -24771,9 +24776,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
             `;
   }
   render() {
-    return x`<div class="cw-cluebox-wrapper">
-                ${this.renderCluebox()}
-                <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
+    const edit_button = x`<sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
                 <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
                 <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
@@ -24783,7 +24786,10 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                             <sl-icon src=${pencil_square_default}></sl-icon>
                         </div>
                     </sl-button>
-                </div>
+`;
+    return x`<div class="cw-cluebox-wrapper">
+                ${this.renderCluebox()}
+                ${!this._preview ? edit_button : x``}</div>
             `;
   }
 };
@@ -24849,6 +24855,9 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
     });
     this.addEventListener("set-words-clues", (e13) => this.setWordsCluesChildren(e13.detail));
   }
+  firstUpdated(_changedProperties) {
+    this.onPreviewToggle(this.hasAttribute("contenteditable"));
+  }
   #_wordsAndClues;
   get _wordsAndClues() {
     return this.#_wordsAndClues;
@@ -24872,19 +24881,7 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
    * 
    */
   static get styles() {
-    return i`
-            :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-                display: none;
-            }
-            div.wrapper {
-                min-height: 300px;
-                width: 100%;
-                align-content: left;
-                justify-content: space-around;
-                display: flex;
-                flex-wrap: wrap;
-            }
-            `;
+    return crossword_styles;
   }
   // Registering custom elements
   static get scopedElements() {
@@ -24906,24 +24903,11 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
   generateCrossword() {
     this.gridWidget.generateCrossword(this._wordsAndClues);
   }
-  onPreviewToggle(newValue, oldValue) {
-    if (newValue != oldValue) {
-      this.gridWidget._preview = newValue;
-      this.clueWidget._preview = newValue;
-    }
-    return newValue != oldValue;
+  onPreviewToggle(newValue) {
+    this.clueWidget.onPreviewToggle(newValue);
+    return newValue;
   }
   render() {
-    DEV: console.log("does this have the attribute contenteditable? " + this.hasAttribute("contenteditable"));
-    if (!this.hasAttribute("contenteditable")) {
-      DEV: console.log("Preview mode on");
-      this.clueWidget._preview = true;
-      this.clueWidget.onPreviewToggle(true);
-    } else {
-      DEV: console.log("Preview mode off");
-      this.clueWidget._preview = false;
-      this.clueWidget.onPreviewToggle(false);
-    }
     this.setWordsCluesChildren(this._wordsAndClues);
     return x`<div class="wrapper">
                 ${this.gridWidget}

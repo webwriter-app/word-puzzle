@@ -102,9 +102,11 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
     }
 
     protected firstUpdated(_changedProperties: PropertyValues): void {
-        
+        //DEV: console.log("Within firstupdated, contenteditable is " + this.hasAttribute("contenteditable"))
+        this.onPreviewToggle(this.hasAttribute("contenteditable"))
     }
-/**
+
+    /**
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({ type: Array, attribute: true, reflect: true})
@@ -173,30 +175,14 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         this.gridWidget.generateCrossword(this._wordsAndClues)
     }
 
-    onPreviewToggle(newValue: boolean, oldValue: boolean): boolean {
-        if(newValue != oldValue) {
-            this.gridWidget._preview = newValue
-            this.clueWidget._preview = newValue
-        }
-        return newValue != oldValue
+    onPreviewToggle(newValue: boolean): boolean {
+        //DEV: console.log("Preview toggled")
+        this.clueWidget.onPreviewToggle(newValue)
+        return newValue 
     }
 
 
     render() {
-        // this.isContentEditable gives inconsistent results; it's undefined sometimes, 
-        // so the attribute contenteditable is checked directly
-        DEV: console.log("does this have the attribute contenteditable? " + this.hasAttribute("contenteditable"))
-        if(!this.hasAttribute("contenteditable")) {
-            DEV: console.log("Preview mode on")
-            this.clueWidget._preview = true
-            this.clueWidget.onPreviewToggle(true)
-        }
-        else {
-            DEV: console.log("Preview mode off")
-            this.clueWidget._preview = false
-            this.clueWidget.onPreviewToggle(false)
-        }
-
         this.setWordsCluesChildren(this._wordsAndClues)
         return (html`<div class="wrapper">
                 ${this.gridWidget}
