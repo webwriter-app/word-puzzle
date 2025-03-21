@@ -8,8 +8,8 @@
 import { html, HTMLTemplateResult, render } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { CrosswordContext, WebwriterWordPuzzlesCrossword } from './crossword';
-import { WordClue } from './crossword-grid';
+import { CwContext, WwWordPuzzlesCrossword } from './webwriter-word-puzzles-crossword';
+import { WordClue } from './ww-word-puzzles-cw-grid';
 import { cluebox_styles } from '../styles/styles'
 
 // Shoelace
@@ -27,7 +27,7 @@ import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
+    "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
     }
 }
 
@@ -37,8 +37,8 @@ declare global {interface HTMLElementTagNameMap {
  * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-word-puzzles-crossword-cluebox")
-export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
+@customElement("ww-word-puzzles-cw-cluebox")
+export class WwWordPuzzlesCwCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     localize = null
@@ -54,7 +54,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * This one is intended for the crossword solver (i.e. student).
      * 
-     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
     @query(".cluebox")
     accessor cluebox: HTMLTableElement
@@ -64,25 +64,22 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * It's intended exclusively for use by crossword creators (i.e. teachers).
      * 
-     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
     @query(".clueboxInput")
     accessor clueboxInput: HTMLTableElement
-
-    @property({ type: Object, attribute: false })
-    _parent: WebwriterWordPuzzlesCrossword
 
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({type: Array, attribute: false})
-    _wordsAndClues: WordClue[] = [{word: "", across: true}]
+    _wordsClues: WordClue[] = [{word: "", across: true}]
 
     /**
      * Current crossword context; across and clue number
      */
     @property({ type: Object, state: true, attribute: false })
-    _crosswordContext: CrosswordContext
+    _cwContext: CwContext
 
     /**
      * drawer
@@ -110,7 +107,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
         "sl-drawer": SlDrawer,
-        "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
+        "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
         };
     }
 
@@ -130,7 +127,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      */
     triggerCwGeneration() {
         this.getNewWords()
-        if(this._wordsAndClues.length != 0) {
+        if(this._wordsClues.length != 0) {
             const genClicked = new CustomEvent("generateCw", {bubbles: true, composed: true})
             this.dispatchEvent(genClicked)
         }
@@ -161,7 +158,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         }
 
         this.setWordsClues(wordsAndClues)
-        return this._wordsAndClues
+        return this._wordsClues
     }
 
     showDrawer() {
@@ -189,7 +186,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
         if (event.ctrlKey && event.key === "Enter") {
             event.stopPropagation()
             this.getNewWords()
-            if(this._wordsAndClues.length != 0) {
+            if(this._wordsClues.length != 0) {
                 this.triggerCwGeneration()
             }
         }
@@ -205,7 +202,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
      * @param oldContext 
      * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
      */
-    highlightContext(context: CrosswordContext): void {
+    highlightContext(context: CwContext): void {
         if(this.cluebox.querySelector('table.cluebox td[current]') != null) {
             this.cluebox.querySelector('table.cluebox td[current]').removeAttribute("current")
         }
@@ -244,7 +241,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
     /**
      * Lit HTML template for adding a new row to cluebox input element.
-     * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
+     * Used in {@link WwWordPuzzlesCwCluebox.addRow() | addRow()}
      */
     new_row_template_inner = html`
                 <td contenteditable></td>
@@ -279,14 +276,14 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
                 </div>
             </td>`
 
-        if(this._wordsAndClues != null) {
+        if(this._wordsClues != null) {
             let i = 0
-            for(i < 0; i < this._wordsAndClues.length; i++) {
-                if(this._wordsAndClues[i].word != "") {
-                    clueboxInputRender.push(this._wordsAndClues[i].clueText != "" 
-                        ? html`<tr><td contenteditable>${this._wordsAndClues[i].word}</td>
-                        <td></td><td contenteditable>${this._wordsAndClues[i].clueText}</td>${clueboxButtonCell}</tr>`
-                        : html`<td contenteditable>${this._wordsAndClues[i].word}</td>
+            for(i < 0; i < this._wordsClues.length; i++) {
+                if(this._wordsClues[i].word != "") {
+                    clueboxInputRender.push(this._wordsClues[i].clueText != "" 
+                        ? html`<tr><td contenteditable>${this._wordsClues[i].word}</td>
+                        <td></td><td contenteditable>${this._wordsClues[i].clueText}</td>${clueboxButtonCell}</tr>`
+                        : html`<td contenteditable>${this._wordsClues[i].word}</td>
                         <td></td><td contenteditable></td>
                         ${clueboxButtonCell}</tr>`
                         )
@@ -351,8 +348,8 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
         const clueboxTemplateCells = []
 
-        if(this._wordsAndClues != null) {
-            for(let wordClue of this._wordsAndClues) {
+        if(this._wordsClues != null) {
+            for(let wordClue of this._wordsClues) {
                 if(wordClue.across) {
                     i++
                 }
@@ -364,7 +361,7 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
 
             // Add clues in the same row
             for(let k = 0; k < sharedRows; k++) {
-                clueboxTemplateCells.push(html`<tr><td clue="${this._wordsAndClues[k].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k])}</td><td clue="${this._wordsAndClues[k+i].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k+i])}</td></tr>`)
+                clueboxTemplateCells.push(html`<tr><td clue="${this._wordsClues[k].clueNumber}" across>${clueboxCellContents(this._wordsClues[k])}</td><td clue="${this._wordsClues[k+i].clueNumber}" down>${clueboxCellContents(this._wordsClues[k+i])}</td></tr>`)
             }
 
             // Add clues remaining clues in only across / down column
@@ -372,10 +369,10 @@ export class WebwriterWordPuzzlesCrosswordCluebox extends WebwriterWordPuzzles {
             let start = i > j ? sharedRows : sharedRows + i
 
             for(let k = start; k < diff + start; k++) {
-                let cell = this._wordsAndClues[k].across ? 
-                    html`<tr><td clue="${this._wordsAndClues[k].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k])}</td><td></td></tr>`
+                let cell = this._wordsClues[k].across ? 
+                    html`<tr><td clue="${this._wordsClues[k].clueNumber}" across>${clueboxCellContents(this._wordsClues[k])}</td><td></td></tr>`
                     : 
-                    html`<tr><td></td><td clue="${this._wordsAndClues[k].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k])}</td></tr>`
+                    html`<tr><td></td><td clue="${this._wordsClues[k].clueNumber}" down>${clueboxCellContents(this._wordsClues[k])}</td></tr>`
                     clueboxTemplateCells.push(cell)
             }
         }

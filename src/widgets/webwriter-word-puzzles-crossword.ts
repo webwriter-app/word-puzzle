@@ -9,9 +9,9 @@ import { html, css, PropertyValues } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 
-import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterWordPuzzlesCrosswordGrid, WordClue, defaultCell } from './crossword-grid';
-import { WebwriterWordPuzzlesCrosswordCluebox } from './crossword-cluebox';
+import { WebwriterWordPuzzles as WwWordPuzzles } from './webwriter-word-puzzles';
+import { WwWordPuzzlesCwGrid, WordClue, defaultCell } from './ww-word-puzzles-cw-grid';
+import { WwWordPuzzlesCwCluebox } from './ww-word-puzzles-cw-cluebox';
 
 import { crossword_styles } from '../styles/styles'
 
@@ -24,10 +24,10 @@ import { SlButton, SlIcon, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
 
 
 declare global {interface HTMLElementTagNameMap {
-        "webwriter-word-puzzles": WebwriterWordPuzzles;
-        "webwriter-word-puzzles-crossword": WebwriterWordPuzzlesCrossword;
-        "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
-        "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox;
+        "webwriter-word-puzzles": WwWordPuzzles;
+        "webwriter-word-puzzles-crossword": WwWordPuzzlesCrossword;
+        "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid;
+        "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
         "sl-button": SlButton;
         "sl-drawer": SlDrawer;
     }
@@ -43,7 +43,7 @@ declare global {interface HTMLElementTagNameMap {
  * }
  * ```
  */
-export interface CrosswordContext {
+export interface CwContext {
     across: boolean,
     clue: number
 }
@@ -54,49 +54,49 @@ export interface CrosswordContext {
      * @param {number} clue the updated clue number
      * @param {boolean} across whether the updated direction is across
      */
-export function setContext(context: CrosswordContext): void {
+export function setContext(context: CwContext): void {
     let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: context})
     this.dispatchEvent(setContext)
 }
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
- * @extends { WebwriterWordPuzzles  }
+ * @extends { WwWordPuzzles  }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @customElement("webwriter-word-puzzles-crossword")
-export class WebwriterWordPuzzlesCrossword extends LitElementWw {
+export class WwWordPuzzlesCrossword extends WwWordPuzzles {
 
     /**
      * @constructor
      * Constructor for the crossword puzzle
      * 
-     * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+     * Sets the {@link WwWordPuzzlesCrossword.width | width} and {@link WwWordPuzzlesCrossword.height | height} attributes
      * Dispatches an event to generate the crossword grid
      */
     constructor(dimension: number = 8) {
         super()
-        this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid
-        this.gridWidget.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
-        this.gridWidget.newCrosswordGridDOM(document)
-        this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox()
+        this.gridW = new WwWordPuzzlesCwGrid
+        this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
+        this.gridW.newCrosswordGridDOM(document)
+        this.clueW = new WwWordPuzzlesCwCluebox()
 
-        this.setWordsCluesChildren(this._wordsAndClues)
+        this.setWordsCluesChildren(this._wordsClues)
 
         this.addEventListener("generateCw", () => {
             DEV: console.log("generateCw triggered")
-            this.clueWidget._wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget._wordsAndClues)
-            this.clueWidget.requestUpdate()
+            this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues)
+            this.clueW.requestUpdate()
         })
         this.addEventListener("set-context", (e: CustomEvent) => {
             if(e.detail.acrossContext)
                 DEV: console.log("set-context: across, clue " + e.detail.clue)
             else
                 DEV: console.log("set-context: down, clue " + e.detail.clue)
-            this._crosswordContext = e.detail
-            this.gridWidget._crosswordContext = this._crosswordContext
-            this.clueWidget._crosswordContext = this._crosswordContext
-            this.clueWidget.highlightContext(this._crosswordContext)
+            this._cwContext = e.detail
+            this.gridW._cwContext = this._cwContext
+            this.clueW._cwContext = this._cwContext
+            this.clueW.highlightContext(this._cwContext)
         })
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
     }
@@ -110,37 +110,37 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({ type: Array, attribute: true, reflect: true})
-    accessor _wordsAndClues: WordClue[]
+    accessor _wordsClues: WordClue[]
 
 
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
-     * See the constructor {@link WebwriterWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
+     * See the constructor {@link WwWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
     @query('webwriter-word-puzzles-crossword-grid')
-    private gridWidget: WebwriterWordPuzzlesCrosswordGrid
+    private gridW: WwWordPuzzlesCwGrid
 
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
-     * See the constructor {@link WebwriterWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
     @query('webwriter-word-puzzles-crossword-cluebox')
-    private clueWidget: WebwriterWordPuzzlesCrosswordCluebox
+    private clueW: WwWordPuzzlesCwCluebox
 
     /**
      * Current crossword context; across and clue number
      */
     @property({ type: Object, state: true, attribute: false})
-    _crosswordContext: CrosswordContext
+    _cwContext: CwContext
 
 
     setWordsCluesChildren(wordsClues: WordClue[]) {
         //DEV: console.log("Setting words and clues in children.")
-        this._wordsAndClues = wordsClues
-        this.gridWidget._wordsAndClues = wordsClues
-        this.clueWidget._wordsAndClues = wordsClues
+        this._wordsClues = wordsClues
+        this.gridW._wordsClues = wordsClues
+        this.clueW._wordsClues = wordsClues
         //DEV: console.log("this._wordsAndClues:")
         //DEV: console.log(this._wordsAndClues)
     }
@@ -159,8 +159,8 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
         "sl-drawer": SlDrawer,
-        "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid,
-        "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox,
+        "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
+        "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
         };
     }
 
@@ -172,21 +172,21 @@ export class WebwriterWordPuzzlesCrossword extends LitElementWw {
      */
     protected generateCrossword() {
         // Initialization
-        this.gridWidget.generateCrossword(this._wordsAndClues)
+        this.gridW.generateCrossword(this._wordsClues)
     }
 
     onPreviewToggle(newValue: boolean): boolean {
         //DEV: console.log("Preview toggled")
-        this.clueWidget.onPreviewToggle(newValue)
+        this.clueW.onPreviewToggle(newValue)
         return newValue 
     }
 
 
     render() {
-        this.setWordsCluesChildren(this._wordsAndClues)
+        this.setWordsCluesChildren(this._wordsClues)
         return (html`<div class="wrapper">
-                ${this.gridWidget}
-                ${this.clueWidget}
+                ${this.gridW}
+                ${this.clueW}
             </div>
             `)
     }

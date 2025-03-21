@@ -6,7 +6,7 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 
-import { WordClue, Cell, GenerationResults, defaultCell, WebwriterWordPuzzlesCrosswordGrid } from '../widgets/crossword-grid'
+import { WordClue, Cell, GenerationResults, defaultCell } from '../widgets/ww-word-puzzles-cw-grid'
 
 function deleteElement<Type>(list: Type[], element: Type): Type {
     list.splice(list.indexOf(element), 1)

@@ -558,6 +558,90 @@ var i4 = globalThis.litElementPolyfillSupport;
 i4?.({ LitElement: r4 });
 (globalThis.litElementVersions ??= []).push("4.1.1");
 
+// node_modules/@lit/reactive-element/decorators/custom-element.js
+var t3 = (t8) => (e13, o14) => {
+  void 0 !== o14 ? o14.addInitializer(() => {
+    customElements.define(t8, e13);
+  }) : customElements.define(t8, e13);
+};
+
+// node_modules/@lit/reactive-element/decorators/property.js
+var o4 = { attribute: true, type: String, converter: u, reflect: false, hasChanged: f };
+var r5 = (t8 = o4, e13, r11) => {
+  const { kind: n11, metadata: i9 } = r11;
+  let s5 = globalThis.litPropertyMetadata.get(i9);
+  if (void 0 === s5 && globalThis.litPropertyMetadata.set(i9, s5 = /* @__PURE__ */ new Map()), s5.set(r11.name, t8), "accessor" === n11) {
+    const { name: o14 } = r11;
+    return { set(r12) {
+      const n12 = e13.get.call(this);
+      e13.set.call(this, r12), this.requestUpdate(o14, n12, t8);
+    }, init(e14) {
+      return void 0 !== e14 && this.P(o14, void 0, t8), e14;
+    } };
+  }
+  if ("setter" === n11) {
+    const { name: o14 } = r11;
+    return function(r12) {
+      const n12 = this[o14];
+      e13.call(this, r12), this.requestUpdate(o14, n12, t8);
+    };
+  }
+  throw Error("Unsupported decorator location: " + n11);
+};
+function n4(t8) {
+  return (e13, o14) => "object" == typeof o14 ? r5(t8, e13, o14) : ((t9, e14, o15) => {
+    const r11 = e14.hasOwnProperty(o15);
+    return e14.constructor.createProperty(o15, r11 ? { ...t9, wrapped: true } : t9), r11 ? Object.getOwnPropertyDescriptor(e14, o15) : void 0;
+  })(t8, e13, o14);
+}
+
+// node_modules/@lit/reactive-element/decorators/state.js
+function r6(r11) {
+  return n4({ ...r11, state: true, attribute: false });
+}
+
+// node_modules/@lit/reactive-element/decorators/event-options.js
+function t4(t8) {
+  return (n11, o14) => {
+    const c7 = "function" == typeof n11 ? n11 : n11[o14];
+    Object.assign(c7, t8);
+  };
+}
+
+// node_modules/@lit/reactive-element/decorators/base.js
+var e4 = (e13, t8, c7) => (c7.configurable = true, c7.enumerable = true, Reflect.decorate && "object" != typeof t8 && Object.defineProperty(e13, t8, c7), c7);
+
+// node_modules/@lit/reactive-element/decorators/query.js
+function e5(e13, r11) {
+  return (n11, s5, i9) => {
+    const o14 = (t8) => t8.renderRoot?.querySelector(e13) ?? null;
+    if (r11) {
+      const { get: e14, set: r12 } = "object" == typeof s5 ? n11 : i9 ?? (() => {
+        const t8 = Symbol();
+        return { get() {
+          return this[t8];
+        }, set(e15) {
+          this[t8] = e15;
+        } };
+      })();
+      return e4(n11, s5, { get() {
+        let t8 = e14.call(this);
+        return void 0 === t8 && (t8 = o14(this), (null !== t8 || this.hasUpdated) && r12.call(this, t8)), t8;
+      } });
+    }
+    return e4(n11, s5, { get() {
+      return o14(this);
+    } });
+  };
+}
+
+// node_modules/@lit/reactive-element/decorators/query-async.js
+function r7(r11) {
+  return (n11, e13) => e4(n11, e13, { async get() {
+    return await this.updateComplete, this.renderRoot?.querySelector(r11) ?? null;
+  } });
+}
+
 // node_modules/@webwriter/lit/index.js
 var __create = Object.create;
 var __defProp2 = Object.defineProperty;
@@ -608,11 +692,11 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-var t3 = globalThis;
-var e4 = t3.ShadowRoot && (void 0 === t3.ShadyCSS || t3.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var t5 = globalThis;
+var e6 = t5.ShadowRoot && (void 0 === t5.ShadyCSS || t5.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
 var s3 = Symbol();
-var o4 = /* @__PURE__ */ new WeakMap();
-var n4 = class {
+var o5 = /* @__PURE__ */ new WeakMap();
+var n5 = class {
   constructor(t22, e42, o42) {
     if (this._$cssResult$ = true, o42 !== s3) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t22, this.t = e42;
@@ -620,9 +704,9 @@ var n4 = class {
   get styleSheet() {
     let t22 = this.o;
     const s22 = this.t;
-    if (e4 && void 0 === t22) {
+    if (e6 && void 0 === t22) {
       const e42 = void 0 !== s22 && 1 === s22.length;
-      e42 && (t22 = o4.get(s22)), void 0 === t22 && ((this.o = t22 = new CSSStyleSheet()).replaceSync(this.cssText), e42 && o4.set(s22, t22));
+      e42 && (t22 = o5.get(s22)), void 0 === t22 && ((this.o = t22 = new CSSStyleSheet()).replaceSync(this.cssText), e42 && o5.set(s22, t22));
     }
     return t22;
   }
@@ -630,18 +714,18 @@ var n4 = class {
     return this.cssText;
   }
 };
-var r5 = (t22) => new n4("string" == typeof t22 ? t22 : t22 + "", void 0, s3);
+var r8 = (t22) => new n5("string" == typeof t22 ? t22 : t22 + "", void 0, s3);
 var S3 = (s22, o42) => {
-  if (e4) s22.adoptedStyleSheets = o42.map((t22) => t22 instanceof CSSStyleSheet ? t22 : t22.styleSheet);
+  if (e6) s22.adoptedStyleSheets = o42.map((t22) => t22 instanceof CSSStyleSheet ? t22 : t22.styleSheet);
   else for (const e42 of o42) {
-    const o52 = document.createElement("style"), n52 = t3.litNonce;
+    const o52 = document.createElement("style"), n52 = t5.litNonce;
     void 0 !== n52 && o52.setAttribute("nonce", n52), o52.textContent = e42.cssText, s22.appendChild(o52);
   }
 };
-var c4 = e4 ? (t22) => t22 : (t22) => t22 instanceof CSSStyleSheet ? ((t32) => {
+var c4 = e6 ? (t22) => t22 : (t22) => t22 instanceof CSSStyleSheet ? ((t32) => {
   let e42 = "";
   for (const s22 of t32.cssRules) e42 += s22.cssText;
-  return r5(e42);
+  return r8(e42);
 })(t22) : t22;
 var { is: i22, defineProperty: e22, getOwnPropertyDescriptor: r22, getOwnPropertyNames: h3, getOwnPropertySymbols: o22, getPrototypeOf: n22 } = Object;
 var a3 = globalThis;
@@ -1310,90 +1394,6 @@ __publicField(LitElementWw, "scopedElements", {});
 __publicField(LitElementWw, "options", {});
 __publicField(LitElementWw, "actions", {});
 
-// node_modules/@lit/reactive-element/decorators/custom-element.js
-var t4 = (t8) => (e13, o14) => {
-  void 0 !== o14 ? o14.addInitializer(() => {
-    customElements.define(t8, e13);
-  }) : customElements.define(t8, e13);
-};
-
-// node_modules/@lit/reactive-element/decorators/property.js
-var o5 = { attribute: true, type: String, converter: u, reflect: false, hasChanged: f };
-var r6 = (t8 = o5, e13, r11) => {
-  const { kind: n11, metadata: i9 } = r11;
-  let s5 = globalThis.litPropertyMetadata.get(i9);
-  if (void 0 === s5 && globalThis.litPropertyMetadata.set(i9, s5 = /* @__PURE__ */ new Map()), s5.set(r11.name, t8), "accessor" === n11) {
-    const { name: o14 } = r11;
-    return { set(r12) {
-      const n12 = e13.get.call(this);
-      e13.set.call(this, r12), this.requestUpdate(o14, n12, t8);
-    }, init(e14) {
-      return void 0 !== e14 && this.P(o14, void 0, t8), e14;
-    } };
-  }
-  if ("setter" === n11) {
-    const { name: o14 } = r11;
-    return function(r12) {
-      const n12 = this[o14];
-      e13.call(this, r12), this.requestUpdate(o14, n12, t8);
-    };
-  }
-  throw Error("Unsupported decorator location: " + n11);
-};
-function n5(t8) {
-  return (e13, o14) => "object" == typeof o14 ? r6(t8, e13, o14) : ((t9, e14, o15) => {
-    const r11 = e14.hasOwnProperty(o15);
-    return e14.constructor.createProperty(o15, r11 ? { ...t9, wrapped: true } : t9), r11 ? Object.getOwnPropertyDescriptor(e14, o15) : void 0;
-  })(t8, e13, o14);
-}
-
-// node_modules/@lit/reactive-element/decorators/state.js
-function r7(r11) {
-  return n5({ ...r11, state: true, attribute: false });
-}
-
-// node_modules/@lit/reactive-element/decorators/event-options.js
-function t5(t8) {
-  return (n11, o14) => {
-    const c7 = "function" == typeof n11 ? n11 : n11[o14];
-    Object.assign(c7, t8);
-  };
-}
-
-// node_modules/@lit/reactive-element/decorators/base.js
-var e5 = (e13, t8, c7) => (c7.configurable = true, c7.enumerable = true, Reflect.decorate && "object" != typeof t8 && Object.defineProperty(e13, t8, c7), c7);
-
-// node_modules/@lit/reactive-element/decorators/query.js
-function e6(e13, r11) {
-  return (n11, s5, i9) => {
-    const o14 = (t8) => t8.renderRoot?.querySelector(e13) ?? null;
-    if (r11) {
-      const { get: e14, set: r12 } = "object" == typeof s5 ? n11 : i9 ?? (() => {
-        const t8 = Symbol();
-        return { get() {
-          return this[t8];
-        }, set(e15) {
-          this[t8] = e15;
-        } };
-      })();
-      return e5(n11, s5, { get() {
-        let t8 = e14.call(this);
-        return void 0 === t8 && (t8 = o14(this), (null !== t8 || this.hasUpdated) && r12.call(this, t8)), t8;
-      } });
-    }
-    return e5(n11, s5, { get() {
-      return o14(this);
-    } });
-  };
-}
-
-// node_modules/@lit/reactive-element/decorators/query-async.js
-function r8(r11) {
-  return (n11, e13) => e5(n11, e13, { async get() {
-    return await this.updateComplete, this.renderRoot?.querySelector(r11) ?? null;
-  } });
-}
-
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.3Y6SB6QS.js
 var basePath = "";
 function setBasePath(path) {
@@ -1509,10 +1509,10 @@ var WebwriterWordPuzzles = class extends LitElementWw {
   }
 };
 __decorateClass([
-  n5({ attribute: false })
+  n4({ attribute: false })
 ], WebwriterWordPuzzles.prototype, "crossword", 1);
 WebwriterWordPuzzles = __decorateClass([
-  t4("webwriter-word-puzzles")
+  t3("webwriter-word-puzzles")
 ], WebwriterWordPuzzles);
 
 // src/lib/crossword-gen.ts
@@ -2291,7 +2291,7 @@ var grid_styles = i`
         }
 `;
 
-// src/widgets/crossword-grid.ts
+// src/widgets/ww-word-puzzles-cw-grid.ts
 function stopCtrlPropagation(event) {
   if (event.ctrlKey) {
     event.stopPropagation();
@@ -2307,14 +2307,12 @@ function defaultCell() {
   };
 }
 var DEFAULT_DIMENSION = 9;
-var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
+var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
   _preview = false;
   grid;
   gridEl;
-  _wordsAndClues;
-  acrossContext;
-  currentClue;
-  _crosswordContext;
+  _wordsClues;
+  _cwContext;
   cur_row;
   cur_col;
   // @type {boolean}
@@ -2327,7 +2325,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   constructor() {
     super();
     this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
-    this._crosswordContext = { across: null, clue: null };
+    this._cwContext = { across: null, clue: null };
   }
   /**
    * Styles for the crossword grid.
@@ -2338,7 +2336,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   }
   // TODO Add event listener for adding the focus class based on the clue number and direction
   /**
-   * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
+   * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
    * 
    * Dimensions are based on {@link this.grid | grid}.
    * 
@@ -2377,22 +2375,22 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
     let init_row = Number(currentCell.getAttribute("grid-row"));
     let init_col = Number(currentCell.getAttribute("grid-col"));
     let timeoutLimit = 0;
-    for (let wordClue of this._wordsAndClues) {
+    for (let wordClue of this._wordsClues) {
       timeoutLimit += wordClue.word.length;
     }
     timeoutLimit = timeoutLimit * 10;
     let { across: acrossContext, clue: clueContext } = this.getContextFromCell(row, col);
-    if (this._crosswordContext.across != null) {
-      acrossContext = this._crosswordContext.across;
+    if (this._cwContext.across != null) {
+      acrossContext = this._cwContext.across;
     }
-    if (this._crosswordContext.clue != null) {
-      clueContext = this._crosswordContext.clue;
+    if (this._cwContext.clue != null) {
+      clueContext = this._cwContext.clue;
     }
     let initialAcross = acrossContext;
     let initialClue = clueContext;
     let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1;
     if (currentWordIndex == -1) {
-      currentWordIndex = this._wordsAndClues.length - 1;
+      currentWordIndex = this._wordsClues.length - 1;
     }
     let iNextW = -1;
     let timeout = 0;
@@ -2404,14 +2402,14 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
       nrow = row + Number(!acrossContext);
       ncol = col + Number(acrossContext);
       pass += row == init_row && col == init_col ? 1 : 0;
-      if (this._wordsAndClues.length > 1) {
+      if (this._wordsClues.length > 1) {
         iNextW = this.getNextWordIndex(acrossContext, clueContext);
       }
       if (ncol >= this.grid.length || nrow >= this.grid.length || this.grid[nrow][ncol] == null || !this.grid[nrow][ncol].white) {
         if (iNextW == -1) {
           iNextW = 0;
         }
-        nextWord = this._wordsAndClues[iNextW];
+        nextWord = this._wordsClues[iNextW];
         row = nextWord.x;
         col = nextWord.y;
         nextCell = this.getCellDOM(row, col);
@@ -2438,7 +2436,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
       this.cur_col = Number(nextCell.getAttribute("grid-row"));
       this.cur_row = Number(nextCell.getAttribute("grid-col"));
       if (nextWord) {
-        this.setContext(this._crosswordContext);
+        this.setContext(this._cwContext);
       }
     } else {
       currentCell.blur();
@@ -2459,11 +2457,11 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
     let cell = this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
     let across;
     let clue;
-    if (this._crosswordContext == null) {
+    if (this._cwContext == null) {
       across = cell.getAttribute("direction") == "across" || cell.getAttribute("direction") == "both";
     } else {
       if (cell.getAttribute("direction") == "both") {
-        across = this._crosswordContext.across;
+        across = this._cwContext.across;
       } else {
         across = cell.getAttribute("direction") == "across";
       }
@@ -2504,18 +2502,18 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   */
   // May not need the arguments lol
   getNextWordIndex(across, clue) {
-    if (this._wordsAndClues.length == 1) {
+    if (this._wordsClues.length == 1) {
       return 0;
     }
-    let i9 = this._wordsAndClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.across == across);
+    let i9 = this._wordsClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.across == across);
     i9 += 1;
-    if (i9 >= this._wordsAndClues.length) {
-      i9 = this._wordsAndClues.findIndex((wordClue) => wordClue.across == !across);
+    if (i9 >= this._wordsClues.length) {
+      i9 = this._wordsClues.findIndex((wordClue) => wordClue.across == !across);
     }
     return i9;
   }
   /**
-   * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
+   * Constructor for the cells of the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element.
    * 
    * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
    * @param {number} x the row of the cell, 0-indexed
@@ -2585,17 +2583,17 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
       // Go to next clue
       case "Tab":
         e13.stopPropagation();
-        let nextWord = this._wordsAndClues[this.getNextWordIndex(this._crosswordContext.across, this._crosswordContext.clue)];
+        let nextWord = this._wordsClues[this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)];
         row = nextWord.x;
         col = nextWord.y;
-        this.setContext(this._crosswordContext);
+        this.setContext(this._cwContext);
         nextCell = this.getCellDOM(row, col);
         nextCell.focus();
         break;
       // Change direction context if the current cell goes in both directions
       case " ":
         if (cell.getAttribute("direction") == "both") {
-          this.setContext({ across: !this._crosswordContext.across, clue: this.getClueNumber(!this._crosswordContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))) });
+          this.setContext({ across: !this._cwContext.across, clue: this.getClueNumber(!this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))) });
         }
         break;
       // NAVIGATION ========================================================
@@ -2652,9 +2650,9 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
     let x3 = this.cur_row;
     let y4 = this.cur_col;
     let { across: acrossContext, clue: clueContext } = this.getContextFromCell(this.cur_row, this.cur_col);
-    this._crosswordContext.across = acrossContext;
-    this._crosswordContext.clue = clueContext;
-    if (this._crosswordContext.acrossContext) {
+    this._cwContext.across = acrossContext;
+    this._cwContext.clue = clueContext;
+    if (this._cwContext.acrossContext) {
       while (y4 > 0 && this.grid[x3][y4 - 1].white) {
         y4 -= 1;
       }
@@ -2663,7 +2661,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
         x3 -= 1;
       }
     }
-    this.setContext(this._crosswordContext);
+    this.setContext(this._cwContext);
   }
   /**
    * Dispatches an event to update the current words and clues.
@@ -2691,7 +2689,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   // TODO Implement answer checking
   // It should compare the text content of the cell with the answer in this.grid 
   render() {
-    this.grid = generateCrosswordFromList(this._wordsAndClues);
+    this.grid = generateCrosswordFromList(this._wordsClues);
     this.newCrosswordGridDOM(document);
     return x`<div>
                 ${this.gridEl}
@@ -2700,7 +2698,7 @@ var WebwriterWordPuzzlesCrosswordGrid2 = class extends WebwriterWordPuzzles {
   }
 };
 __decorateClass([
-  n5({
+  n4({
     type: Boolean,
     state: true,
     attribute: false,
@@ -2708,34 +2706,28 @@ __decorateClass([
       return this.onPreviewToggle(newValue, oldValue);
     }
   })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "_preview", 2);
+], WwWordPuzzlesCwGrid.prototype, "_preview", 2);
 __decorateClass([
-  n5({ type: Array, state: true, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "grid", 2);
+  n4({ type: Array, state: true, attribute: true, reflect: true })
+], WwWordPuzzlesCwGrid.prototype, "grid", 2);
 __decorateClass([
-  n5({ type: HTMLDivElement, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "gridEl", 2);
+  n4({ type: HTMLDivElement, state: true, attribute: false })
+], WwWordPuzzlesCwGrid.prototype, "gridEl", 2);
 __decorateClass([
-  n5({ type: Array, state: true, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "_wordsAndClues", 2);
+  n4({ type: Array, state: true, attribute: true, reflect: true })
+], WwWordPuzzlesCwGrid.prototype, "_wordsClues", 2);
 __decorateClass([
-  n5({ type: Boolean, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "acrossContext", 2);
+  n4({ type: Object, state: true, attribute: false })
+], WwWordPuzzlesCwGrid.prototype, "_cwContext", 2);
 __decorateClass([
-  n5({ type: Number, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "currentClue", 2);
+  r6()
+], WwWordPuzzlesCwGrid.prototype, "cur_row", 2);
 __decorateClass([
-  n5({ type: Object, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "_crosswordContext", 2);
-__decorateClass([
-  r7()
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "cur_row", 2);
-__decorateClass([
-  r7()
-], WebwriterWordPuzzlesCrosswordGrid2.prototype, "cur_col", 2);
-WebwriterWordPuzzlesCrosswordGrid2 = __decorateClass([
-  t4("webwriter-word-puzzles-crossword-grid")
-], WebwriterWordPuzzlesCrosswordGrid2);
+  r6()
+], WwWordPuzzlesCwGrid.prototype, "cur_col", 2);
+WwWordPuzzlesCwGrid = __decorateClass([
+  t3("webwriter-word-puzzles-crossword-grid")
+], WwWordPuzzlesCwGrid);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.3RPBFEDE.js
 var formCollections = /* @__PURE__ */ new WeakMap();
@@ -3133,10 +3125,10 @@ _hasRecordedInitialProperties = /* @__PURE__ */ new WeakMap();
 ShoelaceElement.version = "2.19.1";
 ShoelaceElement.dependencies = {};
 __decorateClass2([
-  n5()
+  n4()
 ], ShoelaceElement.prototype, "dir", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], ShoelaceElement.prototype, "lang", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.LMJSHYJT.js
@@ -5228,43 +5220,43 @@ var SlPopup = class extends ShoelaceElement {
 };
 SlPopup.styles = [component_styles_default, popup_styles_default];
 __decorateClass2([
-  e6(".popup")
+  e5(".popup")
 ], SlPopup.prototype, "popup", 2);
 __decorateClass2([
-  e6(".popup__arrow")
+  e5(".popup__arrow")
 ], SlPopup.prototype, "arrowEl", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlPopup.prototype, "anchor", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlPopup.prototype, "active", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlPopup.prototype, "placement", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlPopup.prototype, "strategy", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlPopup.prototype, "distance", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlPopup.prototype, "skidding", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlPopup.prototype, "arrow", 2);
 __decorateClass2([
-  n5({ attribute: "arrow-placement" })
+  n4({ attribute: "arrow-placement" })
 ], SlPopup.prototype, "arrowPlacement", 2);
 __decorateClass2([
-  n5({ attribute: "arrow-padding", type: Number })
+  n4({ attribute: "arrow-padding", type: Number })
 ], SlPopup.prototype, "arrowPadding", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlPopup.prototype, "flip", 2);
 __decorateClass2([
-  n5({
+  n4({
     attribute: "flip-fallback-placements",
     converter: {
       fromAttribute: (value) => {
@@ -5277,37 +5269,37 @@ __decorateClass2([
   })
 ], SlPopup.prototype, "flipFallbackPlacements", 2);
 __decorateClass2([
-  n5({ attribute: "flip-fallback-strategy" })
+  n4({ attribute: "flip-fallback-strategy" })
 ], SlPopup.prototype, "flipFallbackStrategy", 2);
 __decorateClass2([
-  n5({ type: Object })
+  n4({ type: Object })
 ], SlPopup.prototype, "flipBoundary", 2);
 __decorateClass2([
-  n5({ attribute: "flip-padding", type: Number })
+  n4({ attribute: "flip-padding", type: Number })
 ], SlPopup.prototype, "flipPadding", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlPopup.prototype, "shift", 2);
 __decorateClass2([
-  n5({ type: Object })
+  n4({ type: Object })
 ], SlPopup.prototype, "shiftBoundary", 2);
 __decorateClass2([
-  n5({ attribute: "shift-padding", type: Number })
+  n4({ attribute: "shift-padding", type: Number })
 ], SlPopup.prototype, "shiftPadding", 2);
 __decorateClass2([
-  n5({ attribute: "auto-size" })
+  n4({ attribute: "auto-size" })
 ], SlPopup.prototype, "autoSize", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlPopup.prototype, "sync", 2);
 __decorateClass2([
-  n5({ type: Object })
+  n4({ type: Object })
 ], SlPopup.prototype, "autoSizeBoundary", 2);
 __decorateClass2([
-  n5({ attribute: "auto-size-padding", type: Number })
+  n4({ attribute: "auto-size-padding", type: Number })
 ], SlPopup.prototype, "autoSizePadding", 2);
 __decorateClass2([
-  n5({ attribute: "hover-bridge", type: Boolean })
+  n4({ attribute: "hover-bridge", type: Boolean })
 ], SlPopup.prototype, "hoverBridge", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.K7JGTRV7.js
@@ -5603,37 +5595,37 @@ var SlTooltip = class extends ShoelaceElement {
 SlTooltip.styles = [component_styles_default, tooltip_styles_default];
 SlTooltip.dependencies = { "sl-popup": SlPopup };
 __decorateClass2([
-  e6("slot:not([name])")
+  e5("slot:not([name])")
 ], SlTooltip.prototype, "defaultSlot", 2);
 __decorateClass2([
-  e6(".tooltip__body")
+  e5(".tooltip__body")
 ], SlTooltip.prototype, "body", 2);
 __decorateClass2([
-  e6("sl-popup")
+  e5("sl-popup")
 ], SlTooltip.prototype, "popup", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTooltip.prototype, "content", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTooltip.prototype, "placement", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTooltip.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlTooltip.prototype, "distance", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTooltip.prototype, "open", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlTooltip.prototype, "skidding", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTooltip.prototype, "trigger", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlTooltip.prototype, "hoist", 2);
 __decorateClass2([
   watch("open", { waitUntilFirstUpdate: true })
@@ -6398,19 +6390,19 @@ var SlIcon = class extends ShoelaceElement {
 };
 SlIcon.styles = [component_styles_default, icon_styles_default];
 __decorateClass2([
-  r7()
+  r6()
 ], SlIcon.prototype, "svg", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlIcon.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIcon.prototype, "src", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIcon.prototype, "label", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlIcon.prototype, "library", 2);
 __decorateClass2([
   watch("label")
@@ -6618,43 +6610,43 @@ var SlCheckbox = class extends ShoelaceElement {
 SlCheckbox.styles = [component_styles_default, form_control_styles_default, checkbox_styles_default];
 SlCheckbox.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6('input[type="checkbox"]')
+  e5('input[type="checkbox"]')
 ], SlCheckbox.prototype, "input", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlCheckbox.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlCheckbox.prototype, "title", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlCheckbox.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlCheckbox.prototype, "value", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlCheckbox.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCheckbox.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCheckbox.prototype, "checked", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCheckbox.prototype, "indeterminate", 2);
 __decorateClass2([
   defaultValue("checked")
 ], SlCheckbox.prototype, "defaultChecked", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlCheckbox.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCheckbox.prototype, "required", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlCheckbox.prototype, "helpText", 2);
 __decorateClass2([
   watch("disabled", { waitUntilFirstUpdate: true })
@@ -6943,43 +6935,43 @@ _SlTreeItem.dependencies = {
   "sl-spinner": SlSpinner
 };
 __decorateClass2([
-  r7()
+  r6()
 ], _SlTreeItem.prototype, "indeterminate", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], _SlTreeItem.prototype, "isLeaf", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], _SlTreeItem.prototype, "loading", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], _SlTreeItem.prototype, "selectable", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], _SlTreeItem.prototype, "expanded", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], _SlTreeItem.prototype, "selected", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], _SlTreeItem.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], _SlTreeItem.prototype, "lazy", 2);
 __decorateClass2([
-  e6("slot:not([name])")
+  e5("slot:not([name])")
 ], _SlTreeItem.prototype, "defaultSlot", 2);
 __decorateClass2([
-  e6("slot[name=children]")
+  e5("slot[name=children]")
 ], _SlTreeItem.prototype, "childrenSlot", 2);
 __decorateClass2([
-  e6(".tree-item__item")
+  e5(".tree-item__item")
 ], _SlTreeItem.prototype, "itemElement", 2);
 __decorateClass2([
-  e6(".tree-item__children")
+  e5(".tree-item__children")
 ], _SlTreeItem.prototype, "childrenContainer", 2);
 __decorateClass2([
-  e6(".tree-item__expand-button slot")
+  e5(".tree-item__expand-button slot")
 ], _SlTreeItem.prototype, "expandButtonSlot", 2);
 __decorateClass2([
   watch("loading", { waitUntilFirstUpdate: true })
@@ -7292,16 +7284,16 @@ var SlTree = class extends ShoelaceElement {
 };
 SlTree.styles = [component_styles_default, tree_styles_default];
 __decorateClass2([
-  e6("slot:not([name])")
+  e5("slot:not([name])")
 ], SlTree.prototype, "defaultSlot", 2);
 __decorateClass2([
-  e6("slot[name=expand-icon]")
+  e5("slot[name=expand-icon]")
 ], SlTree.prototype, "expandedIconSlot", 2);
 __decorateClass2([
-  e6("slot[name=collapse-icon]")
+  e5("slot[name=collapse-icon]")
 ], SlTree.prototype, "collapsedIconSlot", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTree.prototype, "selection", 2);
 __decorateClass2([
   watch("selection")
@@ -7610,7 +7602,7 @@ var SlResizeObserver = class extends ShoelaceElement {
 };
 SlResizeObserver.styles = [component_styles_default, resize_observer_styles_default];
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlResizeObserver.prototype, "disabled", 2);
 __decorateClass2([
   watch("disabled", { waitUntilFirstUpdate: true })
@@ -7835,34 +7827,34 @@ var SlIconButton = class extends ShoelaceElement {
 SlIconButton.styles = [component_styles_default, icon_button_styles_default];
 SlIconButton.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6(".icon-button")
+  e5(".icon-button")
 ], SlIconButton.prototype, "button", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlIconButton.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "library", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "src", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "href", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "target", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "download", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlIconButton.prototype, "label", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlIconButton.prototype, "disabled", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.QIKAGUSA.js
@@ -8218,40 +8210,40 @@ var SlTabGroup = class extends ShoelaceElement {
 SlTabGroup.styles = [component_styles_default, tab_group_styles_default];
 SlTabGroup.dependencies = { "sl-icon-button": SlIconButton, "sl-resize-observer": SlResizeObserver };
 __decorateClass2([
-  e6(".tab-group")
+  e5(".tab-group")
 ], SlTabGroup.prototype, "tabGroup", 2);
 __decorateClass2([
-  e6(".tab-group__body")
+  e5(".tab-group__body")
 ], SlTabGroup.prototype, "body", 2);
 __decorateClass2([
-  e6(".tab-group__nav")
+  e5(".tab-group__nav")
 ], SlTabGroup.prototype, "nav", 2);
 __decorateClass2([
-  e6(".tab-group__indicator")
+  e5(".tab-group__indicator")
 ], SlTabGroup.prototype, "indicator", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlTabGroup.prototype, "hasScrollControls", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlTabGroup.prototype, "shouldHideScrollStartButton", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlTabGroup.prototype, "shouldHideScrollEndButton", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTabGroup.prototype, "placement", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTabGroup.prototype, "activation", 2);
 __decorateClass2([
-  n5({ attribute: "no-scroll-controls", type: Boolean })
+  n4({ attribute: "no-scroll-controls", type: Boolean })
 ], SlTabGroup.prototype, "noScrollControls", 2);
 __decorateClass2([
-  n5({ attribute: "fixed-scroll-controls", type: Boolean })
+  n4({ attribute: "fixed-scroll-controls", type: Boolean })
 ], SlTabGroup.prototype, "fixedScrollControls", 2);
 __decorateClass2([
-  t5({ passive: true })
+  t4({ passive: true })
 ], SlTabGroup.prototype, "updateScrollButtons", 1);
 __decorateClass2([
   watch("noScrollControls", { waitUntilFirstUpdate: true })
@@ -8679,79 +8671,79 @@ var SlTextarea = class extends ShoelaceElement {
 };
 SlTextarea.styles = [component_styles_default, form_control_styles_default, textarea_styles_default];
 __decorateClass2([
-  e6(".textarea__control")
+  e5(".textarea__control")
 ], SlTextarea.prototype, "input", 2);
 __decorateClass2([
-  e6(".textarea__size-adjuster")
+  e5(".textarea__size-adjuster")
 ], SlTextarea.prototype, "sizeAdjuster", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlTextarea.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "title", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "value", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlTextarea.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTextarea.prototype, "filled", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "label", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlTextarea.prototype, "helpText", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "placeholder", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlTextarea.prototype, "rows", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "resize", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTextarea.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTextarea.prototype, "readonly", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlTextarea.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTextarea.prototype, "required", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlTextarea.prototype, "minlength", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlTextarea.prototype, "maxlength", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "autocapitalize", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "autocorrect", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "autocomplete", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlTextarea.prototype, "autofocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "enterkeyhint", 2);
 __decorateClass2([
-  n5({
+  n4({
     type: Boolean,
     converter: {
       // Allow "true|false" attribute values but keep the property boolean
@@ -8761,7 +8753,7 @@ __decorateClass2([
   })
 ], SlTextarea.prototype, "spellcheck", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlTextarea.prototype, "inputmode", 2);
 __decorateClass2([
   defaultValue()
@@ -8951,16 +8943,16 @@ var SlTag = class extends ShoelaceElement {
 SlTag.styles = [component_styles_default, tag_styles_default];
 SlTag.dependencies = { "sl-icon-button": SlIconButton };
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlTag.prototype, "variant", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlTag.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTag.prototype, "pill", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlTag.prototype, "removable", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.OY4FWIVA.js
@@ -9099,22 +9091,22 @@ var SlTab = class extends ShoelaceElement {
 SlTab.styles = [component_styles_default, tab_styles_default];
 SlTab.dependencies = { "sl-icon-button": SlIconButton };
 __decorateClass2([
-  e6(".tab")
+  e5(".tab")
 ], SlTab.prototype, "tab", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlTab.prototype, "panel", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTab.prototype, "active", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTab.prototype, "closable", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTab.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Number, reflect: true })
+  n4({ type: Number, reflect: true })
 ], SlTab.prototype, "tabIndex", 2);
 __decorateClass2([
   watch("active")
@@ -9176,10 +9168,10 @@ var SlTabPanel = class extends ShoelaceElement {
 };
 SlTabPanel.styles = [component_styles_default, tab_panel_styles_default];
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlTabPanel.prototype, "name", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlTabPanel.prototype, "active", 2);
 __decorateClass2([
   watch("active")
@@ -9528,40 +9520,40 @@ var SlSwitch = class extends ShoelaceElement {
 };
 SlSwitch.styles = [component_styles_default, form_control_styles_default, switch_styles_default];
 __decorateClass2([
-  e6('input[type="checkbox"]')
+  e5('input[type="checkbox"]')
 ], SlSwitch.prototype, "input", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSwitch.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSwitch.prototype, "title", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSwitch.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSwitch.prototype, "value", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlSwitch.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSwitch.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSwitch.prototype, "checked", 2);
 __decorateClass2([
   defaultValue("checked")
 ], SlSwitch.prototype, "defaultChecked", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlSwitch.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSwitch.prototype, "required", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlSwitch.prototype, "helpText", 2);
 __decorateClass2([
   watch("checked", { waitUntilFirstUpdate: true })
@@ -9864,28 +9856,28 @@ var SlSplitPanel = class extends ShoelaceElement {
 };
 SlSplitPanel.styles = [component_styles_default, split_panel_styles_default];
 __decorateClass2([
-  e6(".divider")
+  e5(".divider")
 ], SlSplitPanel.prototype, "divider", 2);
 __decorateClass2([
-  n5({ type: Number, reflect: true })
+  n4({ type: Number, reflect: true })
 ], SlSplitPanel.prototype, "position", 2);
 __decorateClass2([
-  n5({ attribute: "position-in-pixels", type: Number })
+  n4({ attribute: "position-in-pixels", type: Number })
 ], SlSplitPanel.prototype, "positionInPixels", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSplitPanel.prototype, "vertical", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSplitPanel.prototype, "disabled", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSplitPanel.prototype, "primary", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSplitPanel.prototype, "snap", 2);
 __decorateClass2([
-  n5({ type: Number, attribute: "snap-threshold" })
+  n4({ type: Number, attribute: "snap-threshold" })
 ], SlSplitPanel.prototype, "snapThreshold", 2);
 __decorateClass2([
   watch("position")
@@ -10246,37 +10238,37 @@ var SlRating = class extends ShoelaceElement {
 SlRating.styles = [component_styles_default, rating_styles_default];
 SlRating.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6(".rating")
+  e5(".rating")
 ], SlRating.prototype, "rating", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRating.prototype, "hoverValue", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRating.prototype, "isHovering", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRating.prototype, "label", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRating.prototype, "value", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRating.prototype, "max", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRating.prototype, "precision", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRating.prototype, "readonly", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRating.prototype, "disabled", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRating.prototype, "getSymbol", 2);
 __decorateClass2([
-  t5({ passive: true })
+  t4({ passive: true })
 ], SlRating.prototype, "handleTouchMove", 1);
 __decorateClass2([
   watch("hoverValue")
@@ -10350,22 +10342,22 @@ var SlRelativeTime = class extends ShoelaceElement {
   }
 };
 __decorateClass2([
-  r7()
+  r6()
 ], SlRelativeTime.prototype, "isoTime", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRelativeTime.prototype, "relativeTime", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRelativeTime.prototype, "date", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRelativeTime.prototype, "format", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRelativeTime.prototype, "numeric", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlRelativeTime.prototype, "sync", 2);
 function getTimeUntilNextUnit(unit) {
   const units = { second: 1e3, minute: 6e4, hour: 36e5, day: 864e5 };
@@ -10462,7 +10454,7 @@ var SlSkeleton = class extends ShoelaceElement {
 };
 SlSkeleton.styles = [component_styles_default, skeleton_styles_default];
 __decorateClass2([
-  n5()
+  n4()
 ], SlSkeleton.prototype, "effect", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.MN4ICWTQ.js
@@ -10932,58 +10924,58 @@ var SlRange = class extends ShoelaceElement {
 };
 SlRange.styles = [component_styles_default, form_control_styles_default, range_styles_default];
 __decorateClass2([
-  e6(".range__control")
+  e5(".range__control")
 ], SlRange.prototype, "input", 2);
 __decorateClass2([
-  e6(".range__tooltip")
+  e5(".range__tooltip")
 ], SlRange.prototype, "output", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRange.prototype, "hasFocus", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRange.prototype, "hasTooltip", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRange.prototype, "title", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRange.prototype, "name", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRange.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRange.prototype, "label", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlRange.prototype, "helpText", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRange.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRange.prototype, "min", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRange.prototype, "max", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlRange.prototype, "step", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRange.prototype, "tooltip", 2);
 __decorateClass2([
-  n5({ attribute: false })
+  n4({ attribute: false })
 ], SlRange.prototype, "tooltipFormatter", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlRange.prototype, "form", 2);
 __decorateClass2([
   defaultValue()
 ], SlRange.prototype, "defaultValue", 2);
 __decorateClass2([
-  t5({ passive: true })
+  t4({ passive: true })
 ], SlRange.prototype, "handleThumbDragStart", 1);
 __decorateClass2([
   watch("value", { waitUntilFirstUpdate: true })
@@ -11375,7 +11367,7 @@ var SlSelect = class extends ShoelaceElement {
     this.helpText = "";
     this.form = "";
     this.required = false;
-    this.getTag = (option3) => {
+    this.getTag = (option2) => {
       return x`
       <sl-tag
         part="tag"
@@ -11388,9 +11380,9 @@ var SlSelect = class extends ShoelaceElement {
         ?pill=${this.pill}
         size=${this.size}
         removable
-        @sl-remove=${(event) => this.handleTagRemove(event, option3)}
+        @sl-remove=${(event) => this.handleTagRemove(event, option2)}
       >
-        ${option3.getTextLabel()}
+        ${option2.getTextLabel()}
       </sl-tag>
     `;
     };
@@ -11482,10 +11474,10 @@ var SlSelect = class extends ShoelaceElement {
         } else {
           this.typeToSelectString += event.key.toLowerCase();
         }
-        for (const option3 of allOptions) {
-          const label = option3.getTextLabel().toLowerCase();
+        for (const option2 of allOptions) {
+          const label = option2.getTextLabel().toLowerCase();
           if (label.startsWith(this.typeToSelectString)) {
-            this.setCurrentOption(option3);
+            this.setCurrentOption(option2);
             break;
           }
         }
@@ -11605,14 +11597,14 @@ var SlSelect = class extends ShoelaceElement {
   }
   handleOptionClick(event) {
     const target = event.target;
-    const option3 = target.closest("sl-option");
+    const option2 = target.closest("sl-option");
     const oldValue = this.value;
-    if (option3 && !option3.disabled) {
+    if (option2 && !option2.disabled) {
       this.valueHasChanged = true;
       if (this.multiple) {
-        this.toggleOptionSelection(option3);
+        this.toggleOptionSelection(option2);
       } else {
-        this.setSelectedOptions(option3);
+        this.setSelectedOptions(option2);
       }
       this.updateComplete.then(() => this.displayInput.focus({ preventScroll: true }));
       if (this.value !== oldValue) {
@@ -11636,14 +11628,14 @@ var SlSelect = class extends ShoelaceElement {
     const val = this.valueHasChanged ? this.value : this.defaultValue;
     const value = Array.isArray(val) ? val : [val];
     const values = [];
-    allOptions.forEach((option3) => values.push(option3.value));
+    allOptions.forEach((option2) => values.push(option2.value));
     this.setSelectedOptions(allOptions.filter((el) => value.includes(el.value)));
   }
-  handleTagRemove(event, option3) {
+  handleTagRemove(event, option2) {
     event.stopPropagation();
     this.valueHasChanged = true;
     if (!this.disabled) {
-      this.toggleOptionSelection(option3, false);
+      this.toggleOptionSelection(option2, false);
       this.updateComplete.then(() => {
         this.emit("sl-input");
         this.emit("sl-change");
@@ -11660,23 +11652,23 @@ var SlSelect = class extends ShoelaceElement {
   }
   // Sets the current option, which is the option the user is currently interacting with (e.g. via keyboard). Only one
   // option may be "current" at a time.
-  setCurrentOption(option3) {
+  setCurrentOption(option2) {
     const allOptions = this.getAllOptions();
     allOptions.forEach((el) => {
       el.current = false;
       el.tabIndex = -1;
     });
-    if (option3) {
-      this.currentOption = option3;
-      option3.current = true;
-      option3.tabIndex = 0;
-      option3.focus();
+    if (option2) {
+      this.currentOption = option2;
+      option2.current = true;
+      option2.tabIndex = 0;
+      option2.focus();
     }
   }
   // Sets the selected option(s)
-  setSelectedOptions(option3) {
+  setSelectedOptions(option2) {
     const allOptions = this.getAllOptions();
-    const newSelectedOptions = Array.isArray(option3) ? option3 : [option3];
+    const newSelectedOptions = Array.isArray(option2) ? option2 : [option2];
     allOptions.forEach((el) => el.selected = false);
     if (newSelectedOptions.length) {
       newSelectedOptions.forEach((el) => el.selected = true);
@@ -11684,11 +11676,11 @@ var SlSelect = class extends ShoelaceElement {
     this.selectionChanged();
   }
   // Toggles an option's selected state
-  toggleOptionSelection(option3, force) {
+  toggleOptionSelection(option2, force) {
     if (force === true || force === false) {
-      option3.selected = force;
+      option2.selected = force;
     } else {
-      option3.selected = !option3.selected;
+      option2.selected = !option2.selected;
     }
     this.selectionChanged();
   }
@@ -11717,10 +11709,10 @@ var SlSelect = class extends ShoelaceElement {
     });
   }
   get tags() {
-    return this.selectedOptions.map((option3, index) => {
+    return this.selectedOptions.map((option2, index) => {
       if (index < this.maxOptionsVisible || this.maxOptionsVisible <= 0) {
-        const tag = this.getTag(option3, index);
-        return x`<div @sl-remove=${(e13) => this.handleTagRemove(e13, option3)}>
+        const tag = this.getTag(option2, index);
+        return x`<div @sl-remove=${(e13) => this.handleTagRemove(e13, option2)}>
           ${typeof tag === "string" ? o9(tag) : tag}
         </div>`;
       } else if (index === this.maxOptionsVisible) {
@@ -11988,91 +11980,91 @@ SlSelect.dependencies = {
   "sl-tag": SlTag
 };
 __decorateClass2([
-  e6(".select")
+  e5(".select")
 ], SlSelect.prototype, "popup", 2);
 __decorateClass2([
-  e6(".select__combobox")
+  e5(".select__combobox")
 ], SlSelect.prototype, "combobox", 2);
 __decorateClass2([
-  e6(".select__display-input")
+  e5(".select__display-input")
 ], SlSelect.prototype, "displayInput", 2);
 __decorateClass2([
-  e6(".select__value-input")
+  e5(".select__value-input")
 ], SlSelect.prototype, "valueInput", 2);
 __decorateClass2([
-  e6(".select__listbox")
+  e5(".select__listbox")
 ], SlSelect.prototype, "listbox", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSelect.prototype, "hasFocus", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSelect.prototype, "displayLabel", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSelect.prototype, "currentOption", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSelect.prototype, "selectedOptions", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSelect.prototype, "valueHasChanged", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSelect.prototype, "name", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlSelect.prototype, "value", 1);
 __decorateClass2([
-  n5({ attribute: "value" })
+  n4({ attribute: "value" })
 ], SlSelect.prototype, "defaultValue", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlSelect.prototype, "size", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSelect.prototype, "placeholder", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSelect.prototype, "multiple", 2);
 __decorateClass2([
-  n5({ attribute: "max-options-visible", type: Number })
+  n4({ attribute: "max-options-visible", type: Number })
 ], SlSelect.prototype, "maxOptionsVisible", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSelect.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlSelect.prototype, "clearable", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSelect.prototype, "open", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlSelect.prototype, "hoist", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSelect.prototype, "filled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSelect.prototype, "pill", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSelect.prototype, "label", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlSelect.prototype, "placement", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlSelect.prototype, "helpText", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlSelect.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlSelect.prototype, "required", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlSelect.prototype, "getTag", 2);
 __decorateClass2([
   watch("disabled", { waitUntilFirstUpdate: true })
@@ -12210,13 +12202,13 @@ var SlButtonGroup = class extends ShoelaceElement {
 };
 SlButtonGroup.styles = [component_styles_default, button_group_styles_default];
 __decorateClass2([
-  e6("slot")
+  e5("slot")
 ], SlButtonGroup.prototype, "defaultSlot", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlButtonGroup.prototype, "disableRole", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButtonGroup.prototype, "label", 2);
 function findButton(el) {
   var _a2;
@@ -12506,40 +12498,40 @@ var SlRadioGroup = class extends ShoelaceElement {
 SlRadioGroup.styles = [component_styles_default, form_control_styles_default, radio_group_styles_default];
 SlRadioGroup.dependencies = { "sl-button-group": SlButtonGroup };
 __decorateClass2([
-  e6("slot:not([name])")
+  e5("slot:not([name])")
 ], SlRadioGroup.prototype, "defaultSlot", 2);
 __decorateClass2([
-  e6(".radio-group__validation-input")
+  e5(".radio-group__validation-input")
 ], SlRadioGroup.prototype, "validationInput", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRadioGroup.prototype, "hasButtonGroup", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRadioGroup.prototype, "errorMessage", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRadioGroup.prototype, "defaultValue", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRadioGroup.prototype, "label", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlRadioGroup.prototype, "helpText", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRadioGroup.prototype, "name", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlRadioGroup.prototype, "value", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlRadioGroup.prototype, "size", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlRadioGroup.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRadioGroup.prototype, "required", 2);
 __decorateClass2([
   watch("size", { waitUntilFirstUpdate: true })
@@ -13255,28 +13247,28 @@ var SlRadioButton = class extends ShoelaceElement {
 };
 SlRadioButton.styles = [component_styles_default, radio_button_styles_default];
 __decorateClass2([
-  e6(".button")
+  e5(".button")
 ], SlRadioButton.prototype, "input", 2);
 __decorateClass2([
-  e6(".hidden-input")
+  e5(".hidden-input")
 ], SlRadioButton.prototype, "hiddenInput", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRadioButton.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRadioButton.prototype, "checked", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRadioButton.prototype, "value", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRadioButton.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlRadioButton.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRadioButton.prototype, "pill", 2);
 __decorateClass2([
   watch("disabled", { waitUntilFirstUpdate: true })
@@ -13395,16 +13387,16 @@ var SlProgressRing = class extends ShoelaceElement {
 };
 SlProgressRing.styles = [component_styles_default, progress_ring_styles_default];
 __decorateClass2([
-  e6(".progress-ring__indicator")
+  e5(".progress-ring__indicator")
 ], SlProgressRing.prototype, "indicator", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlProgressRing.prototype, "indicatorOffset", 2);
 __decorateClass2([
-  n5({ type: Number, reflect: true })
+  n4({ type: Number, reflect: true })
 ], SlProgressRing.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlProgressRing.prototype, "label", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.MD4QFFJM.js
@@ -14087,28 +14079,28 @@ var SlQrCode = class extends ShoelaceElement {
 };
 SlQrCode.styles = [component_styles_default, qr_code_styles_default];
 __decorateClass2([
-  e6("canvas")
+  e5("canvas")
 ], SlQrCode.prototype, "canvas", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlQrCode.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlQrCode.prototype, "label", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlQrCode.prototype, "size", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlQrCode.prototype, "fill", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlQrCode.prototype, "background", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlQrCode.prototype, "radius", 2);
 __decorateClass2([
-  n5({ attribute: "error-correction" })
+  n4({ attribute: "error-correction" })
 ], SlQrCode.prototype, "errorCorrection", 2);
 __decorateClass2([
   watch(["background", "errorCorrection", "fill", "radius", "size", "value"])
@@ -14299,19 +14291,19 @@ var SlRadio = class extends ShoelaceElement {
 SlRadio.styles = [component_styles_default, radio_styles_default];
 SlRadio.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  r7()
+  r6()
 ], SlRadio.prototype, "checked", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlRadio.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlRadio.prototype, "value", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlRadio.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlRadio.prototype, "disabled", 2);
 __decorateClass2([
   watch("checked")
@@ -14499,22 +14491,22 @@ var SlOption = class extends ShoelaceElement {
 SlOption.styles = [component_styles_default, option_styles_default];
 SlOption.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6(".option__label")
+  e5(".option__label")
 ], SlOption.prototype, "defaultSlot", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlOption.prototype, "current", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlOption.prototype, "selected", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlOption.prototype, "hasHover", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlOption.prototype, "value", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlOption.prototype, "disabled", 2);
 __decorateClass2([
   watch("disabled")
@@ -14648,13 +14640,13 @@ var SlProgressBar = class extends ShoelaceElement {
 };
 SlProgressBar.styles = [component_styles_default, progress_bar_styles_default];
 __decorateClass2([
-  n5({ type: Number, reflect: true })
+  n4({ type: Number, reflect: true })
 ], SlProgressBar.prototype, "value", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlProgressBar.prototype, "indeterminate", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlProgressBar.prototype, "label", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.ARU2ONKC.js
@@ -14729,22 +14721,22 @@ var SlMutationObserver = class extends ShoelaceElement {
 };
 SlMutationObserver.styles = [component_styles_default, mutation_observer_styles_default];
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlMutationObserver.prototype, "attr", 2);
 __decorateClass2([
-  n5({ attribute: "attr-old-value", type: Boolean, reflect: true })
+  n4({ attribute: "attr-old-value", type: Boolean, reflect: true })
 ], SlMutationObserver.prototype, "attrOldValue", 2);
 __decorateClass2([
-  n5({ attribute: "char-data", type: Boolean, reflect: true })
+  n4({ attribute: "char-data", type: Boolean, reflect: true })
 ], SlMutationObserver.prototype, "charData", 2);
 __decorateClass2([
-  n5({ attribute: "char-data-old-value", type: Boolean, reflect: true })
+  n4({ attribute: "char-data-old-value", type: Boolean, reflect: true })
 ], SlMutationObserver.prototype, "charDataOldValue", 2);
 __decorateClass2([
-  n5({ attribute: "child-list", type: Boolean, reflect: true })
+  n4({ attribute: "child-list", type: Boolean, reflect: true })
 ], SlMutationObserver.prototype, "childList", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlMutationObserver.prototype, "disabled", 2);
 __decorateClass2([
   watch("disabled")
@@ -15410,103 +15402,103 @@ var SlInput = class extends ShoelaceElement {
 SlInput.styles = [component_styles_default, form_control_styles_default, input_styles_default];
 SlInput.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6(".input__control")
+  e5(".input__control")
 ], SlInput.prototype, "input", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlInput.prototype, "hasFocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "title", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlInput.prototype, "type", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "value", 2);
 __decorateClass2([
   defaultValue()
 ], SlInput.prototype, "defaultValue", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlInput.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlInput.prototype, "filled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlInput.prototype, "pill", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "label", 2);
 __decorateClass2([
-  n5({ attribute: "help-text" })
+  n4({ attribute: "help-text" })
 ], SlInput.prototype, "helpText", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlInput.prototype, "clearable", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlInput.prototype, "disabled", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "placeholder", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlInput.prototype, "readonly", 2);
 __decorateClass2([
-  n5({ attribute: "password-toggle", type: Boolean })
+  n4({ attribute: "password-toggle", type: Boolean })
 ], SlInput.prototype, "passwordToggle", 2);
 __decorateClass2([
-  n5({ attribute: "password-visible", type: Boolean })
+  n4({ attribute: "password-visible", type: Boolean })
 ], SlInput.prototype, "passwordVisible", 2);
 __decorateClass2([
-  n5({ attribute: "no-spin-buttons", type: Boolean })
+  n4({ attribute: "no-spin-buttons", type: Boolean })
 ], SlInput.prototype, "noSpinButtons", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlInput.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlInput.prototype, "required", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "pattern", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlInput.prototype, "minlength", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlInput.prototype, "maxlength", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "min", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "max", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "step", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "autocapitalize", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "autocorrect", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "autocomplete", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlInput.prototype, "autofocus", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "enterkeyhint", 2);
 __decorateClass2([
-  n5({
+  n4({
     type: Boolean,
     converter: {
       // Allow "true|false" attribute values but keep the property boolean
@@ -15516,7 +15508,7 @@ __decorateClass2([
   })
 ], SlInput.prototype, "spellcheck", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInput.prototype, "inputmode", 2);
 __decorateClass2([
   watch("disabled", { waitUntilFirstUpdate: true })
@@ -15663,7 +15655,7 @@ var SlMenu = class extends ShoelaceElement {
 };
 SlMenu.styles = [component_styles_default, menu_styles_default];
 __decorateClass2([
-  e6("slot")
+  e5("slot")
 ], SlMenu.prototype, "defaultSlot", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.2IP2T4OH.js
@@ -16263,25 +16255,25 @@ SlMenuItem.dependencies = {
   "sl-spinner": SlSpinner
 };
 __decorateClass2([
-  e6("slot:not([name])")
+  e5("slot:not([name])")
 ], SlMenuItem.prototype, "defaultSlot", 2);
 __decorateClass2([
-  e6(".menu-item")
+  e5(".menu-item")
 ], SlMenuItem.prototype, "menuItem", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlMenuItem.prototype, "type", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlMenuItem.prototype, "checked", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlMenuItem.prototype, "value", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlMenuItem.prototype, "loading", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlMenuItem.prototype, "disabled", 2);
 __decorateClass2([
   watch("checked")
@@ -16474,13 +16466,13 @@ var SlImageComparer = class extends ShoelaceElement {
 SlImageComparer.styles = [component_styles_default, image_comparer_styles_default];
 SlImageComparer.scopedElement = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6(".image-comparer")
+  e5(".image-comparer")
 ], SlImageComparer.prototype, "base", 2);
 __decorateClass2([
-  e6(".image-comparer__handle")
+  e5(".image-comparer__handle")
 ], SlImageComparer.prototype, "handle", 2);
 __decorateClass2([
-  n5({ type: Number, reflect: true })
+  n4({ type: Number, reflect: true })
 ], SlImageComparer.prototype, "position", 2);
 __decorateClass2([
   watch("position", { waitUntilFirstUpdate: true })
@@ -16555,13 +16547,13 @@ var SlInclude = class extends ShoelaceElement {
 };
 SlInclude.styles = [component_styles_default, include_styles_default];
 __decorateClass2([
-  n5()
+  n4()
 ], SlInclude.prototype, "src", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlInclude.prototype, "mode", 2);
 __decorateClass2([
-  n5({ attribute: "allow-scripts", type: Boolean })
+  n4({ attribute: "allow-scripts", type: Boolean })
 ], SlInclude.prototype, "allowScripts", 2);
 __decorateClass2([
   watch("src")
@@ -16604,13 +16596,13 @@ var SlFormatBytes = class extends ShoelaceElement {
   }
 };
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlFormatBytes.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatBytes.prototype, "unit", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatBytes.prototype, "display", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.XOXL3AMF.js
@@ -16650,40 +16642,40 @@ var SlFormatDate = class extends ShoelaceElement {
   }
 };
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "date", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "weekday", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "era", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "year", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "month", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "day", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "hour", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "minute", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatDate.prototype, "second", 2);
 __decorateClass2([
-  n5({ attribute: "time-zone-name" })
+  n4({ attribute: "time-zone-name" })
 ], SlFormatDate.prototype, "timeZoneName", 2);
 __decorateClass2([
-  n5({ attribute: "time-zone" })
+  n4({ attribute: "time-zone" })
 ], SlFormatDate.prototype, "timeZone", 2);
 __decorateClass2([
-  n5({ attribute: "hour-format" })
+  n4({ attribute: "hour-format" })
 ], SlFormatDate.prototype, "hourFormat", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.47ROBIHB.js
@@ -16718,34 +16710,34 @@ var SlFormatNumber = class extends ShoelaceElement {
   }
 };
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlFormatNumber.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatNumber.prototype, "type", 2);
 __decorateClass2([
-  n5({ attribute: "no-grouping", type: Boolean })
+  n4({ attribute: "no-grouping", type: Boolean })
 ], SlFormatNumber.prototype, "noGrouping", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlFormatNumber.prototype, "currency", 2);
 __decorateClass2([
-  n5({ attribute: "currency-display" })
+  n4({ attribute: "currency-display" })
 ], SlFormatNumber.prototype, "currencyDisplay", 2);
 __decorateClass2([
-  n5({ attribute: "minimum-integer-digits", type: Number })
+  n4({ attribute: "minimum-integer-digits", type: Number })
 ], SlFormatNumber.prototype, "minimumIntegerDigits", 2);
 __decorateClass2([
-  n5({ attribute: "minimum-fraction-digits", type: Number })
+  n4({ attribute: "minimum-fraction-digits", type: Number })
 ], SlFormatNumber.prototype, "minimumFractionDigits", 2);
 __decorateClass2([
-  n5({ attribute: "maximum-fraction-digits", type: Number })
+  n4({ attribute: "maximum-fraction-digits", type: Number })
 ], SlFormatNumber.prototype, "maximumFractionDigits", 2);
 __decorateClass2([
-  n5({ attribute: "minimum-significant-digits", type: Number })
+  n4({ attribute: "minimum-significant-digits", type: Number })
 ], SlFormatNumber.prototype, "minimumSignificantDigits", 2);
 __decorateClass2([
-  n5({ attribute: "maximum-significant-digits", type: Number })
+  n4({ attribute: "maximum-significant-digits", type: Number })
 ], SlFormatNumber.prototype, "maximumSignificantDigits", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.B7CQFSON.js
@@ -16789,7 +16781,7 @@ var SlDivider = class extends ShoelaceElement {
 };
 SlDivider.styles = [component_styles_default, divider_styles_default];
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDivider.prototype, "vertical", 2);
 __decorateClass2([
   watch("vertical")
@@ -17426,28 +17418,28 @@ var SlDrawer = class extends ShoelaceElement {
 SlDrawer.styles = [component_styles_default, drawer_styles_default];
 SlDrawer.dependencies = { "sl-icon-button": SlIconButton };
 __decorateClass2([
-  e6(".drawer")
+  e5(".drawer")
 ], SlDrawer.prototype, "drawer", 2);
 __decorateClass2([
-  e6(".drawer__panel")
+  e5(".drawer__panel")
 ], SlDrawer.prototype, "panel", 2);
 __decorateClass2([
-  e6(".drawer__overlay")
+  e5(".drawer__overlay")
 ], SlDrawer.prototype, "overlay", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDrawer.prototype, "open", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlDrawer.prototype, "label", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlDrawer.prototype, "placement", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDrawer.prototype, "contained", 2);
 __decorateClass2([
-  n5({ attribute: "no-header", type: Boolean, reflect: true })
+  n4({ attribute: "no-header", type: Boolean, reflect: true })
 ], SlDrawer.prototype, "noHeader", 2);
 __decorateClass2([
   watch("open", { waitUntilFirstUpdate: true })
@@ -17872,40 +17864,40 @@ var SlDropdown = class extends ShoelaceElement {
 SlDropdown.styles = [component_styles_default, dropdown_styles_default];
 SlDropdown.dependencies = { "sl-popup": SlPopup };
 __decorateClass2([
-  e6(".dropdown")
+  e5(".dropdown")
 ], SlDropdown.prototype, "popup", 2);
 __decorateClass2([
-  e6(".dropdown__trigger")
+  e5(".dropdown__trigger")
 ], SlDropdown.prototype, "trigger", 2);
 __decorateClass2([
-  e6(".dropdown__panel")
+  e5(".dropdown__panel")
 ], SlDropdown.prototype, "panel", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDropdown.prototype, "open", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlDropdown.prototype, "placement", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDropdown.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ attribute: "stay-open-on-select", type: Boolean, reflect: true })
+  n4({ attribute: "stay-open-on-select", type: Boolean, reflect: true })
 ], SlDropdown.prototype, "stayOpenOnSelect", 2);
 __decorateClass2([
-  n5({ attribute: false })
+  n4({ attribute: false })
 ], SlDropdown.prototype, "containingElement", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlDropdown.prototype, "distance", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlDropdown.prototype, "skidding", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlDropdown.prototype, "hoist", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlDropdown.prototype, "sync", 2);
 __decorateClass2([
   watch("open", { waitUntilFirstUpdate: true })
@@ -18110,49 +18102,49 @@ SlCopyButton.dependencies = {
   "sl-tooltip": SlTooltip
 };
 __decorateClass2([
-  e6('slot[name="copy-icon"]')
+  e5('slot[name="copy-icon"]')
 ], SlCopyButton.prototype, "copyIcon", 2);
 __decorateClass2([
-  e6('slot[name="success-icon"]')
+  e5('slot[name="success-icon"]')
 ], SlCopyButton.prototype, "successIcon", 2);
 __decorateClass2([
-  e6('slot[name="error-icon"]')
+  e5('slot[name="error-icon"]')
 ], SlCopyButton.prototype, "errorIcon", 2);
 __decorateClass2([
-  e6("sl-tooltip")
+  e5("sl-tooltip")
 ], SlCopyButton.prototype, "tooltip", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlCopyButton.prototype, "isCopying", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlCopyButton.prototype, "status", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlCopyButton.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlCopyButton.prototype, "from", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCopyButton.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ attribute: "copy-label" })
+  n4({ attribute: "copy-label" })
 ], SlCopyButton.prototype, "copyLabel", 2);
 __decorateClass2([
-  n5({ attribute: "success-label" })
+  n4({ attribute: "success-label" })
 ], SlCopyButton.prototype, "successLabel", 2);
 __decorateClass2([
-  n5({ attribute: "error-label" })
+  n4({ attribute: "error-label" })
 ], SlCopyButton.prototype, "errorLabel", 2);
 __decorateClass2([
-  n5({ attribute: "feedback-duration", type: Number })
+  n4({ attribute: "feedback-duration", type: Number })
 ], SlCopyButton.prototype, "feedbackDuration", 2);
 __decorateClass2([
-  n5({ attribute: "tooltip-placement" })
+  n4({ attribute: "tooltip-placement" })
 ], SlCopyButton.prototype, "tooltipPlacement", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlCopyButton.prototype, "hoist", 2);
 setDefaultAnimation("copy.in", {
   keyframes: [
@@ -18410,25 +18402,25 @@ SlDetails.dependencies = {
   "sl-icon": SlIcon
 };
 __decorateClass2([
-  e6(".details")
+  e5(".details")
 ], SlDetails.prototype, "details", 2);
 __decorateClass2([
-  e6(".details__header")
+  e5(".details__header")
 ], SlDetails.prototype, "header", 2);
 __decorateClass2([
-  e6(".details__body")
+  e5(".details__body")
 ], SlDetails.prototype, "body", 2);
 __decorateClass2([
-  e6(".details__expand-icon-slot")
+  e5(".details__expand-icon-slot")
 ], SlDetails.prototype, "expandIconSlot", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDetails.prototype, "open", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlDetails.prototype, "summary", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDetails.prototype, "disabled", 2);
 __decorateClass2([
   watch("open", { waitUntilFirstUpdate: true })
@@ -18761,22 +18753,22 @@ SlDialog.dependencies = {
   "sl-icon-button": SlIconButton
 };
 __decorateClass2([
-  e6(".dialog")
+  e5(".dialog")
 ], SlDialog.prototype, "dialog", 2);
 __decorateClass2([
-  e6(".dialog__panel")
+  e5(".dialog__panel")
 ], SlDialog.prototype, "panel", 2);
 __decorateClass2([
-  e6(".dialog__overlay")
+  e5(".dialog__overlay")
 ], SlDialog.prototype, "overlay", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlDialog.prototype, "open", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlDialog.prototype, "label", 2);
 __decorateClass2([
-  n5({ attribute: "no-header", type: Boolean, reflect: true })
+  n4({ attribute: "no-header", type: Boolean, reflect: true })
 ], SlDialog.prototype, "noHeader", 2);
 __decorateClass2([
   watch("open", { waitUntilFirstUpdate: true })
@@ -19328,79 +19320,79 @@ SlButton.dependencies = {
   "sl-spinner": SlSpinner
 };
 __decorateClass2([
-  e6(".button")
+  e5(".button")
 ], SlButton.prototype, "button", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlButton.prototype, "hasFocus", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlButton.prototype, "invalid", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "title", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlButton.prototype, "variant", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlButton.prototype, "size", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlButton.prototype, "caret", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlButton.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlButton.prototype, "loading", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlButton.prototype, "outline", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlButton.prototype, "pill", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlButton.prototype, "circle", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "type", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "name", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "value", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "href", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "target", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "rel", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "download", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlButton.prototype, "form", 2);
 __decorateClass2([
-  n5({ attribute: "formaction" })
+  n4({ attribute: "formaction" })
 ], SlButton.prototype, "formAction", 2);
 __decorateClass2([
-  n5({ attribute: "formenctype" })
+  n4({ attribute: "formenctype" })
 ], SlButton.prototype, "formEnctype", 2);
 __decorateClass2([
-  n5({ attribute: "formmethod" })
+  n4({ attribute: "formmethod" })
 ], SlButton.prototype, "formMethod", 2);
 __decorateClass2([
-  n5({ attribute: "formnovalidate", type: Boolean })
+  n4({ attribute: "formnovalidate", type: Boolean })
 ], SlButton.prototype, "formNoValidate", 2);
 __decorateClass2([
-  n5({ attribute: "formtarget" })
+  n4({ attribute: "formtarget" })
 ], SlButton.prototype, "formTarget", 2);
 __decorateClass2([
   watch("disabled", { waitUntilFirstUpdate: true })
@@ -21232,91 +21224,91 @@ SlColorPicker.dependencies = {
   "sl-visually-hidden": SlVisuallyHidden
 };
 __decorateClass2([
-  e6('[part~="base"]')
+  e5('[part~="base"]')
 ], SlColorPicker.prototype, "base", 2);
 __decorateClass2([
-  e6('[part~="input"]')
+  e5('[part~="input"]')
 ], SlColorPicker.prototype, "input", 2);
 __decorateClass2([
-  e6(".color-dropdown")
+  e5(".color-dropdown")
 ], SlColorPicker.prototype, "dropdown", 2);
 __decorateClass2([
-  e6('[part~="preview"]')
+  e5('[part~="preview"]')
 ], SlColorPicker.prototype, "previewButton", 2);
 __decorateClass2([
-  e6('[part~="trigger"]')
+  e5('[part~="trigger"]')
 ], SlColorPicker.prototype, "trigger", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "hasFocus", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "isDraggingGridHandle", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "isEmpty", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "inputValue", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "hue", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "saturation", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "brightness", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlColorPicker.prototype, "alpha", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlColorPicker.prototype, "value", 2);
 __decorateClass2([
   defaultValue()
 ], SlColorPicker.prototype, "defaultValue", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlColorPicker.prototype, "label", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlColorPicker.prototype, "format", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlColorPicker.prototype, "inline", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlColorPicker.prototype, "size", 2);
 __decorateClass2([
-  n5({ attribute: "no-format-toggle", type: Boolean })
+  n4({ attribute: "no-format-toggle", type: Boolean })
 ], SlColorPicker.prototype, "noFormatToggle", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlColorPicker.prototype, "name", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlColorPicker.prototype, "disabled", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlColorPicker.prototype, "hoist", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlColorPicker.prototype, "opacity", 2);
 __decorateClass2([
-  n5({ type: Boolean })
+  n4({ type: Boolean })
 ], SlColorPicker.prototype, "uppercase", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlColorPicker.prototype, "swatches", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlColorPicker.prototype, "form", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlColorPicker.prototype, "required", 2);
 __decorateClass2([
-  t5({ passive: false })
+  t4({ passive: false })
 ], SlColorPicker.prototype, "handleTouchMove", 1);
 __decorateClass2([
   watch("format", { waitUntilFirstUpdate: true })
@@ -22096,49 +22088,49 @@ var SlCarousel = class extends ShoelaceElement {
 SlCarousel.styles = [component_styles_default, carousel_styles_default];
 SlCarousel.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCarousel.prototype, "loop", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCarousel.prototype, "navigation", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCarousel.prototype, "pagination", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlCarousel.prototype, "autoplay", 2);
 __decorateClass2([
-  n5({ type: Number, attribute: "autoplay-interval" })
+  n4({ type: Number, attribute: "autoplay-interval" })
 ], SlCarousel.prototype, "autoplayInterval", 2);
 __decorateClass2([
-  n5({ type: Number, attribute: "slides-per-page" })
+  n4({ type: Number, attribute: "slides-per-page" })
 ], SlCarousel.prototype, "slidesPerPage", 2);
 __decorateClass2([
-  n5({ type: Number, attribute: "slides-per-move" })
+  n4({ type: Number, attribute: "slides-per-move" })
 ], SlCarousel.prototype, "slidesPerMove", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlCarousel.prototype, "orientation", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true, attribute: "mouse-dragging" })
+  n4({ type: Boolean, reflect: true, attribute: "mouse-dragging" })
 ], SlCarousel.prototype, "mouseDragging", 2);
 __decorateClass2([
-  e6(".carousel__slides")
+  e5(".carousel__slides")
 ], SlCarousel.prototype, "scrollContainer", 2);
 __decorateClass2([
-  e6(".carousel__pagination")
+  e5(".carousel__pagination")
 ], SlCarousel.prototype, "paginationContainer", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlCarousel.prototype, "activeSlide", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlCarousel.prototype, "scrolling", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlCarousel.prototype, "dragging", 2);
 __decorateClass2([
-  t5({ passive: true })
+  t4({ passive: true })
 ], SlCarousel.prototype, "handleScroll", 1);
 __decorateClass2([
   watch("loop", { waitUntilFirstUpdate: true }),
@@ -22323,13 +22315,13 @@ var SlBreadcrumb = class extends ShoelaceElement {
 SlBreadcrumb.styles = [component_styles_default, breadcrumb_styles_default];
 SlBreadcrumb.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6("slot")
+  e5("slot")
 ], SlBreadcrumb.prototype, "defaultSlot", 2);
 __decorateClass2([
-  e6('slot[name="separator"]')
+  e5('slot[name="separator"]')
 ], SlBreadcrumb.prototype, "separatorSlot", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlBreadcrumb.prototype, "label", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.QCTBZZ7G.js
@@ -22458,13 +22450,13 @@ var SlBadge = class extends ShoelaceElement {
 };
 SlBadge.styles = [component_styles_default, badge_styles_default];
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlBadge.prototype, "variant", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlBadge.prototype, "pill", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlBadge.prototype, "pulse", 2);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.DAU34HDS.js
@@ -22631,19 +22623,19 @@ var SlBreadcrumbItem = class extends ShoelaceElement {
 };
 SlBreadcrumbItem.styles = [component_styles_default, breadcrumb_item_styles_default];
 __decorateClass2([
-  e6("slot:not([name])")
+  e5("slot:not([name])")
 ], SlBreadcrumbItem.prototype, "defaultSlot", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlBreadcrumbItem.prototype, "renderType", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlBreadcrumbItem.prototype, "href", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlBreadcrumbItem.prototype, "target", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlBreadcrumbItem.prototype, "rel", 2);
 __decorateClass2([
   watch("href", { waitUntilFirstUpdate: true })
@@ -23751,43 +23743,43 @@ var SlAnimation = class extends ShoelaceElement {
 };
 SlAnimation.styles = [component_styles_default, animation_styles_default];
 __decorateClass2([
-  r8("slot")
+  r7("slot")
 ], SlAnimation.prototype, "defaultSlot", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAnimation.prototype, "name", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlAnimation.prototype, "play", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlAnimation.prototype, "delay", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAnimation.prototype, "direction", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlAnimation.prototype, "duration", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAnimation.prototype, "easing", 2);
 __decorateClass2([
-  n5({ attribute: "end-delay", type: Number })
+  n4({ attribute: "end-delay", type: Number })
 ], SlAnimation.prototype, "endDelay", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAnimation.prototype, "fill", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlAnimation.prototype, "iterations", 2);
 __decorateClass2([
-  n5({ attribute: "iteration-start", type: Number })
+  n4({ attribute: "iteration-start", type: Number })
 ], SlAnimation.prototype, "iterationStart", 2);
 __decorateClass2([
-  n5({ attribute: false })
+  n4({ attribute: false })
 ], SlAnimation.prototype, "keyframes", 2);
 __decorateClass2([
-  n5({ attribute: "playback-rate", type: Number })
+  n4({ attribute: "playback-rate", type: Number })
 ], SlAnimation.prototype, "playbackRate", 2);
 __decorateClass2([
   watch([
@@ -23942,22 +23934,22 @@ SlAvatar.dependencies = {
   "sl-icon": SlIcon
 };
 __decorateClass2([
-  r7()
+  r6()
 ], SlAvatar.prototype, "hasError", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAvatar.prototype, "image", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAvatar.prototype, "label", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAvatar.prototype, "initials", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAvatar.prototype, "loading", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlAvatar.prototype, "shape", 2);
 __decorateClass2([
   watch("image")
@@ -24296,28 +24288,28 @@ var SlAlert = class extends ShoelaceElement {
 SlAlert.styles = [component_styles_default, alert_styles_default];
 SlAlert.dependencies = { "sl-icon-button": SlIconButton };
 __decorateClass2([
-  e6('[part~="base"]')
+  e5('[part~="base"]')
 ], SlAlert.prototype, "base", 2);
 __decorateClass2([
-  e6(".alert__countdown-elapsed")
+  e5(".alert__countdown-elapsed")
 ], SlAlert.prototype, "countdownElement", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlAlert.prototype, "open", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlAlert.prototype, "closable", 2);
 __decorateClass2([
-  n5({ reflect: true })
+  n4({ reflect: true })
 ], SlAlert.prototype, "variant", 2);
 __decorateClass2([
-  n5({ type: Number })
+  n4({ type: Number })
 ], SlAlert.prototype, "duration", 2);
 __decorateClass2([
-  n5({ type: String, reflect: true })
+  n4({ type: String, reflect: true })
 ], SlAlert.prototype, "countdown", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlAlert.prototype, "remainingTime", 2);
 __decorateClass2([
   watch("open", { waitUntilFirstUpdate: true })
@@ -24466,22 +24458,22 @@ var SlAnimatedImage = class extends ShoelaceElement {
 SlAnimatedImage.styles = [component_styles_default, animated_image_styles_default];
 SlAnimatedImage.dependencies = { "sl-icon": SlIcon };
 __decorateClass2([
-  e6(".animated-image__animated")
+  e5(".animated-image__animated")
 ], SlAnimatedImage.prototype, "animatedImage", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlAnimatedImage.prototype, "frozenFrame", 2);
 __decorateClass2([
-  r7()
+  r6()
 ], SlAnimatedImage.prototype, "isLoaded", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAnimatedImage.prototype, "src", 2);
 __decorateClass2([
-  n5()
+  n4()
 ], SlAnimatedImage.prototype, "alt", 2);
 __decorateClass2([
-  n5({ type: Boolean, reflect: true })
+  n4({ type: Boolean, reflect: true })
 ], SlAnimatedImage.prototype, "play", 2);
 __decorateClass2([
   watch("play", { waitUntilFirstUpdate: true })
@@ -24502,8 +24494,8 @@ var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" w
 // node_modules/bootstrap-icons/icons/pencil-square.svg
 var pencil_square_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">%0A  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>%0A  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>%0A</svg>';
 
-// src/widgets/crossword-cluebox.ts
-var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
+// src/widgets/ww-word-puzzles-cw-cluebox.ts
+var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
   // All methods have the same names as in crosswords-js
   localize = null;
   _preview = false;
@@ -24521,9 +24513,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   set clueboxInput(_3) {
     this.#clueboxInput = _3;
   }
-  _parent;
-  _wordsAndClues = [{ word: "", across: true }];
-  _crosswordContext;
+  _wordsClues = [{ word: "", across: true }];
+  _cwContext;
   #drawer;
   get drawer() {
     return this.#drawer;
@@ -24549,7 +24540,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       "sl-icon": SlIcon,
       "sl-alert": alert_default,
       "sl-drawer": drawer_default,
-      "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
+      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox
     };
   }
   /**
@@ -24566,7 +24557,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
    */
   triggerCwGeneration() {
     this.getNewWords();
-    if (this._wordsAndClues.length != 0) {
+    if (this._wordsClues.length != 0) {
       const genClicked = new CustomEvent("generateCw", { bubbles: true, composed: true });
       this.dispatchEvent(genClicked);
     }
@@ -24591,7 +24582,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       }
     }
     this.setWordsClues(wordsAndClues);
-    return this._wordsAndClues;
+    return this._wordsClues;
   }
   showDrawer() {
     this.drawer.show();
@@ -24614,7 +24605,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     if (event.ctrlKey && event.key === "Enter") {
       event.stopPropagation();
       this.getNewWords();
-      if (this._wordsAndClues.length != 0) {
+      if (this._wordsClues.length != 0) {
         this.triggerCwGeneration();
       }
     } else if (event.ctrlKey)
@@ -24662,7 +24653,7 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
   /**
    * Lit HTML template for adding a new row to cluebox input element.
-   * Used in {@link WebwriterWordPuzzlesCrosswordCluebox.addRow() | addRow()}
+   * Used in {@link WwWordPuzzlesCwCluebox.addRow() | addRow()}
    */
   new_row_template_inner = x`
                 <td contenteditable></td>
@@ -24689,13 +24680,13 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
                         </sl-button>
                 </div>
             </td>`;
-    if (this._wordsAndClues != null) {
+    if (this._wordsClues != null) {
       let i9 = 0;
-      for (i9 < 0; i9 < this._wordsAndClues.length; i9++) {
-        if (this._wordsAndClues[i9].word != "") {
+      for (i9 < 0; i9 < this._wordsClues.length; i9++) {
+        if (this._wordsClues[i9].word != "") {
           clueboxInputRender.push(
-            this._wordsAndClues[i9].clueText != "" ? x`<tr><td contenteditable>${this._wordsAndClues[i9].word}</td>
-                        <td></td><td contenteditable>${this._wordsAndClues[i9].clueText}</td>${clueboxButtonCell}</tr>` : x`<td contenteditable>${this._wordsAndClues[i9].word}</td>
+            this._wordsClues[i9].clueText != "" ? x`<tr><td contenteditable>${this._wordsClues[i9].word}</td>
+                        <td></td><td contenteditable>${this._wordsClues[i9].clueText}</td>${clueboxButtonCell}</tr>` : x`<td contenteditable>${this._wordsClues[i9].word}</td>
                         <td></td><td contenteditable></td>
                         ${clueboxButtonCell}</tr>`
           );
@@ -24746,8 +24737,8 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
     let i9 = 0;
     let j3 = 0;
     const clueboxTemplateCells = [];
-    if (this._wordsAndClues != null) {
-      for (let wordClue of this._wordsAndClues) {
+    if (this._wordsClues != null) {
+      for (let wordClue of this._wordsClues) {
         if (wordClue.across) {
           i9++;
         } else
@@ -24755,12 +24746,12 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
       }
       let sharedRows = Math.min(i9, j3);
       for (let k3 = 0; k3 < sharedRows; k3++) {
-        clueboxTemplateCells.push(x`<tr><td clue="${this._wordsAndClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k3])}</td><td clue="${this._wordsAndClues[k3 + i9].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k3 + i9])}</td></tr>`);
+        clueboxTemplateCells.push(x`<tr><td clue="${this._wordsClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsClues[k3])}</td><td clue="${this._wordsClues[k3 + i9].clueNumber}" down>${clueboxCellContents(this._wordsClues[k3 + i9])}</td></tr>`);
       }
       let diff = Math.abs(i9 - j3);
       let start = i9 > j3 ? sharedRows : sharedRows + i9;
       for (let k3 = start; k3 < diff + start; k3++) {
-        let cell = this._wordsAndClues[k3].across ? x`<tr><td clue="${this._wordsAndClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsAndClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td clue="${this._wordsAndClues[k3].clueNumber}" down>${clueboxCellContents(this._wordsAndClues[k3])}</td></tr>`;
+        let cell = this._wordsClues[k3].across ? x`<tr><td clue="${this._wordsClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td clue="${this._wordsClues[k3].clueNumber}" down>${clueboxCellContents(this._wordsClues[k3])}</td></tr>`;
         clueboxTemplateCells.push(cell);
       }
     } else {
@@ -24813,84 +24804,81 @@ var WebwriterWordPuzzlesCrosswordCluebox = class extends WebwriterWordPuzzles {
   }
 };
 __decorateClass([
-  n5({ type: Boolean, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_preview", 2);
+  n4({ type: Boolean, state: true, attribute: false })
+], WwWordPuzzlesCwCluebox.prototype, "_preview", 2);
 __decorateClass([
-  e6(".cluebox")
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "cluebox", 1);
+  e5(".cluebox")
+], WwWordPuzzlesCwCluebox.prototype, "cluebox", 1);
 __decorateClass([
-  e6(".clueboxInput")
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "clueboxInput", 1);
+  e5(".clueboxInput")
+], WwWordPuzzlesCwCluebox.prototype, "clueboxInput", 1);
 __decorateClass([
-  n5({ type: Object, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_parent", 2);
+  n4({ type: Array, attribute: false })
+], WwWordPuzzlesCwCluebox.prototype, "_wordsClues", 2);
 __decorateClass([
-  n5({ type: Array, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_wordsAndClues", 2);
+  n4({ type: Object, state: true, attribute: false })
+], WwWordPuzzlesCwCluebox.prototype, "_cwContext", 2);
 __decorateClass([
-  n5({ type: Object, state: true, attribute: false })
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "_crosswordContext", 2);
-__decorateClass([
-  e6("sl-drawer")
-], WebwriterWordPuzzlesCrosswordCluebox.prototype, "drawer", 1);
-WebwriterWordPuzzlesCrosswordCluebox = __decorateClass([
-  t4("webwriter-word-puzzles-crossword-cluebox")
-], WebwriterWordPuzzlesCrosswordCluebox);
+  e5("sl-drawer")
+], WwWordPuzzlesCwCluebox.prototype, "drawer", 1);
+WwWordPuzzlesCwCluebox = __decorateClass([
+  t3("ww-word-puzzles-cw-cluebox")
+], WwWordPuzzlesCwCluebox);
 
-// src/widgets/crossword.ts
+// src/widgets/webwriter-word-puzzles-crossword.ts
 function setContext(context) {
   let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
   this.dispatchEvent(setContext2);
 }
-var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
+var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   /**
    * @constructor
    * Constructor for the crossword puzzle
    * 
-   * Sets the {@link WebwriterWordPuzzlesCrossword.width | width} and {@link WebwriterWordPuzzlesCrossword.height | height} attributes
+   * Sets the {@link WwWordPuzzlesCrossword.width | width} and {@link WwWordPuzzlesCrossword.height | height} attributes
    * Dispatches an event to generate the crossword grid
    */
   constructor(dimension = 8) {
     super();
-    this.gridWidget = new WebwriterWordPuzzlesCrosswordGrid2();
-    this.gridWidget.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
-    this.gridWidget.newCrosswordGridDOM(document);
-    this.clueWidget = new WebwriterWordPuzzlesCrosswordCluebox();
-    this.setWordsCluesChildren(this._wordsAndClues);
+    this.gridW = new WwWordPuzzlesCwGrid();
+    this.gridW.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
+    this.gridW.newCrosswordGridDOM(document);
+    this.clueW = new WwWordPuzzlesCwCluebox();
+    this.setWordsCluesChildren(this._wordsClues);
     this.addEventListener("generateCw", () => {
       DEV: console.log("generateCw triggered");
-      this.clueWidget._wordsAndClues = this.gridWidget.generateCrossword(this.clueWidget._wordsAndClues);
-      this.clueWidget.requestUpdate();
+      this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues);
+      this.clueW.requestUpdate();
     });
     this.addEventListener("set-context", (e13) => {
       if (e13.detail.acrossContext)
         DEV: console.log("set-context: across, clue " + e13.detail.clue);
       else
         DEV: console.log("set-context: down, clue " + e13.detail.clue);
-      this._crosswordContext = e13.detail;
-      this.gridWidget._crosswordContext = this._crosswordContext;
-      this.clueWidget._crosswordContext = this._crosswordContext;
-      this.clueWidget.highlightContext(this._crosswordContext);
+      this._cwContext = e13.detail;
+      this.gridW._cwContext = this._cwContext;
+      this.clueW._cwContext = this._cwContext;
+      this.clueW.highlightContext(this._cwContext);
     });
     this.addEventListener("set-words-clues", (e13) => this.setWordsCluesChildren(e13.detail));
   }
   firstUpdated(_changedProperties) {
     this.onPreviewToggle(this.hasAttribute("contenteditable"));
   }
-  #_wordsAndClues;
-  get _wordsAndClues() {
-    return this.#_wordsAndClues;
+  #_wordsClues;
+  get _wordsClues() {
+    return this.#_wordsClues;
   }
-  set _wordsAndClues(_3) {
-    this.#_wordsAndClues = _3;
+  set _wordsClues(_3) {
+    this.#_wordsClues = _3;
   }
-  gridWidget;
-  clueWidget;
-  _crosswordContext;
+  gridW;
+  clueW;
+  _cwContext;
   setWordsCluesChildren(wordsClues) {
-    this._wordsAndClues = wordsClues;
-    this.gridWidget._wordsAndClues = wordsClues;
-    this.clueWidget._wordsAndClues = wordsClues;
+    this._wordsClues = wordsClues;
+    this.gridW._wordsClues = wordsClues;
+    this.clueW._wordsClues = wordsClues;
   }
   /**
    * Styles
@@ -24906,8 +24894,8 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
       "sl-icon": icon_default,
       "sl-alert": alert_default,
       "sl-drawer": drawer_default,
-      "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid2,
-      "webwriter-word-puzzles-crossword-cluebox": WebwriterWordPuzzlesCrosswordCluebox
+      "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
+      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox
     };
   }
   /**
@@ -24917,38 +24905,38 @@ var WebwriterWordPuzzlesCrossword = class extends LitElementWw {
    * Based off of Agarwal and Joshi 2020
    */
   generateCrossword() {
-    this.gridWidget.generateCrossword(this._wordsAndClues);
+    this.gridW.generateCrossword(this._wordsClues);
   }
   onPreviewToggle(newValue) {
-    this.clueWidget.onPreviewToggle(newValue);
+    this.clueW.onPreviewToggle(newValue);
     return newValue;
   }
   render() {
-    this.setWordsCluesChildren(this._wordsAndClues);
+    this.setWordsCluesChildren(this._wordsClues);
     return x`<div class="wrapper">
-                ${this.gridWidget}
-                ${this.clueWidget}
+                ${this.gridW}
+                ${this.clueW}
             </div>
             `;
   }
 };
 __decorateClass([
-  n5({ type: Array, attribute: true, reflect: true })
-], WebwriterWordPuzzlesCrossword.prototype, "_wordsAndClues", 1);
+  n4({ type: Array, attribute: true, reflect: true })
+], WwWordPuzzlesCrossword.prototype, "_wordsClues", 1);
 __decorateClass([
-  e6("webwriter-word-puzzles-crossword-grid")
-], WebwriterWordPuzzlesCrossword.prototype, "gridWidget", 2);
+  e5("webwriter-word-puzzles-crossword-grid")
+], WwWordPuzzlesCrossword.prototype, "gridW", 2);
 __decorateClass([
-  e6("webwriter-word-puzzles-crossword-cluebox")
-], WebwriterWordPuzzlesCrossword.prototype, "clueWidget", 2);
+  e5("webwriter-word-puzzles-crossword-cluebox")
+], WwWordPuzzlesCrossword.prototype, "clueW", 2);
 __decorateClass([
-  n5({ type: Object, state: true, attribute: false })
-], WebwriterWordPuzzlesCrossword.prototype, "_crosswordContext", 2);
-WebwriterWordPuzzlesCrossword = __decorateClass([
-  t4("webwriter-word-puzzles-crossword")
-], WebwriterWordPuzzlesCrossword);
+  n4({ type: Object, state: true, attribute: false })
+], WwWordPuzzlesCrossword.prototype, "_cwContext", 2);
+WwWordPuzzlesCrossword = __decorateClass([
+  t3("webwriter-word-puzzles-crossword")
+], WwWordPuzzlesCrossword);
 export {
-  WebwriterWordPuzzlesCrossword,
+  WwWordPuzzlesCrossword,
   setContext
 };
 /*! Bundled license information:
@@ -24985,6 +24973,76 @@ lit-html/is-server.js:
   (**
    * @license
    * Copyright 2022 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/custom-element.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/property.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/state.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/event-options.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/base.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/query.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/query-all.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/query-async.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/query-assigned-elements.js:
+  (**
+   * @license
+   * Copyright 2021 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+@lit/reactive-element/decorators/query-assigned-nodes.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
    * SPDX-License-Identifier: BSD-3-Clause
    *)
 
@@ -25096,76 +25154,6 @@ lit-html/is-server.js:
      * SPDX-License-Identifier: BSD-3-Clause
      *)
   *)
-
-@lit/reactive-element/decorators/custom-element.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/property.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/state.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/event-options.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/base.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/query.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/query-all.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/query-async.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/query-assigned-elements.js:
-  (**
-   * @license
-   * Copyright 2021 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/reactive-element/decorators/query-assigned-nodes.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
 
 lit-html/directive.js:
   (**

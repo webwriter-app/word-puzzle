@@ -9,7 +9,7 @@ import { html, css } from 'lit';
 import { LitElementWw, option } from '@webwriter/lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterWordPuzzlesCrossword, CrosswordContext } from './crossword';
+import { WwWordPuzzlesCrossword, CwContext } from './webwriter-word-puzzles-crossword';
 import { generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
@@ -18,7 +18,7 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "webwriter-word-puzzles-crossword-grid": WebwriterWordPuzzlesCrosswordGrid;
+    "webwriter-word-puzzles-crossword-grid": WwWordPuzzlesCwGrid;
     }
 }
 
@@ -117,7 +117,7 @@ const DEFAULT_DIMENSION: number = 9
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @customElement("webwriter-word-puzzles-crossword-grid")
-export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
+export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     /**
@@ -136,7 +136,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
-     * See the constructor {@link WebwriterWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
+     * See the constructor {@link WwWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
     @property({ type: HTMLDivElement, state: true, attribute: false})
     gridEl: HTMLDivElement
@@ -145,27 +145,13 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({ type: Array, state: true, attribute: true, reflect: true})
-    _wordsAndClues: WordClue[]
+    _wordsClues: WordClue[]
 
     /**
-     * Whether the current direction is across or down.
-     * true if across, false if down
-     */
-    @property({ type: Boolean, state: true, attribute: false})
-    acrossContext: boolean
-
-    /**
-     * The clue the current selection corresponds to.
-     */
-    @property({ type: Number, state: true, attribute: false})
-    currentClue: number
-
-    /**
-     * TODO Replace current context vars
      * 
      */
     @property({ type: Object, state: true, attribute: false})
-    _crosswordContext
+    _cwContext
 
     /**
      * Current row
@@ -189,7 +175,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     constructor() {
         super()
         this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
-        this._crosswordContext = {across: null, clue: null}
+        this._cwContext = {across: null, clue: null}
     }
 
     /**
@@ -203,7 +189,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     // TODO Add event listener for adding the focus class based on the clue number and direction
 
     /**
-     * Build / construct the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
+     * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
      * 
      * Dimensions are based on {@link this.grid | grid}.
      * 
@@ -256,18 +242,18 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let init_col = (Number(currentCell.getAttribute("grid-col")))
 
         let timeoutLimit = 0
-        for(let wordClue of this._wordsAndClues) {
+        for(let wordClue of this._wordsClues) {
             timeoutLimit += wordClue.word.length
         }
         timeoutLimit = timeoutLimit * 10
 
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(row, col)
 
-        if(this._crosswordContext.across != null) {
-            acrossContext = this._crosswordContext.across
+        if(this._cwContext.across != null) {
+            acrossContext = this._cwContext.across
         }
-        if(this._crosswordContext.clue != null) {
-            clueContext = this._crosswordContext.clue
+        if(this._cwContext.clue != null) {
+            clueContext = this._cwContext.clue
         }
 
         let initialAcross = acrossContext
@@ -275,7 +261,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1
         if (currentWordIndex == -1) {
-            currentWordIndex = this._wordsAndClues.length - 1
+            currentWordIndex = this._wordsClues.length - 1
         }
         let iNextW = -1
 
@@ -291,7 +277,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             pass += (row == init_row) && (col == init_col) ? 1 : 0
             
             // Edge case for a one-word crossword
-            if(this._wordsAndClues.length > 1) {
+            if(this._wordsClues.length > 1) {
                 iNextW = this.getNextWordIndex(acrossContext, clueContext)
             }
 
@@ -305,7 +291,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
                 if(iNextW == -1) {
                     iNextW = 0
                 }
-                nextWord = this._wordsAndClues[iNextW]
+                nextWord = this._wordsClues[iNextW]
                 row = nextWord.x
                 col = nextWord.y
                 nextCell = this.getCellDOM(row, col)
@@ -341,7 +327,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             this.cur_row = Number(nextCell.getAttribute("grid-col"))
             // Update context only if another word was chosen
             if(nextWord) {
-                this.setContext(this._crosswordContext)
+                this.setContext(this._cwContext)
             }
         }
         else {
@@ -357,7 +343,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
          * @param {number} clue the updated clue number
          * @param {boolean} across whether the updated direction is across
          */
-    setContext(context: CrosswordContext): void {
+    setContext(context: CwContext): void {
         let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: context})
         this.dispatchEvent(setContext)
     }
@@ -369,12 +355,12 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
         let across: boolean
         let clue
 
-        if(this._crosswordContext == null) {
+        if(this._cwContext == null) {
             across = (cell.getAttribute("direction") == "across" || cell.getAttribute("direction") == "both")
         }
         else {
             if(cell.getAttribute("direction") == "both") {
-                across = this._crosswordContext.across
+                across = this._cwContext.across
             }
             else  {
                 across = cell.getAttribute("direction") == "across"
@@ -424,19 +410,19 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     */
    // May not need the arguments lol
     getNextWordIndex(across: boolean, clue: number): number {
-        if(this._wordsAndClues.length == 1) {
+        if(this._wordsClues.length == 1) {
             return 0
         }
-            let i = this._wordsAndClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.across == across)
+            let i = this._wordsClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.across == across)
             i += 1
-            if(i >= this._wordsAndClues.length) {
-                i = this._wordsAndClues.findIndex(wordClue => wordClue.across == !across)
+            if(i >= this._wordsClues.length) {
+                i = this._wordsClues.findIndex(wordClue => wordClue.across == !across)
             }
         return i
     }
 
     /**
-     * Constructor for the cells of the {@link WebwriterWordPuzzlesCrossword.gridEl | grid} DOM element.
+     * Constructor for the cells of the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element.
      * 
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
      * @param {number} x the row of the cell, 0-indexed
@@ -527,17 +513,17 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             // Go to next clue
             case "Tab":
                 e.stopPropagation()
-                let nextWord  = this._wordsAndClues[this.getNextWordIndex(this._crosswordContext.across, this._crosswordContext.clue)]
+                let nextWord  = this._wordsClues[this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)]
                 row = nextWord.x
                 col = nextWord.y
-                this.setContext(this._crosswordContext)
+                this.setContext(this._cwContext)
                 nextCell = this.getCellDOM(row, col)
                 nextCell.focus()
                 break;
             // Change direction context if the current cell goes in both directions
             case " ":
                 if(cell.getAttribute("direction") == "both") {
-                    this.setContext({across: !this._crosswordContext.across, clue: this.getClueNumber(!this._crosswordContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col")))})
+                    this.setContext({across: !this._cwContext.across, clue: this.getClueNumber(!this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col")))})
                 }
                 break;
             // NAVIGATION ========================================================
@@ -604,14 +590,14 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
 
         // This is ideally not supposed to happen if a cell is already currently selected
         //if (this._crosswordContext.acrossContext == null) {
-            this._crosswordContext.across = acrossContext
+            this._cwContext.across = acrossContext
         //}
 
-        this._crosswordContext.clue = clueContext
+        this._cwContext.clue = clueContext
 
         // Iterate to beginning of word
         // NOTE: This may mean the context is changed even 
-        if(this._crosswordContext.acrossContext) {
+        if(this._cwContext.acrossContext) {
             while(y > 0 && this.grid[x][y-1].white) {
                 y -= 1
             }
@@ -622,7 +608,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
             }
         }
         //DEV: console.log("Word beginning (0-indexed): (" + x + ", " + y + ")")
-        this.setContext(this._crosswordContext)
+        this.setContext(this._cwContext)
     }
 
     /**
@@ -657,7 +643,7 @@ export class WebwriterWordPuzzlesCrosswordGrid extends WebwriterWordPuzzles {
     // It should compare the text content of the cell with the answer in this.grid 
     
     render() {
-        this.grid = generateCrosswordFromList(this._wordsAndClues)
+        this.grid = generateCrosswordFromList(this._wordsClues)
         this.newCrosswordGridDOM(document)
         return (html`<div>
                 ${this.gridEl}
