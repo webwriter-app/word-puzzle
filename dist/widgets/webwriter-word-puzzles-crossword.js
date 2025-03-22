@@ -2314,444 +2314,6 @@ var grid_styles = i`
         }
 `;
 
-// src/widgets/ww-word-puzzles-cw-grid.ts
-function stopCtrlPropagation(event) {
-  if (event.ctrlKey) {
-    event.stopPropagation();
-  }
-}
-function defaultCell() {
-  return {
-    white: false,
-    answer: null,
-    // NOTE Should this be here, or should 
-    number: null,
-    direction: null
-  };
-}
-var DEFAULT_DIMENSION = 9;
-var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
-  _preview = false;
-  grid;
-  gridEl;
-  _wordsClues;
-  _cwContext;
-  cur_row;
-  cur_col;
-  // @type {boolean}
-  /**
-   * @constructor
-   * Some constructor I apparently thought was a good idea.
-   * 
-   * Pretty much just makes a grid with 9x9 dimensions
-   */
-  constructor() {
-    super();
-    this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
-    this._cwContext = { across: null, clue: null };
-  }
-  /**
-   * Styles for the crossword grid.
-   * clue-label based off of crossword-js
-   */
-  static get styles() {
-    return grid_styles;
-  }
-  // TODO Add event listener for adding the focus class based on the clue number and direction
-  /**
-   * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
-   * 
-   * Dimensions are based on {@link this.grid | grid}.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @returns {HTMLDivElement} the DOM element for the grid.
-   * Source: crosswords-js
-   */
-  newCrosswordGridDOM(document2) {
-    let gridEl = document2.createElement("div");
-    this.gridEl = gridEl;
-    this.gridEl.classList.add("grid");
-    for (let x3 = 0; x3 < this.grid.length; x3 += 1) {
-      for (let y4 = 0; y4 < this.grid.length; y4 += 1) {
-        this.gridEl.appendChild(this.newCell(document2, x3, y4));
-      }
-    }
-    this.gridEl.addEventListener("keydown", stopCtrlPropagation);
-    this.requestUpdate();
-    return this.gridEl;
-  }
-  /** 
-   * For handling a keypress in the crossword grid. Goes to next relevant cell
-   * 
-  */
-  nextEmptyCell(e13) {
-    let currentCell;
-    if (e13 == null) {
-      currentCell = this.getCellDOM(this.cur_row, this.cur_col);
-    } else {
-      currentCell = e13.target;
-    }
-    let nextWord;
-    let nextCell;
-    let row = Number(currentCell.getAttribute("grid-row"));
-    let col = Number(currentCell.getAttribute("grid-col"));
-    let init_row = Number(currentCell.getAttribute("grid-row"));
-    let init_col = Number(currentCell.getAttribute("grid-col"));
-    let timeoutLimit = 0;
-    for (let wordClue of this._wordsClues) {
-      timeoutLimit += wordClue.word.length;
-    }
-    timeoutLimit = timeoutLimit * 10;
-    let { across: acrossContext, clue: clueContext } = this.getContextFromCell(row, col);
-    if (this._cwContext.across != null) {
-      acrossContext = this._cwContext.across;
-    }
-    if (this._cwContext.clue != null) {
-      clueContext = this._cwContext.clue;
-    }
-    let initialAcross = acrossContext;
-    let initialClue = clueContext;
-    let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1;
-    if (currentWordIndex == -1) {
-      currentWordIndex = this._wordsClues.length - 1;
-    }
-    let iNextW = -1;
-    let timeout = 0;
-    let pass = -1;
-    let nrow = 0;
-    let ncol = 0;
-    do {
-      nextWord = null;
-      nrow = row + Number(!acrossContext);
-      ncol = col + Number(acrossContext);
-      pass += row == init_row && col == init_col ? 1 : 0;
-      if (this._wordsClues.length > 1) {
-        iNextW = this.getNextWordIndex(acrossContext, clueContext);
-      }
-      if (ncol >= this.grid.length || nrow >= this.grid.length || this.grid[nrow][ncol] == null || !this.grid[nrow][ncol].white) {
-        if (iNextW == -1) {
-          iNextW = 0;
-        }
-        nextWord = this._wordsClues[iNextW];
-        row = nextWord.x;
-        col = nextWord.y;
-        nextCell = this.getCellDOM(row, col);
-      } else {
-        row = nrow;
-        col = ncol;
-        nextCell = this.getCellDOM(row, col);
-      }
-      timeout += 1;
-      if (timeout > timeoutLimit) {
-        throw new Error("You've created an infinite loop, congratulations");
-      }
-      if (nextWord) {
-        clueContext = nextWord.clueNumber;
-        acrossContext = nextWord.across;
-      }
-      timeout += 1;
-      if (timeout >= timeoutLimit) {
-        throw new Error("You've created an infinite loop, congratulations");
-      }
-    } while (pass < 2 && nextCell.querySelector(".cell-letter").textContent !== "");
-    if (nextCell.querySelector(".cell-letter").textContent == "") {
-      nextCell.focus();
-      this.cur_col = Number(nextCell.getAttribute("grid-row"));
-      this.cur_row = Number(nextCell.getAttribute("grid-col"));
-      if (nextWord) {
-        this.setContext(this._cwContext);
-      }
-    } else {
-      currentCell.blur();
-      this.setContext({ across: null, clue: null });
-    }
-  }
-  /**
-       * Dispatches an event to change the current clue and direction context.
-       * 
-       * @param {number} clue the updated clue number
-       * @param {boolean} across whether the updated direction is across
-       */
-  setContext(context) {
-    let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
-    this.dispatchEvent(setContext2);
-  }
-  getContextFromCell(row, col) {
-    let cell = this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
-    let across;
-    let clue;
-    if (this._cwContext == null) {
-      across = cell.getAttribute("direction") == "across" || cell.getAttribute("direction") == "both";
-    } else {
-      if (cell.getAttribute("direction") == "both") {
-        across = this._cwContext.across;
-      } else {
-        across = cell.getAttribute("direction") == "across";
-      }
-    }
-    clue = this.getClueNumber(across, this.cur_row, this.cur_col);
-    return { across, clue };
-  }
-  /**
-   * Gets the current clue number for a cell based off of the grid object. (Not DOM)
-   * 
-   * @param {boolean} across 
-   * @param {number} x 
-   * @param {number} y 
-   * @returns 
-   */
-  getClueNumber(across, x3, y4) {
-    let shift_row = across ? 0 : 1;
-    let shift_col = 1 - shift_row;
-    while (x3 - shift_row >= 0 && y4 - shift_col >= 0 && this.grid[x3 - shift_row][y4 - shift_col].white) {
-      x3 -= shift_row;
-      y4 -= shift_col;
-    }
-    return this.grid[x3][y4].number;
-  }
-  /** Function for getting a cell based on its location in the DOM grid.
-   * 
-   * @param {number} row the row number, 1-indexed
-   * @param {number} col the column number, 1-indexed
-   * @returns {HTMLDivElement} the DOM element of the cell
-  */
-  getCellDOM(row, col) {
-    return this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
-  }
-  /** Function for getting the next word in context of the direction and current clue number.
-   * Returns the empty cell element at the next word
-   * 
-   * @returns {HTMLDivElement} the DOM element of the cell
-  */
-  // May not need the arguments lol
-  getNextWordIndex(across, clue) {
-    if (this._wordsClues.length == 1) {
-      return 0;
-    }
-    let i9 = this._wordsClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.across == across);
-    i9 += 1;
-    if (i9 >= this._wordsClues.length) {
-      i9 = this._wordsClues.findIndex((wordClue) => wordClue.across == !across);
-    }
-    return i9;
-  }
-  /**
-   * Constructor for the cells of the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @param {number} x the row of the cell, 0-indexed
-   * @param {number} y the column of the cell, 0-indexed
-   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-   * @returns {HTMLDivElement} the DOM element for the _cell_
-   * Source: crosswords-js
-   */
-  // TODO idk why the focusing stuff isn't working now, maybe I set the values here wrong
-  newCell(document2, x3, y4) {
-    const cellDOM = document2.createElement("div");
-    cellDOM.className = "cell";
-    cellDOM.style.display = "grid";
-    cellDOM.style.gridRowStart = (x3 + 1).toString();
-    cellDOM.style.gridColumnStart = (y4 + 1).toString();
-    cellDOM.setAttribute("grid-row", x3.toString());
-    cellDOM.setAttribute("grid-col", y4.toString());
-    try {
-      if (!this.grid[x3][y4].white) {
-        cellDOM.setAttribute("black", "");
-        cellDOM.setAttribute("answer", "false");
-        cellDOM.contentEditable = "false";
-      } else {
-        cellDOM.contentEditable = "true";
-        cellDOM.removeAttribute("black");
-        cellDOM.setAttribute("answer", "true");
-        cellDOM.setAttribute("direction", this.grid[x3][y4].direction);
-        const cellLetter = document2.createElement("div");
-        cellLetter.classList.add("cell-letter");
-        cellDOM.appendChild(cellLetter);
-        if (this.grid[x3][y4].number) {
-          const numberText = document2.createElement("div");
-          numberText.classList.add("clue-label");
-          numberText.contentEditable = "false";
-          numberText.innerHTML = this.grid[x3][y4].number.toString();
-          cellDOM.appendChild(numberText);
-        }
-      }
-    } catch (error) {
-      DEV: console.log("newCell(): Error at (" + x3 + "," + y4 + ")");
-    }
-    cellDOM.addEventListener("keydown", (e13) => {
-      this.cellKeydownHandler(e13);
-    });
-    cellDOM.addEventListener("focusin", (e13) => {
-      e13.stopPropagation();
-      this.cellFocusHandler(e13);
-    });
-    return cellDOM;
-  }
-  /**
-   * Event listener for a cellDOM element that handles keypresses. 
-   * 
-   * Tab switches to the next word, space changes context for direction, and
-   * if the key was an alphabetic character, the text currently in the cell with whatever was pressed.
-   * 
-   * Overrides / prevents the default character insertion
-   */
-  cellKeydownHandler(e13) {
-    e13.preventDefault();
-    const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
-    let cell = e13.target;
-    let nextCell;
-    let row = Number(cell.getAttribute("grid-row"));
-    let col = Number(cell.getAttribute("grid-col"));
-    switch (e13.key) {
-      // Go to next clue
-      case "Tab":
-        e13.stopPropagation();
-        let nextWord = this._wordsClues[this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)];
-        row = nextWord.x;
-        col = nextWord.y;
-        this.setContext(this._cwContext);
-        nextCell = this.getCellDOM(row, col);
-        nextCell.focus();
-        break;
-      // Change direction context if the current cell goes in both directions
-      case " ":
-        if (cell.getAttribute("direction") == "both") {
-          this.setContext({ across: !this._cwContext.across, clue: this.getClueNumber(!this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))) });
-        }
-        break;
-      // NAVIGATION ========================================================
-      case "ArrowLeft":
-        col -= 1;
-        if (col >= 0 && this.grid[row][col].white) {
-          nextCell = this.getCellDOM(row, col);
-          nextCell.focus();
-        }
-        break;
-      case "ArrowRight":
-        col += 1;
-        if (col < this.grid.length && this.grid[row][col].white) {
-          nextCell = this.getCellDOM(row, col);
-          nextCell.focus();
-        }
-        break;
-      case "ArrowUp":
-        row -= 1;
-        if (row >= 0 && this.grid[row][col].white) {
-          nextCell = this.getCellDOM(row, col);
-          nextCell.focus();
-        }
-        break;
-      case "ArrowDown":
-        row += 1;
-        if (row < this.grid.length && this.grid[row][col].white) {
-          nextCell = this.getCellDOM(row, col);
-          nextCell.focus();
-        }
-        break;
-      case "Backspace":
-      case "Delete":
-        cell.querySelector(".cell-letter").textContent = "";
-      // Insert character
-      default:
-        if (isAlphaChar(e13.key)) {
-          cell.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
-          this.nextEmptyCell(e13);
-        }
-    }
-  }
-  /** Handler for when a cell gains focus. Sets the clue and direction context
-   * 
-   * @param {FocusEvent} e - the event. Its target attribute is used
-  */
-  cellFocusHandler(e13) {
-    this.cur_row = Number(e13.target.getAttribute("grid-row"));
-    this.cur_col = Number(e13.target.getAttribute("grid-col"));
-    if (this.cur_row == null || this.cur_row == null) {
-      this.cur_row = Number(e13.target.getAttribute("grid-row"));
-      this.cur_col = Number(e13.target.getAttribute("grid-col"));
-    }
-    let x3 = this.cur_row;
-    let y4 = this.cur_col;
-    let { across: acrossContext, clue: clueContext } = this.getContextFromCell(this.cur_row, this.cur_col);
-    this._cwContext.across = acrossContext;
-    this._cwContext.clue = clueContext;
-    if (this._cwContext.acrossContext) {
-      while (y4 > 0 && this.grid[x3][y4 - 1].white) {
-        y4 -= 1;
-      }
-    } else {
-      while (x3 > 0 && this.grid[x3 - 1][y4].white) {
-        x3 -= 1;
-      }
-    }
-    this.setContext(this._cwContext);
-  }
-  /**
-   * Dispatches an event to update the current words and clues.
-   * 
-   * @param {number} clue the updated clue number
-   */
-  setWordsClues(wordsClues) {
-    let setWordsClues = new CustomEvent("set-words-clues", { bubbles: true, composed: true, detail: wordsClues });
-    this.dispatchEvent(setWordsClues);
-  }
-  /**
-  * Generates crossword puzzle based off of words in the clue box, without given coordinates.
-  * Calls the function in crossword-gen
-  * 
-  * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
-  * @returns {WordClue[]} 
-  */
-  generateCrossword(wordsCluesInput) {
-    let { wordsAndClues, grid } = generateCrossword(wordsCluesInput);
-    this.setWordsClues(wordsAndClues);
-    this.grid = grid;
-    this.newCrosswordGridDOM(document);
-    return wordsAndClues;
-  }
-  // TODO Implement answer checking
-  // It should compare the text content of the cell with the answer in this.grid 
-  render() {
-    this.grid = generateCrosswordFromList(this._wordsClues);
-    this.newCrosswordGridDOM(document);
-    return x`<div>
-                ${this.gridEl}
-            </div>
-            `;
-  }
-};
-__decorateClass([
-  n4({
-    type: Boolean,
-    state: true,
-    attribute: false,
-    hasChanged(newValue, oldValue) {
-      return this.onPreviewToggle(newValue, oldValue);
-    }
-  })
-], WwWordPuzzlesCwGrid.prototype, "_preview", 2);
-__decorateClass([
-  n4({ type: Array, state: true, attribute: true, reflect: true })
-], WwWordPuzzlesCwGrid.prototype, "grid", 2);
-__decorateClass([
-  n4({ type: HTMLDivElement, state: true, attribute: false })
-], WwWordPuzzlesCwGrid.prototype, "gridEl", 2);
-__decorateClass([
-  n4({ type: Array, state: true, attribute: true, reflect: true })
-], WwWordPuzzlesCwGrid.prototype, "_wordsClues", 2);
-__decorateClass([
-  n4({ type: Object, state: true, attribute: false })
-], WwWordPuzzlesCwGrid.prototype, "_cwContext", 2);
-__decorateClass([
-  r6()
-], WwWordPuzzlesCwGrid.prototype, "cur_row", 2);
-__decorateClass([
-  r6()
-], WwWordPuzzlesCwGrid.prototype, "cur_col", 2);
-WwWordPuzzlesCwGrid = __decorateClass([
-  t3("ww-word-puzzles-cw-grid")
-], WwWordPuzzlesCwGrid);
-
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.3RPBFEDE.js
 var formCollections = /* @__PURE__ */ new WeakMap();
 var reportValidityOverloads = /* @__PURE__ */ new WeakMap();
@@ -3697,7 +3259,7 @@ var computePosition = async (reference, floating, config) => {
     middlewareData
   };
 };
-async function detectOverflow(state4, options) {
+async function detectOverflow(state, options) {
   var _await$platform$isEle;
   if (options === void 0) {
     options = {};
@@ -3709,14 +3271,14 @@ async function detectOverflow(state4, options) {
     rects,
     elements,
     strategy
-  } = state4;
+  } = state;
   const {
     boundary = "clippingAncestors",
     rootBoundary = "viewport",
     elementContext = "floating",
     altBoundary = false,
     padding = 0
-  } = evaluate(options, state4);
+  } = evaluate(options, state);
   const paddingObject = getPaddingObject(padding);
   const altContext = elementContext === "floating" ? "reference" : "floating";
   const element = elements[altBoundary ? altContext : elementContext];
@@ -3756,7 +3318,7 @@ async function detectOverflow(state4, options) {
 var arrow = (options) => ({
   name: "arrow",
   options,
-  async fn(state4) {
+  async fn(state) {
     const {
       x: x3,
       y: y4,
@@ -3765,11 +3327,11 @@ var arrow = (options) => ({
       platform: platform2,
       elements,
       middlewareData
-    } = state4;
+    } = state;
     const {
       element,
       padding = 0
-    } = evaluate(options, state4) || {};
+    } = evaluate(options, state) || {};
     if (element == null) {
       return {};
     }
@@ -3822,7 +3384,7 @@ var flip = function(options) {
   return {
     name: "flip",
     options,
-    async fn(state4) {
+    async fn(state) {
       var _middlewareData$arrow, _middlewareData$flip;
       const {
         placement,
@@ -3831,7 +3393,7 @@ var flip = function(options) {
         initialPlacement,
         platform: platform2,
         elements
-      } = state4;
+      } = state;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = true,
@@ -3840,7 +3402,7 @@ var flip = function(options) {
         fallbackAxisSideDirection = "none",
         flipAlignment = true,
         ...detectOverflowOptions
-      } = evaluate(options, state4);
+      } = evaluate(options, state);
       if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3854,7 +3416,7 @@ var flip = function(options) {
         fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
       }
       const placements2 = [initialPlacement, ...fallbackPlacements];
-      const overflow = await detectOverflow(state4, detectOverflowOptions);
+      const overflow = await detectOverflow(state, detectOverflowOptions);
       const overflows = [];
       let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
       if (checkMainAxis) {
@@ -3919,19 +3481,19 @@ var flip = function(options) {
     }
   };
 };
-async function convertValueToCoords(state4, options) {
+async function convertValueToCoords(state, options) {
   const {
     placement,
     platform: platform2,
     elements
-  } = state4;
+  } = state;
   const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
   const side = getSide(placement);
   const alignment = getAlignment(placement);
   const isVertical = getSideAxis(placement) === "y";
   const mainAxisMulti = ["left", "top"].includes(side) ? -1 : 1;
   const crossAxisMulti = rtl && isVertical ? -1 : 1;
-  const rawValue = evaluate(options, state4);
+  const rawValue = evaluate(options, state);
   let {
     mainAxis,
     crossAxis,
@@ -3963,15 +3525,15 @@ var offset = function(options) {
   return {
     name: "offset",
     options,
-    async fn(state4) {
+    async fn(state) {
       var _middlewareData$offse, _middlewareData$arrow;
       const {
         x: x3,
         y: y4,
         placement,
         middlewareData
-      } = state4;
-      const diffCoords = await convertValueToCoords(state4, options);
+      } = state;
+      const diffCoords = await convertValueToCoords(state, options);
       if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3993,12 +3555,12 @@ var shift = function(options) {
   return {
     name: "shift",
     options,
-    async fn(state4) {
+    async fn(state) {
       const {
         x: x3,
         y: y4,
         placement
-      } = state4;
+      } = state;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = false,
@@ -4015,12 +3577,12 @@ var shift = function(options) {
           }
         },
         ...detectOverflowOptions
-      } = evaluate(options, state4);
+      } = evaluate(options, state);
       const coords = {
         x: x3,
         y: y4
       };
-      const overflow = await detectOverflow(state4, detectOverflowOptions);
+      const overflow = await detectOverflow(state, detectOverflowOptions);
       const crossAxis = getSideAxis(getSide(placement));
       const mainAxis = getOppositeAxis(crossAxis);
       let mainAxisCoord = coords[mainAxis];
@@ -4040,7 +3602,7 @@ var shift = function(options) {
         crossAxisCoord = clamp(min2, crossAxisCoord, max2);
       }
       const limitedCoords = limiter.fn({
-        ...state4,
+        ...state,
         [mainAxis]: mainAxisCoord,
         [crossAxis]: crossAxisCoord
       });
@@ -4065,20 +3627,20 @@ var size = function(options) {
   return {
     name: "size",
     options,
-    async fn(state4) {
+    async fn(state) {
       var _state$middlewareData, _state$middlewareData2;
       const {
         placement,
         rects,
         platform: platform2,
         elements
-      } = state4;
+      } = state;
       const {
         apply = () => {
         },
         ...detectOverflowOptions
-      } = evaluate(options, state4);
-      const overflow = await detectOverflow(state4, detectOverflowOptions);
+      } = evaluate(options, state);
+      const overflow = await detectOverflow(state, detectOverflowOptions);
       const side = getSide(placement);
       const alignment = getAlignment(placement);
       const isYAxis = getSideAxis(placement) === "y";
@@ -4099,13 +3661,13 @@ var size = function(options) {
       const maximumClippingWidth = width - overflow.left - overflow.right;
       const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
       const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-      const noShift = !state4.middlewareData.shift;
+      const noShift = !state.middlewareData.shift;
       let availableHeight = overflowAvailableHeight;
       let availableWidth = overflowAvailableWidth;
-      if ((_state$middlewareData = state4.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
+      if ((_state$middlewareData = state.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
         availableWidth = maximumClippingWidth;
       }
-      if ((_state$middlewareData2 = state4.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
+      if ((_state$middlewareData2 = state.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
         availableHeight = maximumClippingHeight;
       }
       if (noShift && !alignment) {
@@ -4120,7 +3682,7 @@ var size = function(options) {
         }
       }
       await apply({
-        ...state4,
+        ...state,
         availableWidth,
         availableHeight
       });
@@ -4202,8 +3764,8 @@ function isTopLayer(element) {
 }
 function isContainingBlock(elementOrCss) {
   const webkit = isWebKit();
-  const css3 = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
-  return css3.transform !== "none" || css3.perspective !== "none" || (css3.containerType ? css3.containerType !== "normal" : false) || !webkit && (css3.backdropFilter ? css3.backdropFilter !== "none" : false) || !webkit && (css3.filter ? css3.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css3.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css3.contain || "").includes(value));
+  const css = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
+  return css.transform !== "none" || css.perspective !== "none" || (css.containerType ? css.containerType !== "normal" : false) || !webkit && (css.backdropFilter ? css.backdropFilter !== "none" : false) || !webkit && (css.filter ? css.filter !== "none" : false) || ["transform", "perspective", "filter"].some((value) => (css.willChange || "").includes(value)) || ["paint", "layout", "strict", "content"].some((value) => (css.contain || "").includes(value));
 }
 function getContainingBlock(element) {
   let currentNode = getParentNode(element);
@@ -4285,9 +3847,9 @@ function getFrameElement(win) {
 
 // node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getCssDimensions(element) {
-  const css3 = getComputedStyle2(element);
-  let width = parseFloat(css3.width) || 0;
-  let height = parseFloat(css3.height) || 0;
+  const css = getComputedStyle2(element);
+  let width = parseFloat(css.width) || 0;
+  let height = parseFloat(css.height) || 0;
   const hasOffset = isHTMLElement(element);
   const offsetWidth = hasOffset ? element.offsetWidth : width;
   const offsetHeight = hasOffset ? element.offsetHeight : height;
@@ -4381,9 +3943,9 @@ function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetPar
     while (currentIFrame && offsetParent && offsetWin !== currentWin) {
       const iframeScale = getScale(currentIFrame);
       const iframeRect = currentIFrame.getBoundingClientRect();
-      const css3 = getComputedStyle2(currentIFrame);
-      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css3.paddingLeft)) * iframeScale.x;
-      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css3.paddingTop)) * iframeScale.y;
+      const css = getComputedStyle2(currentIFrame);
+      const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
+      const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
       x3 *= iframeScale.x;
       y4 *= iframeScale.y;
       width *= iframeScale.x;
@@ -16090,10 +15652,10 @@ var SubmenuController = class {
       }
     }
   }
-  setSubmenuState(state4) {
+  setSubmenuState(state) {
     if (this.popupRef.value) {
-      if (this.popupRef.value.active !== state4) {
-        this.popupRef.value.active = state4;
+      if (this.popupRef.value.active !== state) {
+        this.popupRef.value.active = state;
         this.host.requestUpdate();
       }
     }
@@ -24508,6 +24070,448 @@ __decorateClass2([
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.RJUO2BMU.js
 SlAnimatedImage.define("sl-animated-image");
 
+// src/widgets/ww-word-puzzles-cw-grid.ts
+function stopCtrlPropagation(event) {
+  if (event.ctrlKey) {
+    event.stopPropagation();
+  }
+}
+function defaultCell() {
+  return {
+    white: false,
+    answer: null,
+    // NOTE Should this be here, or should 
+    number: null,
+    direction: null
+  };
+}
+var DEFAULT_DIMENSION = 9;
+var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
+  _preview = false;
+  grid;
+  gridEl;
+  _wordsClues;
+  _cwContext;
+  cur_row;
+  cur_col;
+  // @type {boolean}
+  /**
+   * @constructor
+   * Some constructor I apparently thought was a good idea.
+   * 
+   * Pretty much just makes a grid with 9x9 dimensions
+   */
+  constructor() {
+    super();
+    this.grid = Array.from({ length: DEFAULT_DIMENSION }, () => Array(DEFAULT_DIMENSION).fill(defaultCell()));
+    this._cwContext = { across: null, clue: null };
+  }
+  /**
+   * Styles for the crossword grid.
+   * clue-label based off of crossword-js
+   */
+  static get styles() {
+    return grid_styles;
+  }
+  static get scopedElements() {
+    return {
+      "sl-alert": alert_default
+    };
+  }
+  // TODO Add event listener for adding the focus class based on the clue number and direction
+  /**
+   * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
+   * 
+   * Dimensions are based on {@link this.grid | grid}.
+   * 
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * @returns {HTMLDivElement} the DOM element for the grid.
+   * Source: crosswords-js
+   */
+  newCrosswordGridDOM(document2) {
+    let gridEl = document2.createElement("div");
+    this.gridEl = gridEl;
+    this.gridEl.classList.add("grid");
+    for (let x3 = 0; x3 < this.grid.length; x3 += 1) {
+      for (let y4 = 0; y4 < this.grid.length; y4 += 1) {
+        this.gridEl.appendChild(this.newCell(document2, x3, y4));
+      }
+    }
+    this.gridEl.addEventListener("keydown", stopCtrlPropagation);
+    this.requestUpdate();
+    return this.gridEl;
+  }
+  /** 
+   * For handling a keypress in the crossword grid. Goes to next relevant cell
+   * 
+  */
+  nextEmptyCell(e13) {
+    let currentCell;
+    if (e13 == null) {
+      currentCell = this.getCellDOM(this.cur_row, this.cur_col);
+    } else {
+      currentCell = e13.target;
+    }
+    let nextWord;
+    let nextCell;
+    let row = Number(currentCell.getAttribute("grid-row"));
+    let col = Number(currentCell.getAttribute("grid-col"));
+    let init_row = Number(currentCell.getAttribute("grid-row"));
+    let init_col = Number(currentCell.getAttribute("grid-col"));
+    let timeoutLimit = 0;
+    for (let wordClue of this._wordsClues) {
+      timeoutLimit += wordClue.word.length;
+    }
+    timeoutLimit = timeoutLimit * 10;
+    let { across: acrossContext, clue: clueContext } = this.getContextFromCell(row, col);
+    if (this._cwContext.across != null) {
+      acrossContext = this._cwContext.across;
+    }
+    if (this._cwContext.clue != null) {
+      clueContext = this._cwContext.clue;
+    }
+    let initialAcross = acrossContext;
+    let initialClue = clueContext;
+    let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1;
+    if (currentWordIndex == -1) {
+      currentWordIndex = this._wordsClues.length - 1;
+    }
+    let iNextW = -1;
+    let timeout = 0;
+    let pass = -1;
+    let nrow = 0;
+    let ncol = 0;
+    do {
+      nextWord = null;
+      nrow = row + Number(!acrossContext);
+      ncol = col + Number(acrossContext);
+      pass += row == init_row && col == init_col ? 1 : 0;
+      if (this._wordsClues.length > 1) {
+        iNextW = this.getNextWordIndex(acrossContext, clueContext);
+      }
+      if (ncol >= this.grid.length || nrow >= this.grid.length || this.grid[nrow][ncol] == null || !this.grid[nrow][ncol].white) {
+        if (iNextW == -1) {
+          iNextW = 0;
+        }
+        nextWord = this._wordsClues[iNextW];
+        row = nextWord.x;
+        col = nextWord.y;
+        nextCell = this.getCellDOM(row, col);
+      } else {
+        row = nrow;
+        col = ncol;
+        nextCell = this.getCellDOM(row, col);
+      }
+      timeout += 1;
+      if (timeout > timeoutLimit) {
+        throw new Error("You've created an infinite loop, congratulations");
+      }
+      if (nextWord) {
+        clueContext = nextWord.clueNumber;
+        acrossContext = nextWord.across;
+      }
+      timeout += 1;
+      if (timeout >= timeoutLimit) {
+        throw new Error("You've created an infinite loop, congratulations");
+      }
+    } while (pass < 2 && nextCell.querySelector(".cell-letter").textContent !== "");
+    if (nextCell.querySelector(".cell-letter").textContent == "") {
+      nextCell.focus();
+      this.cur_col = Number(nextCell.getAttribute("grid-row"));
+      this.cur_row = Number(nextCell.getAttribute("grid-col"));
+      if (nextWord) {
+        this.setContext(this._cwContext);
+      }
+    } else {
+      currentCell.blur();
+      this.setContext({ across: null, clue: null });
+    }
+  }
+  /**
+       * Dispatches an event to change the current clue and direction context.
+       * 
+       * @param {number} clue the updated clue number
+       * @param {boolean} across whether the updated direction is across
+       */
+  setContext(context) {
+    let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
+    this.dispatchEvent(setContext2);
+  }
+  getContextFromCell(row, col) {
+    let cell = this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
+    let across;
+    let clue;
+    if (this._cwContext == null) {
+      across = cell.getAttribute("direction") == "across" || cell.getAttribute("direction") == "both";
+    } else {
+      if (cell.getAttribute("direction") == "both") {
+        across = this._cwContext.across;
+      } else {
+        across = cell.getAttribute("direction") == "across";
+      }
+    }
+    clue = this.getClueNumber(across, this.cur_row, this.cur_col);
+    return { across, clue };
+  }
+  /**
+   * Gets the current clue number for a cell based off of the grid object. (Not DOM)
+   * 
+   * @param {boolean} across 
+   * @param {number} x 
+   * @param {number} y 
+   * @returns 
+   */
+  getClueNumber(across, x3, y4) {
+    let shift_row = across ? 0 : 1;
+    let shift_col = 1 - shift_row;
+    while (x3 - shift_row >= 0 && y4 - shift_col >= 0 && this.grid[x3 - shift_row][y4 - shift_col].white) {
+      x3 -= shift_row;
+      y4 -= shift_col;
+    }
+    return this.grid[x3][y4].number;
+  }
+  /** Function for getting a cell based on its location in the DOM grid.
+   * 
+   * @param {number} row the row number, 1-indexed
+   * @param {number} col the column number, 1-indexed
+   * @returns {HTMLDivElement} the DOM element of the cell
+  */
+  getCellDOM(row, col) {
+    return this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
+  }
+  /** Function for getting the next word in context of the direction and current clue number.
+   * Returns the empty cell element at the next word
+   * 
+   * @returns {HTMLDivElement} the DOM element of the cell
+  */
+  // May not need the arguments lol
+  getNextWordIndex(across, clue) {
+    if (this._wordsClues.length == 1) {
+      return 0;
+    }
+    let i9 = this._wordsClues.findIndex((wordClue) => wordClue.clueNumber == clue && wordClue.across == across);
+    i9 += 1;
+    if (i9 >= this._wordsClues.length) {
+      i9 = this._wordsClues.findIndex((wordClue) => wordClue.across == !across);
+    }
+    return i9;
+  }
+  /**
+   * Constructor for the cells of the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element.
+   * 
+   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+   * @param {number} x the row of the cell, 0-indexed
+   * @param {number} y the column of the cell, 0-indexed
+   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
+   * @returns {HTMLDivElement} the DOM element for the _cell_
+   * Source: crosswords-js
+   */
+  newCell(document2, x3, y4) {
+    const cellDOM = document2.createElement("div");
+    cellDOM.className = "cell";
+    cellDOM.style.display = "grid";
+    cellDOM.style.gridRowStart = (x3 + 1).toString();
+    cellDOM.style.gridColumnStart = (y4 + 1).toString();
+    cellDOM.setAttribute("grid-row", x3.toString());
+    cellDOM.setAttribute("grid-col", y4.toString());
+    try {
+      if (!this.grid[x3][y4].white) {
+        cellDOM.setAttribute("black", "");
+        cellDOM.setAttribute("answer", "false");
+        cellDOM.contentEditable = "false";
+      } else {
+        cellDOM.contentEditable = "true";
+        cellDOM.removeAttribute("black");
+        cellDOM.setAttribute("answer", "true");
+        cellDOM.setAttribute("direction", this.grid[x3][y4].direction);
+        const cellLetter = document2.createElement("div");
+        cellLetter.classList.add("cell-letter");
+        cellDOM.appendChild(cellLetter);
+        if (this.grid[x3][y4].number) {
+          const numberText = document2.createElement("div");
+          numberText.classList.add("clue-label");
+          numberText.contentEditable = "false";
+          numberText.innerHTML = this.grid[x3][y4].number.toString();
+          cellDOM.appendChild(numberText);
+        }
+      }
+    } catch (error) {
+      DEV: console.log("newCell(): Error at (" + x3 + "," + y4 + ")");
+    }
+    cellDOM.addEventListener("keydown", (e13) => {
+      this.cellKeydownHandler(e13);
+    });
+    cellDOM.addEventListener("focusin", (e13) => {
+      e13.stopPropagation();
+      this.cellFocusHandler(e13);
+    });
+    return cellDOM;
+  }
+  /**
+   * Event listener for a cellDOM element that handles keypresses. 
+   * 
+   * Tab switches to the next word, space changes context for direction, and
+   * if the key was an alphabetic character, the text currently in the cell with whatever was pressed.
+   * 
+   * Overrides / prevents the default character insertion
+   */
+  cellKeydownHandler(e13) {
+    e13.preventDefault();
+    const isAlphaChar = (str) => /^[a-zA-Z]$/.test(str);
+    let cell = e13.target;
+    let nextCell;
+    let row = Number(cell.getAttribute("grid-row"));
+    let col = Number(cell.getAttribute("grid-col"));
+    switch (e13.key) {
+      // Go to next clue
+      case "Tab":
+        e13.stopPropagation();
+        let nextWord = this._wordsClues[this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)];
+        row = nextWord.x;
+        col = nextWord.y;
+        this.setContext(this._cwContext);
+        nextCell = this.getCellDOM(row, col);
+        nextCell.focus();
+        break;
+      // Change direction context if the current cell goes in both directions
+      case " ":
+        if (cell.getAttribute("direction") == "both") {
+          this.setContext({ across: !this._cwContext.across, clue: this.getClueNumber(!this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col"))) });
+        }
+        break;
+      // NAVIGATION ========================================================
+      case "ArrowLeft":
+        col -= 1;
+        if (col >= 0 && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      case "ArrowRight":
+        col += 1;
+        if (col < this.grid.length && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      case "ArrowUp":
+        row -= 1;
+        if (row >= 0 && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      case "ArrowDown":
+        row += 1;
+        if (row < this.grid.length && this.grid[row][col].white) {
+          nextCell = this.getCellDOM(row, col);
+          nextCell.focus();
+        }
+        break;
+      case "Backspace":
+      case "Delete":
+        cell.querySelector(".cell-letter").textContent = "";
+      // Insert character
+      default:
+        if (isAlphaChar(e13.key)) {
+          cell.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
+          this.nextEmptyCell(e13);
+        }
+    }
+  }
+  /** Handler for when a cell gains focus. Sets the clue and direction context
+   * 
+   * @param {FocusEvent} e - the event. Its target attribute is used
+  */
+  cellFocusHandler(e13) {
+    this.cur_row = Number(e13.target.getAttribute("grid-row"));
+    this.cur_col = Number(e13.target.getAttribute("grid-col"));
+    if (this.cur_row == null || this.cur_row == null) {
+      this.cur_row = Number(e13.target.getAttribute("grid-row"));
+      this.cur_col = Number(e13.target.getAttribute("grid-col"));
+    }
+    let x3 = this.cur_row;
+    let y4 = this.cur_col;
+    let { across: acrossContext, clue: clueContext } = this.getContextFromCell(this.cur_row, this.cur_col);
+    this._cwContext.across = acrossContext;
+    this._cwContext.clue = clueContext;
+    if (this._cwContext.acrossContext) {
+      while (y4 > 0 && this.grid[x3][y4 - 1].white) {
+        y4 -= 1;
+      }
+    } else {
+      while (x3 > 0 && this.grid[x3 - 1][y4].white) {
+        x3 -= 1;
+      }
+    }
+    this.setContext(this._cwContext);
+  }
+  /**
+   * Dispatches an event to update the current words and clues.
+   * 
+   * @param {number} clue the updated clue number
+   */
+  setWordsClues(wordsClues) {
+    let setWordsClues = new CustomEvent("set-words-clues", { bubbles: true, composed: true, detail: wordsClues });
+    this.dispatchEvent(setWordsClues);
+  }
+  /**
+  * Generates crossword puzzle based off of words in the clue box, without given coordinates.
+  * Calls the function in crossword-gen
+  * 
+  * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
+  * @returns {WordClue[]} 
+  */
+  generateCrossword(wordsCluesInput) {
+    let { wordsAndClues, grid } = generateCrossword(wordsCluesInput);
+    this.setWordsClues(wordsAndClues);
+    this.grid = grid;
+    this.newCrosswordGridDOM(document);
+    return wordsAndClues;
+  }
+  // TODO Implement answer checking
+  // It should compare the text content of the cell with the answer in this.grid 
+  render() {
+    this.grid = generateCrosswordFromList(this._wordsClues);
+    this.newCrosswordGridDOM(document);
+    return x`<div>
+                ${this.gridEl}
+            </div>
+            `;
+  }
+};
+__decorateClass([
+  n4({
+    type: Boolean,
+    state: true,
+    attribute: false,
+    hasChanged(newValue, oldValue) {
+      return this.onPreviewToggle(newValue, oldValue);
+    }
+  })
+], WwWordPuzzlesCwGrid.prototype, "_preview", 2);
+__decorateClass([
+  n4({ type: Array, state: true, attribute: true, reflect: true })
+], WwWordPuzzlesCwGrid.prototype, "grid", 2);
+__decorateClass([
+  n4({ type: HTMLDivElement, state: true, attribute: false })
+], WwWordPuzzlesCwGrid.prototype, "gridEl", 2);
+__decorateClass([
+  n4({ type: Array, state: true, attribute: true, reflect: true })
+], WwWordPuzzlesCwGrid.prototype, "_wordsClues", 2);
+__decorateClass([
+  n4({ type: Object, state: true, attribute: false })
+], WwWordPuzzlesCwGrid.prototype, "_cwContext", 2);
+__decorateClass([
+  r6()
+], WwWordPuzzlesCwGrid.prototype, "cur_row", 2);
+__decorateClass([
+  r6()
+], WwWordPuzzlesCwGrid.prototype, "cur_col", 2);
+WwWordPuzzlesCwGrid = __decorateClass([
+  t3("ww-word-puzzles-cw-grid")
+], WwWordPuzzlesCwGrid);
+
 // src/widgets/ww-word-puzzles-cw-cluebox.ts
 var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
   // All methods have the same names as in crosswords-js
@@ -24531,13 +24535,6 @@ var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
   }
   static get styles() {
     return cluebox_styles;
-  }
-  // Registering custom elements
-  static get scopedElements() {
-    return {
-      "sl-alert": alert_default,
-      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox
-    };
   }
   /**
    * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context.
@@ -24644,7 +24641,6 @@ var WwWordPuzzlesCwClueboxInput = class extends WebwriterWordPuzzles {
     this.#clueboxInput = _3;
   }
   _wordsClues = [{ word: "", across: true }];
-  _cwContext;
   #drawer;
   get drawer() {
     return this.#drawer;
@@ -24668,9 +24664,7 @@ var WwWordPuzzlesCwClueboxInput = class extends WebwriterWordPuzzles {
     return {
       "sl-button": button_default,
       "sl-icon": SlIcon,
-      "sl-alert": alert_default,
-      "sl-drawer": drawer_default,
-      "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput
+      "sl-drawer": drawer_default
     };
   }
   /**
@@ -24870,9 +24864,6 @@ __decorateClass([
   n4({ type: Array, attribute: false })
 ], WwWordPuzzlesCwClueboxInput.prototype, "_wordsClues", 2);
 __decorateClass([
-  n4({ type: Object, state: true, attribute: false })
-], WwWordPuzzlesCwClueboxInput.prototype, "_cwContext", 2);
-__decorateClass([
   e5("sl-drawer")
 ], WwWordPuzzlesCwClueboxInput.prototype, "drawer", 1);
 WwWordPuzzlesCwClueboxInput = __decorateClass([
@@ -24956,7 +24947,8 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       "sl-drawer": drawer_default,
       "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
       "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
-      "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput
+      "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput,
+      "webwriter-word-puzzles-crossword": WwWordPuzzlesCrossword
     };
   }
   /**

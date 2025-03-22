@@ -5,9 +5,8 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, css, PropertyValues } from 'lit';
-import { LitElementWw, option } from '@webwriter/lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { html, PropertyValues } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
 
 import { WebwriterWordPuzzles as WwWordPuzzles } from './webwriter-word-puzzles';
 import { WwWordPuzzlesCwGrid, WordClue, defaultCell } from './ww-word-puzzles-cw-grid';
@@ -30,8 +29,6 @@ declare global {interface HTMLElementTagNameMap {
         "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid;
         "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
         "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput;
-        "sl-button": SlButton;
-        "sl-drawer": SlDrawer;
     }
 }
 
@@ -180,6 +177,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
         "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
         "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
         "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput,
+        "webwriter-word-puzzles-crossword": WwWordPuzzlesCrossword
         };
     }
 

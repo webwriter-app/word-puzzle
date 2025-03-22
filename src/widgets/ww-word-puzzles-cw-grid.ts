@@ -5,22 +5,19 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, css } from 'lit';
-import { LitElementWw, option } from '@webwriter/lit';
+import { html } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WwWordPuzzlesCrossword, CwContext } from './webwriter-word-puzzles-crossword';
 import { generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
+// TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
+// @webwriter/wui
+import { SlAlert } from '@shoelace-style/shoelace';
+
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-
-declare global {interface HTMLElementTagNameMap {
-    "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid;
-    }
-}
 
 function stopCtrlPropagation(event: KeyboardEvent): void {
         if (event.ctrlKey) {
@@ -29,8 +26,6 @@ function stopCtrlPropagation(event: KeyboardEvent): void {
         }
     }
 
-
-// NOTE Almost all methods within this class are from / based on the crosswords-js module
 
 /**
  * Cell object for the crossword grid. 
@@ -186,6 +181,11 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
         return grid_styles
     }
 
+    static get scopedElements() {
+        return {
+        "sl-alert": SlAlert
+        };
+    }
     // TODO Add event listener for adding the focus class based on the clue number and direction
 
     /**
@@ -317,8 +317,6 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
             if(timeout >= timeoutLimit) {
                 throw new Error("You've created an infinite loop, congratulations")
             }
-
-            // TODO Change this condition
         } while(pass < 2 && nextCell.querySelector(".cell-letter").textContent !== "")
 
         if(nextCell.querySelector(".cell-letter").textContent == "") {
@@ -384,7 +382,6 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
             let shift_row = across ? 0 : 1
             let shift_col = 1 - shift_row
 
-            // TODO Fix out of bounds checking
             while((x-shift_row >= 0 && y-shift_col >= 0) && this.grid[x-shift_row][y-shift_col].white) {
                 x -= shift_row
                 y -= shift_col
@@ -431,7 +428,6 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * @returns {HTMLDivElement} the DOM element for the _cell_
      * Source: crosswords-js
      */
-    // TODO idk why the focusing stuff isn't working now, maybe I set the values here wrong
     protected newCell(document: Document, x: number, y: number) {
         const cellDOM: HTMLDivElement = document.createElement('div');
         cellDOM.className = 'cell'

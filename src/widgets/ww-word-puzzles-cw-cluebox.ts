@@ -5,8 +5,8 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, HTMLTemplateResult, render } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { html, HTMLTemplateResult } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { CwContext, WwWordPuzzlesCrossword } from './webwriter-word-puzzles-crossword';
 import { WordClue } from './ww-word-puzzles-cw-grid';
@@ -14,22 +14,13 @@ import { cluebox_styles } from '../styles/styles'
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import { SlButton, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
-import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component.js";
 
-// TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
-// @webwriter/wui
 
-// Icons
-import plus from 'bootstrap-icons/icons/plus-lg.svg';
-import minus from 'bootstrap-icons/icons/dash.svg';
-import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
-
-declare global {interface HTMLElementTagNameMap {
-    "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
-    }
-}
+//declare global {interface HTMLElementTagNameMap {
+//    "webwriter-word-puzzles": WebwriterWordPuzzles;
+//    "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
+//    }
+//}
 
 
 /**
@@ -76,14 +67,6 @@ export class WwWordPuzzlesCwCluebox extends WebwriterWordPuzzles {
 
     static get styles() {
         return cluebox_styles
-    }
-
-    // Registering custom elements
-    static get scopedElements() {
-        return {
-        "sl-alert": SlAlert,
-        "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
-        };
     }
 
     /**
