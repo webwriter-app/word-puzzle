@@ -188,43 +188,12 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
     }
     // TODO Add event listener for adding the focus class based on the clue number and direction
 
-    /**
-     * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
-     * 
-     * Dimensions are based on {@link this.grid | grid}.
-     * 
-     * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-     * @returns {HTMLDivElement} the DOM element for the grid.
-     * Source: crosswords-js
-     */
-    newCrosswordGridDOM(document) {
-        let gridEl = document.createElement('div');
-        this.gridEl = gridEl
-        this.gridEl.classList.add('grid')
-        for (let x = 0; x < this.grid.length; x += 1) {
-            for (let y = 0; y < this.grid.length; y += 1) {
-                //  Build the cell element and place cell in grid element
-                this.gridEl.appendChild(this.newCell(document, x, y));
-            }
-        }
-        this.gridEl.addEventListener("keydown", stopCtrlPropagation)
-        //DEV: console.log("gridEl:")
-        //DEV: console.log(this.gridEl)
-        this.requestUpdate()
-        //DEV: console.log("Updated crossword grid DOM:")
-        //DEV: console.log(this.gridEl)
-        //DEV: console.log("Grid object:")
-        //DEV: console.log(this.grid)
-        //DEV: console.log("Words and clues:")
-        //DEV: console.log(this._wordsAndClues)
-        return this.gridEl
-    }
 
     /** 
      * For handling a keypress in the crossword grid. Goes to next relevant cell
      * 
     */
-    nextEmptyCell(e?: KeyboardEvent) {
+    private nextEmptyCell(e?: KeyboardEvent) {
         // Idk how to get typescript to stop crying about this even though it works
         let currentCell: HTMLDivElement
         if(e == null) {
@@ -335,7 +304,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
         }
     }
 
-    /**
+         /**
          * Dispatches an event to change the current clue and direction context.
          * 
          * @param {number} clue the updated clue number
@@ -345,7 +314,6 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
         let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: context})
         this.dispatchEvent(setContext)
     }
-
 
 
     getContextFromCell(row: number, col: number): {across: boolean, clue: number} {
@@ -378,7 +346,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * @param {number} y 
      * @returns 
      */
-    getClueNumber(across: boolean, x: number, y: number): number {
+    private getClueNumber(across: boolean, x: number, y: number): number {
             let shift_row = across ? 0 : 1
             let shift_col = 1 - shift_row
 
@@ -396,7 +364,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * @param {number} col the column number, 1-indexed
      * @returns {HTMLDivElement} the DOM element of the cell
     */
-    getCellDOM(row: number, col: number): HTMLDivElement {
+    private getCellDOM(row: number, col: number): HTMLDivElement {
         return this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
     }
 
@@ -406,7 +374,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * @returns {HTMLDivElement} the DOM element of the cell
     */
    // May not need the arguments lol
-    getNextWordIndex(across: boolean, clue: number): number {
+    private getNextWordIndex(across: boolean, clue: number): number {
         if(this._wordsClues.length == 1) {
             return 0
         }
@@ -491,11 +459,13 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * Event listener for a cellDOM element that handles keypresses. 
      * 
      * Tab switches to the next word, space changes context for direction, and
-     * if the key was an alphabetic character, the text currently in the cell with whatever was pressed.
+     * if the key was an alphabetic character, replaces text currently in the cell
+     * with whatever was pressed and calls nextEmptyCell().
+     * Arrow key navigation is also possible.
      * 
      * Overrides / prevents the default character insertion
      */
-    cellKeydownHandler(e: KeyboardEvent) {
+    private cellKeydownHandler(e: KeyboardEvent) {
         e.preventDefault(); // Prevent default character insertion
         const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
         let cell: HTMLDivElement = (e.target)
@@ -568,15 +538,10 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * 
      * @param {FocusEvent} e - the event. Its target attribute is used
     */
-    cellFocusHandler(e: FocusEvent) {
+    private cellFocusHandler(e: FocusEvent) {
         this.cur_row = Number((e.target).getAttribute("grid-row"))
         this.cur_col = Number((e.target).getAttribute("grid-col"))
-        //DEV: console.log("Current cell coordinates..? (" + this.cur_row + ", " + this.cur_col + ")")
-        
-        if(this.cur_row == null || this.cur_row == null) {
-            this.cur_row = Number((e.target).getAttribute("grid-row"))
-            this.cur_col = Number((e.target).getAttribute("grid-col"))
-        }
+        //
         // Needs to be corrected bc it's 1-indexed in the DOM
         let x = this.cur_row
         let y = this.cur_col
@@ -618,7 +583,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
     }
     
 
-        /**
+     /**
      * Generates crossword puzzle based off of words in the clue box, without given coordinates.
      * Calls the function in crossword-gen
      * 
@@ -636,8 +601,40 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
     }
 
     // TODO Implement answer checking
-    // It should compare the text content of the cell with the answer in this.grid 
-    
+    // It should compare the text content of the cell with the answer in this.grid
+
+     /**
+     * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
+     *
+     * Dimensions are based on {@link this.grid | grid}.
+     *
+     * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+     * @returns {HTMLDivElement} the DOM element for the grid.
+     * Source: crosswords-js
+     */
+    newCrosswordGridDOM(document) {
+        let gridEl = document.createElement('div');
+        this.gridEl = gridEl
+        this.gridEl.classList.add('grid')
+        for (let x = 0; x < this.grid.length; x += 1) {
+            for (let y = 0; y < this.grid.length; y += 1) {
+                //  Build the cell element and place cell in grid element
+                this.gridEl.appendChild(this.newCell(document, x, y));
+            }
+        }
+        this.gridEl.addEventListener("keydown", stopCtrlPropagation)
+        //DEV: console.log("gridEl:")
+        //DEV: console.log(this.gridEl)
+        this.requestUpdate()
+        //DEV: console.log("Updated crossword grid DOM:")
+        //DEV: console.log(this.gridEl)
+        //DEV: console.log("Grid object:")
+        //DEV: console.log(this.grid)
+        //DEV: console.log("Words and clues:")
+        //DEV: console.log(this._wordsAndClues)
+        return this.gridEl
+    }
+ 
     render() {
         this.grid = generateCrosswordFromList(this._wordsClues)
         this.newCrosswordGridDOM(document)

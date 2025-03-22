@@ -1536,7 +1536,7 @@ function generateCrossword(wordsClues) {
   let rankedList;
   rankedList = sortWords();
   let clueCount = 0;
-  let epoch = 500;
+  let epoch = 1500;
   for (let i9 = 0; i9 < wordsClues.length; null) {
     rankings[i9] = rankWord(i9);
     i9++;
@@ -1545,8 +1545,9 @@ function generateCrossword(wordsClues) {
   try {
     generateCrosswordGrid(wordsClues, 0);
   } catch (error) {
-    DEV: console.log("Reached end of epoch");
+    DEV: console.log("Crossword generation interrupted");
     DEV: console.log(error.message);
+    DEV: console.log(error.stack);
   }
   clueCount = 0;
   for (let i9 = 0; i9 < bestGrid.length; i9++) {
@@ -1567,8 +1568,6 @@ function generateCrossword(wordsClues) {
   }
   bestWordsPlaced.sort((a5, b4) => a5.clueNumber - b4.clueNumber);
   bestWordsPlaced.sort((a5, b4) => Number(b4.across) - Number(a5.across));
-  DEV: console.log("bestWordsPlaced sorted by clue number and across / down:");
-  DEV: console.log(bestWordsPlaced);
   wordsClues = bestWordsPlaced;
   DEV: console.log(bestGrid);
   return { wordsAndClues: bestWordsPlaced, grid: bestGrid };
@@ -1663,8 +1662,6 @@ function generateCrossword(wordsClues) {
         }
       }
     }
-    DEV: console.log("Possible placements for " + newWordClue.word + ": ");
-    DEV: console.log(possiblePlacements);
     return possiblePlacements;
   }
   function selectPlacement(possiblePlacementOptions) {
@@ -1813,7 +1810,6 @@ function generateCrossword(wordsClues) {
         return 1;
       }
     }
-    DEV: console.log("Depth: " + depth);
     crosswordGenTimeout += 1;
     if (crosswordGenTimeout == epoch) {
       throw new Error("Epoch reached");
@@ -1877,7 +1873,6 @@ function generateCrossword(wordsClues) {
       wordList[i10].y = null;
     }
     function setClueNumbers(wordList) {
-      DEV: console.log("Setting clue numbers");
       let wordListCopy = wordList.map((wC) => ({ ...wC }));
       wordListCopy.sort((a5, b4) => a5.y - b4.y);
       wordListCopy.sort((a5, b4) => a5.x - b4.x);
@@ -1902,7 +1897,6 @@ function generateCrossword(wordsClues) {
   }
 }
 function generateCrosswordFromList(wordsClues) {
-  DEV: console.log("Crossword generation from list triggered");
   if (wordsClues == null) {
     let grid2 = [];
     for (let i9 = 0; i9 < 8; i9++) {
@@ -2072,6 +2066,22 @@ var cluebox_styles = i`
     }
     #button-drawer{
         position: absolute;
+    }
+    sl-drawer::part(title){
+        font-size: 18px;
+        padding: 10 var(--header-spacing);
+        color: var(--sl-color-gray-700);
+        align-content: center;
+    }
+    sl-drawer::part(header-actions){
+        padding: 10 var(--header-spacing);
+    }
+    sl-drawer::part(body){
+        padding: 5 var(--body-spacing);
+    }
+    sl-drawer sl-button[variant="success"]::part(base) {
+        background-color: #97BD64;
+        font-weight: bold;
     }
     .minus-button {
         font-size: 10px;
@@ -24129,28 +24139,6 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
     };
   }
   // TODO Add event listener for adding the focus class based on the clue number and direction
-  /**
-   * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
-   * 
-   * Dimensions are based on {@link this.grid | grid}.
-   * 
-   * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-   * @returns {HTMLDivElement} the DOM element for the grid.
-   * Source: crosswords-js
-   */
-  newCrosswordGridDOM(document2) {
-    let gridEl = document2.createElement("div");
-    this.gridEl = gridEl;
-    this.gridEl.classList.add("grid");
-    for (let x3 = 0; x3 < this.grid.length; x3 += 1) {
-      for (let y4 = 0; y4 < this.grid.length; y4 += 1) {
-        this.gridEl.appendChild(this.newCell(document2, x3, y4));
-      }
-    }
-    this.gridEl.addEventListener("keydown", stopCtrlPropagation);
-    this.requestUpdate();
-    return this.gridEl;
-  }
   /** 
    * For handling a keypress in the crossword grid. Goes to next relevant cell
    * 
@@ -24238,11 +24226,11 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
     }
   }
   /**
-       * Dispatches an event to change the current clue and direction context.
-       * 
-       * @param {number} clue the updated clue number
-       * @param {boolean} across whether the updated direction is across
-       */
+  * Dispatches an event to change the current clue and direction context.
+  * 
+  * @param {number} clue the updated clue number
+  * @param {boolean} across whether the updated direction is across
+  */
   setContext(context) {
     let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
     this.dispatchEvent(setContext2);
@@ -24361,7 +24349,9 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
    * Event listener for a cellDOM element that handles keypresses. 
    * 
    * Tab switches to the next word, space changes context for direction, and
-   * if the key was an alphabetic character, the text currently in the cell with whatever was pressed.
+   * if the key was an alphabetic character, replaces text currently in the cell
+   * with whatever was pressed and calls nextEmptyCell().
+   * Arrow key navigation is also possible.
    * 
    * Overrides / prevents the default character insertion
    */
@@ -24436,10 +24426,6 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
   cellFocusHandler(e13) {
     this.cur_row = Number(e13.target.getAttribute("grid-row"));
     this.cur_col = Number(e13.target.getAttribute("grid-col"));
-    if (this.cur_row == null || this.cur_row == null) {
-      this.cur_row = Number(e13.target.getAttribute("grid-row"));
-      this.cur_col = Number(e13.target.getAttribute("grid-col"));
-    }
     let x3 = this.cur_row;
     let y4 = this.cur_col;
     let { across: acrossContext, clue: clueContext } = this.getContextFromCell(this.cur_row, this.cur_col);
@@ -24480,7 +24466,29 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
     return wordsAndClues;
   }
   // TODO Implement answer checking
-  // It should compare the text content of the cell with the answer in this.grid 
+  // It should compare the text content of the cell with the answer in this.grid
+  /**
+  * Build / construct the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element that will contain the words and clues
+  *
+  * Dimensions are based on {@link this.grid | grid}.
+  *
+  * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+  * @returns {HTMLDivElement} the DOM element for the grid.
+  * Source: crosswords-js
+  */
+  newCrosswordGridDOM(document2) {
+    let gridEl = document2.createElement("div");
+    this.gridEl = gridEl;
+    this.gridEl.classList.add("grid");
+    for (let x3 = 0; x3 < this.grid.length; x3 += 1) {
+      for (let y4 = 0; y4 < this.grid.length; y4 += 1) {
+        this.gridEl.appendChild(this.newCell(document2, x3, y4));
+      }
+    }
+    this.gridEl.addEventListener("keydown", stopCtrlPropagation);
+    this.requestUpdate();
+    return this.gridEl;
+  }
   render() {
     this.grid = generateCrosswordFromList(this._wordsClues);
     this.newCrosswordGridDOM(document);
@@ -24634,6 +24642,9 @@ var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg
 
 // node_modules/bootstrap-icons/icons/dash.svg
 var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">%0A  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>%0A</svg>';
+
+// node_modules/bootstrap-icons/icons/magic.svg
+var magic_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magic" viewBox="0 0 16 16">%0A  <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707zM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1zM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707zM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0z"/>%0A</svg>';
 
 // node_modules/bootstrap-icons/icons/pencil-square.svg
 var pencil_square_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">%0A  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>%0A  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>%0A</svg>';
@@ -24852,8 +24863,9 @@ var WwWordPuzzlesCwClueboxInput = class extends WebwriterWordPuzzles {
   render() {
     const edit_button = x`<sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
-                <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
-                <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
+                <sl-button title="Ctrl+Enter" slot="header-actions" size="small" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword
+                            <sl-icon slot="suffix" src=${magic_default}></sl-icon>
+</sl-button>
                 </sl-drawer>
                     <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
                         <div style="justify-content:center;padding-top:2px;">

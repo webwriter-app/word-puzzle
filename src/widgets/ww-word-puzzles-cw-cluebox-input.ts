@@ -20,6 +20,7 @@ import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component
 // Icons
 import plus from 'bootstrap-icons/icons/plus-lg.svg';
 import minus from 'bootstrap-icons/icons/dash.svg';
+import magic_wand from 'bootstrap-icons/icons/magic.svg';
 import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
 
 
@@ -300,8 +301,9 @@ export class WwWordPuzzlesCwClueboxInput extends WebwriterWordPuzzles {
         //this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
         const edit_button = html`<sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
-                <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword</sl-button>
-                <sl-button slot="footer" variant="primary" @click=${() => this.hideDrawer()}>Close</sl-button>
+                <sl-button title="Ctrl+Enter" slot="header-actions" size="small" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword
+                            <sl-icon slot="suffix" src=${magic_wand}></sl-icon>
+</sl-button>
                 </sl-drawer>
                     <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
                         <div style="justify-content:center;padding-top:2px;">

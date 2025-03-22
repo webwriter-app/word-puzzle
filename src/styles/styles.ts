@@ -99,6 +99,22 @@ export const cluebox_styles = css`
     #button-drawer{
         position: absolute;
     }
+    sl-drawer::part(title){
+        font-size: 18px;
+        padding: 10 var(--header-spacing);
+        color: var(--sl-color-gray-700);
+        align-content: center;
+    }
+    sl-drawer::part(header-actions){
+        padding: 10 var(--header-spacing);
+    }
+    sl-drawer::part(body){
+        padding: 5 var(--body-spacing);
+    }
+    sl-drawer sl-button[variant="success"]::part(base) {
+        background-color: #97BD64;
+        font-weight: bold;
+    }
     .minus-button {
         font-size: 10px;
     }

@@ -60,7 +60,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     let clueCount = 0 // @type{number}
 
     /** Number of iterations until the algorithm stops */
-    let epoch = 500 // @type{number}
+    let epoch = 1500 // @type{number}
 
     // Rank the words
     for(let i = 0; i < wordsClues.length; null) {
@@ -74,8 +74,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         generateCrosswordGrid(wordsClues, 0)
     }
     catch(error) {
-        DEV: console.log("Reached end of epoch")
+        DEV: console.log("Crossword generation interrupted")
         DEV: console.log(error.message)
+        DEV: console.log(error.stack)
     }
 
     //DEV: console.log("Words and clues:")
@@ -110,8 +111,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     bestWordsPlaced.sort((a, b) => a.clueNumber - b.clueNumber)
     // Sort words by across / down
     bestWordsPlaced.sort((a, b) => Number(b.across) - Number(a.across))
-    DEV: console.log("bestWordsPlaced sorted by clue number and across / down:")
-    DEV: console.log(bestWordsPlaced)
+    //DEV: console.log("bestWordsPlaced sorted by clue number and across / down:")
+    //DEV: console.log(bestWordsPlaced)
 
     wordsClues = bestWordsPlaced
     DEV: console.log(bestGrid)
@@ -258,8 +259,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         // test all the placements to make sure they don't cross over already assigned squares, 
             // or have adjacent squares that don't belong to that word
-        DEV: console.log("Possible placements for " + newWordClue.word + ": ")
-        DEV: console.log(possiblePlacements)
+        //DEV: console.log("Possible placements for " + newWordClue.word + ": ")
+        //DEV: console.log(possiblePlacements)
         return possiblePlacements
     }
 
@@ -527,7 +528,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 return 1
             }
         }
-        DEV: console.log("Depth: " + depth)
+        //DEV: console.log("Depth: " + depth)
 
         crosswordGenTimeout += 1
         if(crosswordGenTimeout == epoch) {
@@ -623,7 +624,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
 
         function setClueNumbers(wordList: WordClue[]): WordClue[]{
-            DEV: console.log("Setting clue numbers")
+            //DEV: console.log("Setting clue numbers")
             //DEV: console.log("wordList beffore:")
             //DEV: console.log(wordList)
             let wordListCopy = wordList.map(wC => ({...wC}));
@@ -685,7 +686,7 @@ interface GridAndShift {
 export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
 
     // Initialization
-    DEV: console.log("Crossword generation from list triggered")
+    //DEV: console.log("Crossword generation from list triggered")
     if(wordsClues == null) {
         let grid: Cell[][] = []
 
