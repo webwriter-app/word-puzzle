@@ -74,36 +74,36 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      * Sets the {@link WwWordPuzzlesCrossword.width | width} and {@link WwWordPuzzlesCrossword.height | height} attributes
      * Dispatches an event to generate the crossword grid
      */
-    constructor() {
+    constructor(dimension: number = 8) {
         super()
-        this.addEventListener("generateCw", this.generateCwHandler)
-        this.addEventListener("set-context", (e: CustomEvent) => { this.setContextHandler(e) })
+        this.gridW = new WwWordPuzzlesCwGrid
+        this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
+        this.gridW.newCrosswordGridDOM(document)
+        this.clueW = new WwWordPuzzlesCwCluebox()
+
+        this.setWordsCluesChildren(this._wordsClues)
+
+        this.addEventListener("generateCw", () => {
+            DEV: console.log("generateCw triggered")
+            this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues)
+            this.clueW.requestUpdate()
+        })
+        this.addEventListener("set-context", (e: CustomEvent) => {
+            if(e.detail.acrossContext)
+                DEV: console.log("set-context: across, clue " + e.detail.clue)
+            else
+                DEV: console.log("set-context: down, clue " + e.detail.clue)
+            this._cwContext = e.detail
+            this.gridW._cwContext = this._cwContext
+            this.clueW._cwContext = this._cwContext
+            this.clueW.highlightContext(this._cwContext)
+        })
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
     }
 
     protected firstUpdated(_changedProperties: PropertyValues): void {
-        //this.gridW = new WwWordPuzzlesCwGrid
-        //this.clueW = new WwWordPuzzlesCwCluebox()
-
         //DEV: console.log("Within firstupdated, contenteditable is " + this.hasAttribute("contenteditable"))
         this.onPreviewToggle(this.hasAttribute("contenteditable"))
-    }
-
-    generateCwHandler() {
-        DEV: console.log("generateCw triggered")
-        this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues)
-        this.clueW.requestUpdate()
-    }
-    setContextHandler(e: CustomEvent) {
-        if(e.detail.acrossContext)
-            DEV: console.log("set-context: across, clue " + e.detail.clue)
-        else
-            DEV: console.log("set-context: down, clue " + e.detail.clue)
-        this._cwContext = e.detail
-        this.gridW._cwContext = this._cwContext
-        this.clueW._cwContext = this._cwContext
-        this.clueW.highlightContext(this._cwContext)
- 
     }
 
     /**
@@ -118,7 +118,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      * 
      * See the constructor {@link WwWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
-    @query('ww-word-puzzles-cw-grid')
+    @query('webwriter-word-puzzles-crossword-grid')
     private gridW: WwWordPuzzlesCwGrid
 
     /**
@@ -126,7 +126,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      * 
      * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
-    @query('webwriter-word-puzzles-cw-cluebox')
+    @query('webwriter-word-puzzles-crossword-cluebox')
     private clueW: WwWordPuzzlesCwCluebox
 
     /**
@@ -138,10 +138,6 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
 
     setWordsCluesChildren(wordsClues: WordClue[]) {
         //DEV: console.log("Setting words and clues in children.")
-        DEV: console.log("gridW:")
-        DEV: console.log(this.gridW)
-        DEV: console.log("clueW:")
-        DEV: console.log(this.clueW)
         this._wordsClues = wordsClues
         this.gridW._wordsClues = wordsClues
         this.clueW._wordsClues = wordsClues
@@ -187,14 +183,10 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
 
 
     render() {
-        this.gridW.grid = Array.from({ length: 8}, () => Array(8).fill(defaultCell()))
-        this.gridW.newCrosswordGridDOM(document)
         this.setWordsCluesChildren(this._wordsClues)
-
-
         return (html`<div class="wrapper">
-                <ww-word-puzzles-cw-grid></ww-word-puzzles-cw-grid>
-                <ww-word-puzzles-cw-cluebox></ww-word-puzzles-cw-cluebox>
+                ${this.gridW}
+                ${this.clueW}
             </div>
             `)
     }

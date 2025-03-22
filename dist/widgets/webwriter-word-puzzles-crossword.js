@@ -24838,31 +24838,32 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
    * Sets the {@link WwWordPuzzlesCrossword.width | width} and {@link WwWordPuzzlesCrossword.height | height} attributes
    * Dispatches an event to generate the crossword grid
    */
-  constructor() {
+  constructor(dimension = 8) {
     super();
-    this.addEventListener("generateCw", this.generateCwHandler);
+    this.gridW = new WwWordPuzzlesCwGrid();
+    this.gridW.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
+    this.gridW.newCrosswordGridDOM(document);
+    this.clueW = new WwWordPuzzlesCwCluebox();
+    this.setWordsCluesChildren(this._wordsClues);
+    this.addEventListener("generateCw", () => {
+      DEV: console.log("generateCw triggered");
+      this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues);
+      this.clueW.requestUpdate();
+    });
     this.addEventListener("set-context", (e13) => {
-      this.setContextHandler(e13);
+      if (e13.detail.acrossContext)
+        DEV: console.log("set-context: across, clue " + e13.detail.clue);
+      else
+        DEV: console.log("set-context: down, clue " + e13.detail.clue);
+      this._cwContext = e13.detail;
+      this.gridW._cwContext = this._cwContext;
+      this.clueW._cwContext = this._cwContext;
+      this.clueW.highlightContext(this._cwContext);
     });
     this.addEventListener("set-words-clues", (e13) => this.setWordsCluesChildren(e13.detail));
   }
   firstUpdated(_changedProperties) {
     this.onPreviewToggle(this.hasAttribute("contenteditable"));
-  }
-  generateCwHandler() {
-    DEV: console.log("generateCw triggered");
-    this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues);
-    this.clueW.requestUpdate();
-  }
-  setContextHandler(e13) {
-    if (e13.detail.acrossContext)
-      DEV: console.log("set-context: across, clue " + e13.detail.clue);
-    else
-      DEV: console.log("set-context: down, clue " + e13.detail.clue);
-    this._cwContext = e13.detail;
-    this.gridW._cwContext = this._cwContext;
-    this.clueW._cwContext = this._cwContext;
-    this.clueW.highlightContext(this._cwContext);
   }
   #_wordsClues;
   get _wordsClues() {
@@ -24875,10 +24876,6 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   clueW;
   _cwContext;
   setWordsCluesChildren(wordsClues) {
-    DEV: console.log("gridW:");
-    DEV: console.log(this.gridW);
-    DEV: console.log("clueW:");
-    DEV: console.log(this.clueW);
     this._wordsClues = wordsClues;
     this.gridW._wordsClues = wordsClues;
     this.clueW._wordsClues = wordsClues;
@@ -24915,12 +24912,10 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     return newValue;
   }
   render() {
-    this.gridW.grid = Array.from({ length: 8 }, () => Array(8).fill(defaultCell()));
-    this.gridW.newCrosswordGridDOM(document);
     this.setWordsCluesChildren(this._wordsClues);
     return x`<div class="wrapper">
-                <ww-word-puzzles-cw-grid></ww-word-puzzles-cw-grid>
-                <ww-word-puzzles-cw-cluebox></ww-word-puzzles-cw-cluebox>
+                ${this.gridW}
+                ${this.clueW}
             </div>
             `;
   }
@@ -24929,10 +24924,10 @@ __decorateClass([
   n4({ type: Array, attribute: true, reflect: true })
 ], WwWordPuzzlesCrossword.prototype, "_wordsClues", 1);
 __decorateClass([
-  e5("ww-word-puzzles-cw-grid")
+  e5("webwriter-word-puzzles-crossword-grid")
 ], WwWordPuzzlesCrossword.prototype, "gridW", 2);
 __decorateClass([
-  e5("webwriter-word-puzzles-cw-cluebox")
+  e5("webwriter-word-puzzles-crossword-cluebox")
 ], WwWordPuzzlesCrossword.prototype, "clueW", 2);
 __decorateClass([
   n4({ type: Object, state: true, attribute: false })
