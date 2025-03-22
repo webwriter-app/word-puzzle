@@ -18,7 +18,7 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "webwriter-word-puzzles-crossword-grid": WwWordPuzzlesCwGrid;
+    "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid;
     }
 }
 
@@ -116,7 +116,7 @@ const DEFAULT_DIMENSION: number = 9
  * @extends { WebwriterWordPuzzles  }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-word-puzzles-crossword-grid")
+@customElement("ww-word-puzzles-cw-grid")
 export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 

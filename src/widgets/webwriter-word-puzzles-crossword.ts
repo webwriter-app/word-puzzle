@@ -76,29 +76,32 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      */
     constructor(dimension: number = 8) {
         super()
-        this.gridW = new WwWordPuzzlesCwGrid
+        this.gridW = new WwWordPuzzlesCwGrid()
+        this.clueW = new WwWordPuzzlesCwCluebox()
         this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
-        this.clueW = new WwWordPuzzlesCwCluebox()
 
         this.setWordsCluesChildren(this._wordsClues)
 
-        this.addEventListener("generateCw", () => {
-            DEV: console.log("generateCw triggered")
-            this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues)
-            this.clueW.requestUpdate()
-        })
-        this.addEventListener("set-context", (e: CustomEvent) => {
-            if(e.detail.acrossContext)
-                DEV: console.log("set-context: across, clue " + e.detail.clue)
-            else
-                DEV: console.log("set-context: down, clue " + e.detail.clue)
-            this._cwContext = e.detail
-            this.gridW._cwContext = this._cwContext
-            this.clueW._cwContext = this._cwContext
-            this.clueW.highlightContext(this._cwContext)
-        })
+        this.addEventListener("generateCw", this.generateCwHandler )
+        this.addEventListener("set-context", this.setContextHandler)
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
+    }
+
+    generateCwHandler() {
+        DEV: console.log("generateCw triggered")
+        this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues)
+        this.clueW.requestUpdate()
+    }
+    setContextHandler(e: CustomEvent) {
+        if(e.detail.acrossContext)
+            DEV: console.log("set-context: across, clue " + e.detail.clue)
+        else
+            DEV: console.log("set-context: down, clue " + e.detail.clue)
+        this._cwContext = e.detail
+        this.gridW._cwContext = this._cwContext
+        this.clueW._cwContext = this._cwContext
+        this.clueW.highlightContext(this._cwContext)
     }
 
     protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -118,7 +121,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      * 
      * See the constructor {@link WwWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
-    @query('webwriter-word-puzzles-crossword-grid')
+    @query('ww-word-puzzles-cw-grid')
     private gridW: WwWordPuzzlesCwGrid
 
     /**
@@ -126,7 +129,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      * 
      * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
-    @query('webwriter-word-puzzles-crossword-cluebox')
+    @query('ww-word-puzzles-cw-cluebox')
     private clueW: WwWordPuzzlesCwCluebox
 
     /**

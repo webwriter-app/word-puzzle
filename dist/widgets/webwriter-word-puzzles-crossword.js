@@ -2726,7 +2726,7 @@ __decorateClass([
   r6()
 ], WwWordPuzzlesCwGrid.prototype, "cur_col", 2);
 WwWordPuzzlesCwGrid = __decorateClass([
-  t3("webwriter-word-puzzles-crossword-grid")
+  t3("ww-word-puzzles-cw-grid")
 ], WwWordPuzzlesCwGrid);
 
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.3RPBFEDE.js
@@ -24841,26 +24841,28 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   constructor(dimension = 8) {
     super();
     this.gridW = new WwWordPuzzlesCwGrid();
+    this.clueW = new WwWordPuzzlesCwCluebox();
     this.gridW.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridW.newCrosswordGridDOM(document);
-    this.clueW = new WwWordPuzzlesCwCluebox();
     this.setWordsCluesChildren(this._wordsClues);
-    this.addEventListener("generateCw", () => {
-      DEV: console.log("generateCw triggered");
-      this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues);
-      this.clueW.requestUpdate();
-    });
-    this.addEventListener("set-context", (e13) => {
-      if (e13.detail.acrossContext)
-        DEV: console.log("set-context: across, clue " + e13.detail.clue);
-      else
-        DEV: console.log("set-context: down, clue " + e13.detail.clue);
-      this._cwContext = e13.detail;
-      this.gridW._cwContext = this._cwContext;
-      this.clueW._cwContext = this._cwContext;
-      this.clueW.highlightContext(this._cwContext);
-    });
+    this.addEventListener("generateCw", this.generateCwHandler);
+    this.addEventListener("set-context", this.setContextHandler);
     this.addEventListener("set-words-clues", (e13) => this.setWordsCluesChildren(e13.detail));
+  }
+  generateCwHandler() {
+    DEV: console.log("generateCw triggered");
+    this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues);
+    this.clueW.requestUpdate();
+  }
+  setContextHandler(e13) {
+    if (e13.detail.acrossContext)
+      DEV: console.log("set-context: across, clue " + e13.detail.clue);
+    else
+      DEV: console.log("set-context: down, clue " + e13.detail.clue);
+    this._cwContext = e13.detail;
+    this.gridW._cwContext = this._cwContext;
+    this.clueW._cwContext = this._cwContext;
+    this.clueW.highlightContext(this._cwContext);
   }
   firstUpdated(_changedProperties) {
     this.onPreviewToggle(this.hasAttribute("contenteditable"));
@@ -24924,10 +24926,10 @@ __decorateClass([
   n4({ type: Array, attribute: true, reflect: true })
 ], WwWordPuzzlesCrossword.prototype, "_wordsClues", 1);
 __decorateClass([
-  e5("webwriter-word-puzzles-crossword-grid")
+  e5("ww-word-puzzles-cw-grid")
 ], WwWordPuzzlesCrossword.prototype, "gridW", 2);
 __decorateClass([
-  e5("webwriter-word-puzzles-crossword-cluebox")
+  e5("ww-word-puzzles-cw-cluebox")
 ], WwWordPuzzlesCrossword.prototype, "clueW", 2);
 __decorateClass([
   n4({ type: Object, state: true, attribute: false })
