@@ -686,6 +686,17 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
 
     // Initialization
     DEV: console.log("Crossword generation from list triggered")
+    if(wordsClues == null) {
+        let grid: Cell[][] = []
+
+            for(let i = 0; i < 8; i++) {
+                grid[i] = []
+                for (let j = 0; j < 8; j++) {
+                    grid[i][j] = defaultCell()
+                }
+            }
+        return grid
+    }
 
     let leftmost: number, rightmost: number, topmost: number, bottommost: number
 

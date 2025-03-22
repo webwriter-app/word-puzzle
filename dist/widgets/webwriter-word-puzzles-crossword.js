@@ -1903,6 +1903,16 @@ function generateCrossword(wordsClues) {
 }
 function generateCrosswordFromList(wordsClues) {
   DEV: console.log("Crossword generation from list triggered");
+  if (wordsClues == null) {
+    let grid2 = [];
+    for (let i9 = 0; i9 < 8; i9++) {
+      grid2[i9] = [];
+      for (let j3 = 0; j3 < 8; j3++) {
+        grid2[i9][j3] = defaultCell();
+      }
+    }
+    return grid2;
+  }
   let leftmost, rightmost, topmost, bottommost;
   leftmost = wordsClues[0].y;
   rightmost = wordsClues[0].y;
