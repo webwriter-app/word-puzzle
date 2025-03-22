@@ -19,6 +19,38 @@ export const crossword_styles = css`
                 display: flex;
                 flex-wrap: wrap;
             }
+    div {
+            display:flex;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:space-between;
+            margin-top: 10px;
+            width: 100%;
+        }
+ww-word-puzzles-cw-cluebox {
+            display:flex;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:space-between;
+            margin-top: 10px;
+        }
+ww-word-puzzles-cw-cluebox-input {
+            display:contents;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:space-between;
+            margin-top: 10px;
+        }
+
+div.cw-cluebox-wrapper {
+            display:flex;
+            flex-wrap:none;
+            align-items: space-between;
+            justify-content:center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
 `
 
 /**
@@ -39,15 +71,7 @@ export const cluebox_styles = css`
         margin-top: 10px;
         width: 100%;
     }
-    div.cw-cluebox-wrapper {
-            display:flex;
-            flex-wrap:wrap;
-            align-items: space-between;
-            justify-content:center;
-            margin-top: 20px;
-            width: 100%;
-        }
-    table.clueboxInput {
+        table.clueboxInput {
         /*Temporary width and height*/
         /*min-width: 200px;*/
         width: 48%;
@@ -74,7 +98,6 @@ export const cluebox_styles = css`
     }
     #button-drawer{
         position: absolute;
-        margin-top: -0.6em;
     }
     .minus-button {
         font-size: 10px;

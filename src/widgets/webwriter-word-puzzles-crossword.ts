@@ -12,6 +12,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { WebwriterWordPuzzles as WwWordPuzzles } from './webwriter-word-puzzles';
 import { WwWordPuzzlesCwGrid, WordClue, defaultCell } from './ww-word-puzzles-cw-grid';
 import { WwWordPuzzlesCwCluebox } from './ww-word-puzzles-cw-cluebox';
+import { WwWordPuzzlesCwClueboxInput } from './ww-word-puzzles-cw-cluebox-input';
 
 import { crossword_styles } from '../styles/styles'
 
@@ -28,6 +29,7 @@ declare global {interface HTMLElementTagNameMap {
         "webwriter-word-puzzles-crossword": WwWordPuzzlesCrossword;
         "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid;
         "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
+        "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput;
         "sl-button": SlButton;
         "sl-drawer": SlDrawer;
     }
@@ -78,6 +80,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
         super()
         this.gridW = new WwWordPuzzlesCwGrid()
         this.clueW = new WwWordPuzzlesCwCluebox()
+        this.clueInpW = new WwWordPuzzlesCwClueboxInput()
         this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
 
@@ -90,9 +93,11 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
 
     generateCwHandler() {
         DEV: console.log("generateCw triggered")
-        this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues)
+        this.clueInpW._wordsClues = this.gridW.generateCrossword(this.clueInpW._wordsClues)
+        this.clueW._wordsClues = this._wordsClues
         this.clueW.requestUpdate()
     }
+
     setContextHandler(e: CustomEvent) {
         if(e.detail.acrossContext)
             DEV: console.log("set-context: across, clue " + e.detail.clue)
@@ -129,8 +134,17 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
      * 
      * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
      */
+    @query('ww-word-puzzles-cw-cluebox-input')
+    private clueInpW: WwWordPuzzlesCwClueboxInput
+
+    /**
+     * The panel element of the crossword puzzle, containing the words and clues. (WIP)
+     * 
+     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
+     */
     @query('ww-word-puzzles-cw-cluebox')
     private clueW: WwWordPuzzlesCwCluebox
+
 
     /**
      * Current crossword context; across and clue number
@@ -144,6 +158,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
         this._wordsClues = wordsClues
         this.gridW._wordsClues = wordsClues
         this.clueW._wordsClues = wordsClues
+        this.clueInpW._wordsClues = wordsClues
         //DEV: console.log("this._wordsAndClues:")
         //DEV: console.log(this._wordsAndClues)
     }
@@ -164,6 +179,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
         "sl-drawer": SlDrawer,
         "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
         "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
+        "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput,
         };
     }
 
@@ -180,7 +196,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
 
     onPreviewToggle(newValue: boolean): boolean {
         //DEV: console.log("Preview toggled")
-        this.clueW.onPreviewToggle(newValue)
+        this.clueInpW.onPreviewToggle(newValue)
         return newValue 
     }
 
@@ -189,7 +205,9 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
         this.setWordsCluesChildren(this._wordsClues)
         return (html`<div class="wrapper">
                 ${this.gridW}
-                ${this.clueW}
+                <div class="cw-cluebox-wrapper">
+                ${this.clueInpW}${this.clueW}
+                </div>
             </div>
             `)
     }

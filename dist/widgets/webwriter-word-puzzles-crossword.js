@@ -1987,6 +1987,38 @@ var crossword_styles = i`
                 display: flex;
                 flex-wrap: wrap;
             }
+    div {
+            display:flex;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:space-between;
+            margin-top: 10px;
+            width: 100%;
+        }
+ww-word-puzzles-cw-cluebox {
+            display:flex;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:space-between;
+            margin-top: 10px;
+        }
+ww-word-puzzles-cw-cluebox-input {
+            display:contents;
+            flex-wrap:wrap;
+            align-items: space-between;
+            justify-content:space-between;
+            margin-top: 10px;
+        }
+
+div.cw-cluebox-wrapper {
+            display:flex;
+            flex-wrap:none;
+            align-items: space-between;
+            justify-content:center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
 `;
 var cluebox_styles = i`
     [nopreview] {
@@ -2003,15 +2035,7 @@ var cluebox_styles = i`
         margin-top: 10px;
         width: 100%;
     }
-    div.cw-cluebox-wrapper {
-            display:flex;
-            flex-wrap:wrap;
-            align-items: space-between;
-            justify-content:center;
-            margin-top: 20px;
-            width: 100%;
-        }
-    table.clueboxInput {
+        table.clueboxInput {
         /*Temporary width and height*/
         /*min-width: 200px;*/
         width: 48%;
@@ -2038,7 +2062,6 @@ var cluebox_styles = i`
     }
     #button-drawer{
         position: absolute;
-        margin-top: -0.6em;
     }
     .minus-button {
         font-size: 10px;
@@ -3674,7 +3697,7 @@ var computePosition = async (reference, floating, config) => {
     middlewareData
   };
 };
-async function detectOverflow(state3, options) {
+async function detectOverflow(state4, options) {
   var _await$platform$isEle;
   if (options === void 0) {
     options = {};
@@ -3686,14 +3709,14 @@ async function detectOverflow(state3, options) {
     rects,
     elements,
     strategy
-  } = state3;
+  } = state4;
   const {
     boundary = "clippingAncestors",
     rootBoundary = "viewport",
     elementContext = "floating",
     altBoundary = false,
     padding = 0
-  } = evaluate(options, state3);
+  } = evaluate(options, state4);
   const paddingObject = getPaddingObject(padding);
   const altContext = elementContext === "floating" ? "reference" : "floating";
   const element = elements[altBoundary ? altContext : elementContext];
@@ -3733,7 +3756,7 @@ async function detectOverflow(state3, options) {
 var arrow = (options) => ({
   name: "arrow",
   options,
-  async fn(state3) {
+  async fn(state4) {
     const {
       x: x3,
       y: y4,
@@ -3742,11 +3765,11 @@ var arrow = (options) => ({
       platform: platform2,
       elements,
       middlewareData
-    } = state3;
+    } = state4;
     const {
       element,
       padding = 0
-    } = evaluate(options, state3) || {};
+    } = evaluate(options, state4) || {};
     if (element == null) {
       return {};
     }
@@ -3799,7 +3822,7 @@ var flip = function(options) {
   return {
     name: "flip",
     options,
-    async fn(state3) {
+    async fn(state4) {
       var _middlewareData$arrow, _middlewareData$flip;
       const {
         placement,
@@ -3808,7 +3831,7 @@ var flip = function(options) {
         initialPlacement,
         platform: platform2,
         elements
-      } = state3;
+      } = state4;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = true,
@@ -3817,7 +3840,7 @@ var flip = function(options) {
         fallbackAxisSideDirection = "none",
         flipAlignment = true,
         ...detectOverflowOptions
-      } = evaluate(options, state3);
+      } = evaluate(options, state4);
       if ((_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3831,7 +3854,7 @@ var flip = function(options) {
         fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
       }
       const placements2 = [initialPlacement, ...fallbackPlacements];
-      const overflow = await detectOverflow(state3, detectOverflowOptions);
+      const overflow = await detectOverflow(state4, detectOverflowOptions);
       const overflows = [];
       let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
       if (checkMainAxis) {
@@ -3896,19 +3919,19 @@ var flip = function(options) {
     }
   };
 };
-async function convertValueToCoords(state3, options) {
+async function convertValueToCoords(state4, options) {
   const {
     placement,
     platform: platform2,
     elements
-  } = state3;
+  } = state4;
   const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
   const side = getSide(placement);
   const alignment = getAlignment(placement);
   const isVertical = getSideAxis(placement) === "y";
   const mainAxisMulti = ["left", "top"].includes(side) ? -1 : 1;
   const crossAxisMulti = rtl && isVertical ? -1 : 1;
-  const rawValue = evaluate(options, state3);
+  const rawValue = evaluate(options, state4);
   let {
     mainAxis,
     crossAxis,
@@ -3940,15 +3963,15 @@ var offset = function(options) {
   return {
     name: "offset",
     options,
-    async fn(state3) {
+    async fn(state4) {
       var _middlewareData$offse, _middlewareData$arrow;
       const {
         x: x3,
         y: y4,
         placement,
         middlewareData
-      } = state3;
-      const diffCoords = await convertValueToCoords(state3, options);
+      } = state4;
+      const diffCoords = await convertValueToCoords(state4, options);
       if (placement === ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse.placement) && (_middlewareData$arrow = middlewareData.arrow) != null && _middlewareData$arrow.alignmentOffset) {
         return {};
       }
@@ -3970,12 +3993,12 @@ var shift = function(options) {
   return {
     name: "shift",
     options,
-    async fn(state3) {
+    async fn(state4) {
       const {
         x: x3,
         y: y4,
         placement
-      } = state3;
+      } = state4;
       const {
         mainAxis: checkMainAxis = true,
         crossAxis: checkCrossAxis = false,
@@ -3992,12 +4015,12 @@ var shift = function(options) {
           }
         },
         ...detectOverflowOptions
-      } = evaluate(options, state3);
+      } = evaluate(options, state4);
       const coords = {
         x: x3,
         y: y4
       };
-      const overflow = await detectOverflow(state3, detectOverflowOptions);
+      const overflow = await detectOverflow(state4, detectOverflowOptions);
       const crossAxis = getSideAxis(getSide(placement));
       const mainAxis = getOppositeAxis(crossAxis);
       let mainAxisCoord = coords[mainAxis];
@@ -4017,7 +4040,7 @@ var shift = function(options) {
         crossAxisCoord = clamp(min2, crossAxisCoord, max2);
       }
       const limitedCoords = limiter.fn({
-        ...state3,
+        ...state4,
         [mainAxis]: mainAxisCoord,
         [crossAxis]: crossAxisCoord
       });
@@ -4042,20 +4065,20 @@ var size = function(options) {
   return {
     name: "size",
     options,
-    async fn(state3) {
+    async fn(state4) {
       var _state$middlewareData, _state$middlewareData2;
       const {
         placement,
         rects,
         platform: platform2,
         elements
-      } = state3;
+      } = state4;
       const {
         apply = () => {
         },
         ...detectOverflowOptions
-      } = evaluate(options, state3);
-      const overflow = await detectOverflow(state3, detectOverflowOptions);
+      } = evaluate(options, state4);
+      const overflow = await detectOverflow(state4, detectOverflowOptions);
       const side = getSide(placement);
       const alignment = getAlignment(placement);
       const isYAxis = getSideAxis(placement) === "y";
@@ -4076,13 +4099,13 @@ var size = function(options) {
       const maximumClippingWidth = width - overflow.left - overflow.right;
       const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
       const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-      const noShift = !state3.middlewareData.shift;
+      const noShift = !state4.middlewareData.shift;
       let availableHeight = overflowAvailableHeight;
       let availableWidth = overflowAvailableWidth;
-      if ((_state$middlewareData = state3.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
+      if ((_state$middlewareData = state4.middlewareData.shift) != null && _state$middlewareData.enabled.x) {
         availableWidth = maximumClippingWidth;
       }
-      if ((_state$middlewareData2 = state3.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
+      if ((_state$middlewareData2 = state4.middlewareData.shift) != null && _state$middlewareData2.enabled.y) {
         availableHeight = maximumClippingHeight;
       }
       if (noShift && !alignment) {
@@ -4097,7 +4120,7 @@ var size = function(options) {
         }
       }
       await apply({
-        ...state3,
+        ...state4,
         availableWidth,
         availableHeight
       });
@@ -16067,10 +16090,10 @@ var SubmenuController = class {
       }
     }
   }
-  setSubmenuState(state3) {
+  setSubmenuState(state4) {
     if (this.popupRef.value) {
-      if (this.popupRef.value.active !== state3) {
-        this.popupRef.value.active = state3;
+      if (this.popupRef.value.active !== state4) {
+        this.popupRef.value.active = state4;
         this.host.requestUpdate();
       }
     }
@@ -24485,6 +24508,120 @@ __decorateClass2([
 // node_modules/@shoelace-style/shoelace/dist/chunks/chunk.RJUO2BMU.js
 SlAnimatedImage.define("sl-animated-image");
 
+// src/widgets/ww-word-puzzles-cw-cluebox.ts
+var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
+  // All methods have the same names as in crosswords-js
+  localize = null;
+  #cluebox;
+  get cluebox() {
+    return this.#cluebox;
+  }
+  set cluebox(_3) {
+    this.#cluebox = _3;
+  }
+  _wordsClues = [{ word: "", across: true }];
+  _cwContext;
+  /**
+   * @constructor
+   * 
+   * Does nothing I guess
+   */
+  constructor() {
+    super();
+  }
+  static get styles() {
+    return cluebox_styles;
+  }
+  // Registering custom elements
+  static get scopedElements() {
+    return {
+      "sl-alert": alert_default,
+      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox
+    };
+  }
+  /**
+   * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context.
+   * 
+   * @param newContext 
+   * @param oldContext 
+   * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
+   */
+  highlightContext(context) {
+    if (this.cluebox.querySelector("table.cluebox td[current]") != null) {
+      this.cluebox.querySelector("table.cluebox td[current]").removeAttribute("current");
+    }
+    if (context.across != null && context.clue != null) {
+      const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + context.clue + '"][' + (context.across ? "across" : "down") + "]");
+      newCell.setAttribute("current", "");
+    }
+    return;
+  }
+  render() {
+    let i9 = 0;
+    let j3 = 0;
+    const clueboxTemplateCells = [];
+    if (this._wordsClues != null) {
+      for (let wordClue of this._wordsClues) {
+        if (wordClue.across) {
+          i9++;
+        } else
+          j3++;
+      }
+      let sharedRows = Math.min(i9, j3);
+      for (let k3 = 0; k3 < sharedRows; k3++) {
+        clueboxTemplateCells.push(x`<tr><td clue="${this._wordsClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsClues[k3])}</td><td clue="${this._wordsClues[k3 + i9].clueNumber}" down>${clueboxCellContents(this._wordsClues[k3 + i9])}</td></tr>`);
+      }
+      let diff = Math.abs(i9 - j3);
+      let start = i9 > j3 ? sharedRows : sharedRows + i9;
+      for (let k3 = start; k3 < diff + start; k3++) {
+        let cell = this._wordsClues[k3].across ? x`<tr><td clue="${this._wordsClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td clue="${this._wordsClues[k3].clueNumber}" down>${clueboxCellContents(this._wordsClues[k3])}</td></tr>`;
+        clueboxTemplateCells.push(cell);
+      }
+    } else {
+      clueboxTemplateCells.push(x`<tr><td></td><td></td></tr>`);
+    }
+    function clueboxCellContents(wordClue) {
+      if (wordClue != null) {
+        return x`
+                        <b>${wordClue.clueNumber != null ? "[" + wordClue.clueNumber + "]" : ""}</b> 
+                        ${wordClue.clueText != null ? wordClue.clueText : x`<i style="color:gray;">No clue provided for this word</i>`}
+                    `;
+      } else {
+        return x``;
+      }
+    }
+    return x`
+            <table class="cluebox">
+                <colgroup>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Across</th>
+                    <th>Down</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${clueboxTemplateCells}
+            </tbody>
+            </table>
+            `;
+  }
+};
+__decorateClass([
+  e5(".cluebox")
+], WwWordPuzzlesCwCluebox.prototype, "cluebox", 1);
+__decorateClass([
+  n4({ type: Array, attribute: true, reflect: true })
+], WwWordPuzzlesCwCluebox.prototype, "_wordsClues", 2);
+__decorateClass([
+  n4({ type: Object, state: true, attribute: false })
+], WwWordPuzzlesCwCluebox.prototype, "_cwContext", 2);
+WwWordPuzzlesCwCluebox = __decorateClass([
+  t3("ww-word-puzzles-cw-cluebox")
+], WwWordPuzzlesCwCluebox);
+
 // node_modules/bootstrap-icons/icons/plus-lg.svg
 var plus_lg_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">%0A  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>%0A</svg>';
 
@@ -24494,18 +24631,11 @@ var dash_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" w
 // node_modules/bootstrap-icons/icons/pencil-square.svg
 var pencil_square_default = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">%0A  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>%0A  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>%0A</svg>';
 
-// src/widgets/ww-word-puzzles-cw-cluebox.ts
-var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
+// src/widgets/ww-word-puzzles-cw-cluebox-input.ts
+var WwWordPuzzlesCwClueboxInput = class extends WebwriterWordPuzzles {
   // All methods have the same names as in crosswords-js
   localize = null;
   _preview = false;
-  #cluebox;
-  get cluebox() {
-    return this.#cluebox;
-  }
-  set cluebox(_3) {
-    this.#cluebox = _3;
-  }
   #clueboxInput;
   get clueboxInput() {
     return this.#clueboxInput;
@@ -24540,7 +24670,7 @@ var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
       "sl-icon": SlIcon,
       "sl-alert": alert_default,
       "sl-drawer": drawer_default,
-      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox
+      "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput
     };
   }
   /**
@@ -24610,24 +24740,6 @@ var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
       }
     } else if (event.ctrlKey)
       event.stopPropagation();
-  }
-  // TODO Execute upon context changing
-  /**
-   * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context.
-   * 
-   * @param newContext 
-   * @param oldContext 
-   * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
-   */
-  highlightContext(context) {
-    if (this.cluebox.querySelector("table.cluebox td[current]") != null) {
-      this.cluebox.querySelector("table.cluebox td[current]").removeAttribute("current");
-    }
-    if (context.across != null && context.clue != null) {
-      const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + context.clue + '"][' + (context.across ? "across" : "down") + "]");
-      newCell.setAttribute("current", "");
-    }
-    return;
   }
   /**
    * Handler for deleting the row corresponding to the clicked button.
@@ -24733,58 +24845,6 @@ var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
             </table>
             `;
   }
-  renderCluebox() {
-    let i9 = 0;
-    let j3 = 0;
-    const clueboxTemplateCells = [];
-    if (this._wordsClues != null) {
-      for (let wordClue of this._wordsClues) {
-        if (wordClue.across) {
-          i9++;
-        } else
-          j3++;
-      }
-      let sharedRows = Math.min(i9, j3);
-      for (let k3 = 0; k3 < sharedRows; k3++) {
-        clueboxTemplateCells.push(x`<tr><td clue="${this._wordsClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsClues[k3])}</td><td clue="${this._wordsClues[k3 + i9].clueNumber}" down>${clueboxCellContents(this._wordsClues[k3 + i9])}</td></tr>`);
-      }
-      let diff = Math.abs(i9 - j3);
-      let start = i9 > j3 ? sharedRows : sharedRows + i9;
-      for (let k3 = start; k3 < diff + start; k3++) {
-        let cell = this._wordsClues[k3].across ? x`<tr><td clue="${this._wordsClues[k3].clueNumber}" across>${clueboxCellContents(this._wordsClues[k3])}</td><td></td></tr>` : x`<tr><td></td><td clue="${this._wordsClues[k3].clueNumber}" down>${clueboxCellContents(this._wordsClues[k3])}</td></tr>`;
-        clueboxTemplateCells.push(cell);
-      }
-    } else {
-      clueboxTemplateCells.push(x`<tr><td></td><td></td></tr>`);
-    }
-    function clueboxCellContents(wordClue) {
-      if (wordClue != null) {
-        return x`
-                        <b>${wordClue.clueNumber != null ? "[" + wordClue.clueNumber + "]" : ""}</b> 
-                        ${wordClue.clueText != null ? wordClue.clueText : x`<i style="color:gray;">No clue provided for this word</i>`}
-                    `;
-      } else {
-        return x``;
-      }
-    }
-    return x`
-            <table class="cluebox">
-                <colgroup>
-                <col>
-                <col>
-            </colgroup>
-            <thead>
-                <tr>
-                    <th>Across</th>
-                    <th>Down</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${clueboxTemplateCells}
-            </tbody>
-            </table>
-            `;
-  }
   render() {
     const edit_button = x`<sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
                 ${this.renderClueboxInput()}
@@ -24797,33 +24857,27 @@ var WwWordPuzzlesCwCluebox = class extends WebwriterWordPuzzles {
                         </div>
                     </sl-button>
 `;
-    return x`<div class="cw-cluebox-wrapper">
-                ${this.renderCluebox()}
-                ${!this._preview ? edit_button : x``}</div>
-            `;
+    return x`${!this._preview ? edit_button : x``}`;
   }
 };
 __decorateClass([
   n4({ type: Boolean, state: true, attribute: false })
-], WwWordPuzzlesCwCluebox.prototype, "_preview", 2);
-__decorateClass([
-  e5(".cluebox")
-], WwWordPuzzlesCwCluebox.prototype, "cluebox", 1);
+], WwWordPuzzlesCwClueboxInput.prototype, "_preview", 2);
 __decorateClass([
   e5(".clueboxInput")
-], WwWordPuzzlesCwCluebox.prototype, "clueboxInput", 1);
+], WwWordPuzzlesCwClueboxInput.prototype, "clueboxInput", 1);
 __decorateClass([
   n4({ type: Array, attribute: false })
-], WwWordPuzzlesCwCluebox.prototype, "_wordsClues", 2);
+], WwWordPuzzlesCwClueboxInput.prototype, "_wordsClues", 2);
 __decorateClass([
   n4({ type: Object, state: true, attribute: false })
-], WwWordPuzzlesCwCluebox.prototype, "_cwContext", 2);
+], WwWordPuzzlesCwClueboxInput.prototype, "_cwContext", 2);
 __decorateClass([
   e5("sl-drawer")
-], WwWordPuzzlesCwCluebox.prototype, "drawer", 1);
-WwWordPuzzlesCwCluebox = __decorateClass([
-  t3("ww-word-puzzles-cw-cluebox")
-], WwWordPuzzlesCwCluebox);
+], WwWordPuzzlesCwClueboxInput.prototype, "drawer", 1);
+WwWordPuzzlesCwClueboxInput = __decorateClass([
+  t3("ww-word-puzzles-cw-cluebox-input")
+], WwWordPuzzlesCwClueboxInput);
 
 // src/widgets/webwriter-word-puzzles-crossword.ts
 function setContext(context) {
@@ -24842,6 +24896,7 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     super();
     this.gridW = new WwWordPuzzlesCwGrid();
     this.clueW = new WwWordPuzzlesCwCluebox();
+    this.clueInpW = new WwWordPuzzlesCwClueboxInput();
     this.gridW.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridW.newCrosswordGridDOM(document);
     this.setWordsCluesChildren(this._wordsClues);
@@ -24851,7 +24906,8 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   }
   generateCwHandler() {
     DEV: console.log("generateCw triggered");
-    this.clueW._wordsClues = this.gridW.generateCrossword(this.clueW._wordsClues);
+    this.clueInpW._wordsClues = this.gridW.generateCrossword(this.clueInpW._wordsClues);
+    this.clueW._wordsClues = this._wordsClues;
     this.clueW.requestUpdate();
   }
   setContextHandler(e13) {
@@ -24875,12 +24931,14 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.#_wordsClues = _3;
   }
   gridW;
+  clueInpW;
   clueW;
   _cwContext;
   setWordsCluesChildren(wordsClues) {
     this._wordsClues = wordsClues;
     this.gridW._wordsClues = wordsClues;
     this.clueW._wordsClues = wordsClues;
+    this.clueInpW._wordsClues = wordsClues;
   }
   /**
    * Styles
@@ -24897,7 +24955,8 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
       "sl-alert": alert_default,
       "sl-drawer": drawer_default,
       "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
-      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox
+      "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
+      "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput
     };
   }
   /**
@@ -24910,14 +24969,16 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.gridW.generateCrossword(this._wordsClues);
   }
   onPreviewToggle(newValue) {
-    this.clueW.onPreviewToggle(newValue);
+    this.clueInpW.onPreviewToggle(newValue);
     return newValue;
   }
   render() {
     this.setWordsCluesChildren(this._wordsClues);
     return x`<div class="wrapper">
                 ${this.gridW}
-                ${this.clueW}
+                <div class="cw-cluebox-wrapper">
+                ${this.clueInpW}${this.clueW}
+                </div>
             </div>
             `;
   }
@@ -24928,6 +24989,9 @@ __decorateClass([
 __decorateClass([
   e5("ww-word-puzzles-cw-grid")
 ], WwWordPuzzlesCrossword.prototype, "gridW", 2);
+__decorateClass([
+  e5("ww-word-puzzles-cw-cluebox-input")
+], WwWordPuzzlesCrossword.prototype, "clueInpW", 2);
 __decorateClass([
   e5("ww-word-puzzles-cw-cluebox")
 ], WwWordPuzzlesCrossword.prototype, "clueW", 2);
