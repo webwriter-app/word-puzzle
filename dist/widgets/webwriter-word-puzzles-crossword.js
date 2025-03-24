@@ -1516,6 +1516,15 @@ WebwriterWordPuzzles = __decorateClass([
 ], WebwriterWordPuzzles);
 
 // src/lib/crossword-gen.ts
+function defaultCell() {
+  return {
+    white: false,
+    answer: null,
+    // NOTE Should this be here, or should
+    number: null,
+    direction: null
+  };
+}
 function deleteElement(list, element) {
   list.splice(list.indexOf(element), 1);
   return element;
@@ -24091,20 +24100,6 @@ __decorateClass2([
 SlAnimatedImage.define("sl-animated-image");
 
 // src/widgets/ww-word-puzzles-cw-grid.ts
-function stopCtrlPropagation(event) {
-  if (event.ctrlKey) {
-    event.stopPropagation();
-  }
-}
-function defaultCell() {
-  return {
-    white: false,
-    answer: null,
-    // NOTE Should this be here, or should 
-    number: null,
-    direction: null
-  };
-}
 var DEFAULT_DIMENSION = 9;
 var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
   _preview = false;
@@ -24232,8 +24227,8 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
   * @param {boolean} across whether the updated direction is across
   */
   setContext(context) {
-    let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
-    this.dispatchEvent(setContext2);
+    let setContext = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
+    this.dispatchEvent(setContext);
   }
   getContextFromCell(row, col) {
     let cell = this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
@@ -24340,7 +24335,6 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
       this.cellKeydownHandler(e13);
     });
     cellDOM.addEventListener("focusin", (e13) => {
-      e13.stopPropagation();
       this.cellFocusHandler(e13);
     });
     return cellDOM;
@@ -24485,7 +24479,6 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
         this.gridEl.appendChild(this.newCell(document2, x3, y4));
       }
     }
-    this.gridEl.addEventListener("keydown", stopCtrlPropagation);
     this.requestUpdate();
     return this.gridEl;
   }
@@ -24893,9 +24886,10 @@ WwWordPuzzlesCwClueboxInput = __decorateClass([
 ], WwWordPuzzlesCwClueboxInput);
 
 // src/widgets/webwriter-word-puzzles-crossword.ts
-function setContext(context) {
-  let setContext2 = new CustomEvent("set-context", { bubbles: true, composed: true, detail: context });
-  this.dispatchEvent(setContext2);
+function stopCtrlPropagation(event) {
+  if (event.ctrlKey) {
+    event.stopPropagation();
+  }
 }
 var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
   /**
@@ -24913,6 +24907,7 @@ var WwWordPuzzlesCrossword = class extends WebwriterWordPuzzles {
     this.gridW.grid = Array.from({ length: dimension }, () => Array(dimension).fill(defaultCell()));
     this.gridW.newCrosswordGridDOM(document);
     this.setWordsCluesChildren(this._wordsClues);
+    this.addEventListener("keydown", stopCtrlPropagation);
     this.addEventListener("generateCw", this.generateCwHandler);
     this.addEventListener("set-context", this.setContextHandler);
     this.addEventListener("set-words-clues", (e13) => this.setWordsCluesChildren(e13.detail));
@@ -25016,8 +25011,7 @@ WwWordPuzzlesCrossword = __decorateClass([
   t3("webwriter-word-puzzles-crossword")
 ], WwWordPuzzlesCrossword);
 export {
-  WwWordPuzzlesCrossword,
-  setContext
+  WwWordPuzzlesCrossword
 };
 /*! Bundled license information:
 

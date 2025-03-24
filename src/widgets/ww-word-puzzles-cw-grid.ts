@@ -9,7 +9,7 @@ import { html } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WwWordPuzzlesCrossword, CwContext } from './webwriter-word-puzzles-crossword';
-import { generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
+import { WordClue, Cell, GenerationResults, defaultCell, generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
 // TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
@@ -18,91 +18,6 @@ import { SlAlert } from '@shoelace-style/shoelace';
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-
-function stopCtrlPropagation(event: KeyboardEvent): void {
-        if (event.ctrlKey) {
-            event.stopPropagation()
-            //DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
-        }
-    }
-
-
-/**
- * Cell object for the crossword grid. 
- * Maybe use this for the logic eventually
- * ```typescript
- * {
- *     white: boolean;
- *     answer: string;
- *     number: number;
- *     direction: string;
- * }
- * ```
- */
-export interface Cell {
-    white: boolean;
-/** The correct character */
-    answer?: string; // Correct letter
-/** The clue number. Can be null for white cells */
-    number?: number; 
-/** Direction of the word. Down, across, both, or null */
-    direction?: string; 
-}
-
-/** Custom data type for words placed on the grid. 
- * Includes word itself and coordinates. 
- * ```typescript
- * {
- *     word: string;
- *     clue: string;
- *     x: number;
- *     y: number;
- *     direction: string;
- *     number: number;
- * }
- * ```
- * */
-export interface WordClue {
-    /** The word in question */
-    word: string,
-    /** The text for the clue */
-    clueText?: string,
-    /** (0-indexed) starting x-coordinate of the word on the grid*/
-    x?: number, 
-    /** (0-indexed) starting y-coordinate of the word on the grid*/
-    y?: number, 
-    /** Whether the word is across or down */
-    across?: boolean,
-    /** Number of the clue */
-    clueNumber?: number
-}
-
-
-/**
- * Function to create a default cell object.
- */
-export function defaultCell(): Cell {
-    return {
-        white: false,
-        answer: null, // NOTE Should this be here, or should 
-        number: null,
-        direction: null
-    }
-}
-
-/**
- * ```typescript
- * {
- *   wordsAndClues: WordClue[],
- *   grid: Cell[][]
- * }
- * ```
- */
-export interface GenerationResults {
-    wordsAndClues: WordClue[],
-    grid: Cell[][]
-}
-
 
 const DEFAULT_DIMENSION: number = 9
 
@@ -448,7 +363,6 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
          */
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {
             // DEV: console.log("Cell focus event triggered")
-            e.stopPropagation()
             this.cellFocusHandler(e)
         });
 
@@ -622,7 +536,6 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
                 this.gridEl.appendChild(this.newCell(document, x, y));
             }
         }
-        this.gridEl.addEventListener("keydown", stopCtrlPropagation)
         //DEV: console.log("gridEl:")
         //DEV: console.log(this.gridEl)
         this.requestUpdate()

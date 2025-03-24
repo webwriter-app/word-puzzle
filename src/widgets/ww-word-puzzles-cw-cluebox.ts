@@ -9,7 +9,7 @@ import { html, HTMLTemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { CwContext, WwWordPuzzlesCrossword } from './webwriter-word-puzzles-crossword';
-import { WordClue } from './ww-word-puzzles-cw-grid';
+import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
 // Shoelace

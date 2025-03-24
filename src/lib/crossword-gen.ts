@@ -6,7 +6,81 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 
-import { WordClue, Cell, GenerationResults, defaultCell } from '../widgets/ww-word-puzzles-cw-grid'
+/**
+ * Cell object for the crossword grid.
+ * Maybe use this for the logic eventually
+ * ```typescript
+ * {
+ *     white: boolean;
+ *     answer: string;
+ *     number: number;
+ *     direction: string;
+ * }
+ * ```
+ */
+export interface Cell {
+    white: boolean;
+/** The correct character */
+    answer?: string; // Correct letter
+/** The clue number. Can be null for white cells */
+    number?: number;
+/** Direction of the word. Down, across, both, or null */
+    direction?: string;
+}
+
+/** Custom data type for words placed on the grid.
+ * Includes word itself and coordinates.
+ * ```typescript
+ * {
+ *     word: string;
+ *     clue: string;
+ *     x: number;
+ *     y: number;
+ *     direction: string;
+ *     number: number;
+ * }
+ * ```
+ * */
+export interface WordClue {
+    /** The word in question */
+    word: string,
+    /** The text for the clue */
+    clueText?: string,
+    /** (0-indexed) starting x-coordinate of the word on the grid*/
+    x?: number,
+    /** (0-indexed) starting y-coordinate of the word on the grid*/
+    y?: number,
+    /** Whether the word is across or down */
+    across?: boolean,
+    /** Number of the clue */
+    clueNumber?: number
+}
+
+
+/**
+ * Function to create a default cell object.
+ */
+export function defaultCell(): Cell {
+    return {
+        white: false,
+        answer: null, // NOTE Should this be here, or should
+        number: null,
+        direction: null
+    }
+}
+
+/**
+ * ```typescript
+ * {
+ *   wordsAndClues: WordClue[],
+ *   grid: Cell[][]
+ * }
+ * ```
+ */
+export interface GenerationResults {
+    wordsAndClues: WordClue[],
+    grid: Cell[][]
+}
 
 function deleteElement<Type>(list: Type[], element: Type): Type {
     list.splice(list.indexOf(element), 1)

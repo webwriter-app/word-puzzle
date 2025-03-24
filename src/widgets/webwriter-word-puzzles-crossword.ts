@@ -9,12 +9,12 @@ import { html, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
 import { WebwriterWordPuzzles as WwWordPuzzles } from './webwriter-word-puzzles';
-import { WwWordPuzzlesCwGrid, WordClue, defaultCell } from './ww-word-puzzles-cw-grid';
+import { WwWordPuzzlesCwGrid } from './ww-word-puzzles-cw-grid';
+import { WordClue, defaultCell } from '../lib/crossword-gen';
 import { WwWordPuzzlesCwCluebox } from './ww-word-puzzles-cw-cluebox';
 import { WwWordPuzzlesCwClueboxInput } from './ww-word-puzzles-cw-cluebox-input';
 
 import { crossword_styles } from '../styles/styles'
-
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -32,6 +32,13 @@ declare global {interface HTMLElementTagNameMap {
     }
 }
 
+function stopCtrlPropagation(event: KeyboardEvent): void {
+    if (event.ctrlKey) {
+        event.stopPropagation()
+        //DEV: console.log("Prevented propagation of a single CTRL key sequence within widget")
+    }
+}
+
 /**
  * Data type for the crossword context.
  * 
@@ -45,17 +52,6 @@ declare global {interface HTMLElementTagNameMap {
 export interface CwContext {
     across: boolean,
     clue: number
-}
-
-/**
-     * Dispatches an event to change the current clue and direction context.
-     * 
-     * @param {number} clue the updated clue number
-     * @param {boolean} across whether the updated direction is across
-     */
-export function setContext(context: CwContext): void {
-    let setContext = new CustomEvent("set-context", {bubbles: true, composed: true, detail: context})
-    this.dispatchEvent(setContext)
 }
 
 /**
@@ -83,6 +79,7 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
 
         this.setWordsCluesChildren(this._wordsClues)
 
+        this.addEventListener("keydown", stopCtrlPropagation )
         this.addEventListener("generateCw", this.generateCwHandler )
         this.addEventListener("set-context", this.setContextHandler)
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
