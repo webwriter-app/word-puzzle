@@ -70,6 +70,57 @@ export function defaultCell(): Cell {
 }
 
 /**
+* Constructor for the cells of the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element.
+*
+* @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
+* @param {number} x the row of the cell, 0-indexed
+* @param {number} y the column of the cell, 0-indexed
+* eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
+* @returns {HTMLDivElement} the DOM element for the _cell_
+* Source: crosswords-js, partially
+*/
+export function newCellDOM(document: Document, grid: Cell[][], x: number, y: number) {
+    const cellDOM: HTMLDivElement = document.createElement('div');
+    cellDOM.className = 'cell'
+    cellDOM.style.gridRowStart = (x+1).toString()
+    cellDOM.style.gridColumnStart = (y+1).toString()
+    cellDOM.setAttribute("grid-row", (x).toString())
+    cellDOM.setAttribute("grid-col", (y).toString())
+    // This is just temporary for testing
+    try {
+    if (!grid[x][y].white) {
+        cellDOM.setAttribute("black", "")
+        cellDOM.setAttribute("answer", "false");
+        cellDOM.contentEditable = "false";
+    }
+    else {
+        cellDOM.contentEditable = "true";
+        cellDOM.removeAttribute("black")
+        cellDOM.setAttribute("answer", "true");
+        cellDOM.setAttribute("direction", grid[x][y].direction);
+        // Create div for adding a letter
+        const cellLetter = document.createElement('div');
+        cellLetter.classList.add('cell-letter')
+        cellDOM.appendChild(cellLetter)
+        // Add a small div for the clue number if the cell has one
+        if (grid[x][y].number) {
+            const numberText = document.createElement('div');
+            numberText.classList.add('clue-label');
+            numberText.contentEditable = "false";
+            numberText.innerHTML = grid[x][y].number.toString();
+            cellDOM.appendChild(numberText);
+        }
+    }
+    }
+    catch(error) {
+        DEV: console.log("newCellDOM(): Error at (" + x + "," + y + ")")
+    }
+
+    return cellDOM
+}
+
+
+/**
  * ```typescript
  * {
  *   wordsAndClues: WordClue[],

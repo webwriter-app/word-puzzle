@@ -1525,6 +1525,39 @@ function defaultCell() {
     direction: null
   };
 }
+function newCellDOM(document2, grid, x3, y4) {
+  const cellDOM = document2.createElement("div");
+  cellDOM.className = "cell";
+  cellDOM.style.gridRowStart = (x3 + 1).toString();
+  cellDOM.style.gridColumnStart = (y4 + 1).toString();
+  cellDOM.setAttribute("grid-row", x3.toString());
+  cellDOM.setAttribute("grid-col", y4.toString());
+  try {
+    if (!grid[x3][y4].white) {
+      cellDOM.setAttribute("black", "");
+      cellDOM.setAttribute("answer", "false");
+      cellDOM.contentEditable = "false";
+    } else {
+      cellDOM.contentEditable = "true";
+      cellDOM.removeAttribute("black");
+      cellDOM.setAttribute("answer", "true");
+      cellDOM.setAttribute("direction", grid[x3][y4].direction);
+      const cellLetter = document2.createElement("div");
+      cellLetter.classList.add("cell-letter");
+      cellDOM.appendChild(cellLetter);
+      if (grid[x3][y4].number) {
+        const numberText = document2.createElement("div");
+        numberText.classList.add("clue-label");
+        numberText.contentEditable = "false";
+        numberText.innerHTML = grid[x3][y4].number.toString();
+        cellDOM.appendChild(numberText);
+      }
+    }
+  } catch (error) {
+    DEV: console.log("newCellDOM(): Error at (" + x3 + "," + y4 + ")");
+  }
+  return cellDOM;
+}
 function deleteElement(list, element) {
   list.splice(list.indexOf(element), 1);
   return element;
@@ -24295,42 +24328,10 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
    * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
    * @param {number} x the row of the cell, 0-indexed
    * @param {number} y the column of the cell, 0-indexed
-   * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-   * @returns {HTMLDivElement} the DOM element for the _cell_
-   * Source: crosswords-js
+   * @returns {HTMLDivElement} the DOM element for the cell
    */
-  newCell(document2, x3, y4) {
-    const cellDOM = document2.createElement("div");
-    cellDOM.className = "cell";
-    cellDOM.style.display = "grid";
-    cellDOM.style.gridRowStart = (x3 + 1).toString();
-    cellDOM.style.gridColumnStart = (y4 + 1).toString();
-    cellDOM.setAttribute("grid-row", x3.toString());
-    cellDOM.setAttribute("grid-col", y4.toString());
-    try {
-      if (!this.grid[x3][y4].white) {
-        cellDOM.setAttribute("black", "");
-        cellDOM.setAttribute("answer", "false");
-        cellDOM.contentEditable = "false";
-      } else {
-        cellDOM.contentEditable = "true";
-        cellDOM.removeAttribute("black");
-        cellDOM.setAttribute("answer", "true");
-        cellDOM.setAttribute("direction", this.grid[x3][y4].direction);
-        const cellLetter = document2.createElement("div");
-        cellLetter.classList.add("cell-letter");
-        cellDOM.appendChild(cellLetter);
-        if (this.grid[x3][y4].number) {
-          const numberText = document2.createElement("div");
-          numberText.classList.add("clue-label");
-          numberText.contentEditable = "false";
-          numberText.innerHTML = this.grid[x3][y4].number.toString();
-          cellDOM.appendChild(numberText);
-        }
-      }
-    } catch (error) {
-      DEV: console.log("newCell(): Error at (" + x3 + "," + y4 + ")");
-    }
+  newCellDOM(document2, x3, y4) {
+    const cellDOM = newCellDOM(document2, this.grid, x3, y4);
     cellDOM.addEventListener("keydown", (e13) => {
       this.cellKeydownHandler(e13);
     });
@@ -24476,7 +24477,7 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
     this.gridEl.classList.add("grid");
     for (let x3 = 0; x3 < this.grid.length; x3 += 1) {
       for (let y4 = 0; y4 < this.grid.length; y4 += 1) {
-        this.gridEl.appendChild(this.newCell(document2, x3, y4));
+        this.gridEl.appendChild(this.newCellDOM(document2, x3, y4));
       }
     }
     this.requestUpdate();

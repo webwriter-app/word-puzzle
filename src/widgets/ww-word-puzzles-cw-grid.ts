@@ -9,7 +9,7 @@ import { html } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WwWordPuzzlesCrossword, CwContext } from './webwriter-word-puzzles-crossword';
-import { WordClue, Cell, GenerationResults, defaultCell, generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
+import { WordClue, Cell, GenerationResults, defaultCell, generateCrossword, generateCrosswordFromList, newCellDOM } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
 // TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
@@ -307,65 +307,12 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
      * @param {number} x the row of the cell, 0-indexed
      * @param {number} y the column of the cell, 0-indexed
-     * eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-     * @returns {HTMLDivElement} the DOM element for the _cell_
-     * Source: crosswords-js
+     * @returns {HTMLDivElement} the DOM element for the cell
      */
-    protected newCell(document: Document, x: number, y: number) {
-        const cellDOM: HTMLDivElement = document.createElement('div');
-        cellDOM.className = 'cell'
-        cellDOM.style.display = 'grid'
-        cellDOM.style.gridRowStart = (x+1).toString()
-        cellDOM.style.gridColumnStart = (y+1).toString()
-        cellDOM.setAttribute("grid-row", (x).toString())
-        cellDOM.setAttribute("grid-col", (y).toString())
-        // This is just temporary for testing
-        try {
-        if (!this.grid[x][y].white) {
-            cellDOM.setAttribute("black", "")
-            cellDOM.setAttribute("answer", "false");
-            cellDOM.contentEditable = "false";
-        }
-        else {
-            cellDOM.contentEditable = "true";
-            cellDOM.removeAttribute("black")
-            cellDOM.setAttribute("answer", "true");
-            cellDOM.setAttribute("direction", this.grid[x][y].direction);
-            // Create div for adding a letter
-            const cellLetter = document.createElement('div');
-            cellLetter.classList.add('cell-letter')
-            cellDOM.appendChild(cellLetter)
-            // Add a small div for the clue number if the cell has one
-            if (this.grid[x][y].number) {
-                const numberText = document.createElement('div');
-                numberText.classList.add('clue-label');
-                numberText.contentEditable = "false";
-                numberText.innerHTML = this.grid[x][y].number.toString();
-                cellDOM.appendChild(numberText);
-            }
-        }
-        }
-        catch(error) {
-            DEV: console.log("newCell(): Error at (" + x + "," + y + ")")
-        }
-
-        /**
-         * Event listener that replaces the text currently in the cell with whatever was pressed.
-         * 
-         * Overrides / prevents the default character insertion
-         */
+    protected newCellDOM(document: Document, x: number, y: number) {
+        const cellDOM = newCellDOM(document, this.grid, x, y)
         cellDOM.addEventListener('keydown', (e) => { this.cellKeydownHandler(e) });
-
-        /**
-         * Event listener for current focus
-         * 
-         * Overrides / prevents the default character insertion
-         */
-        cellDOM.addEventListener('focusin', (e: FocusEvent) => {
-            // DEV: console.log("Cell focus event triggered")
-            this.cellFocusHandler(e)
-        });
-
+        cellDOM.addEventListener('focusin', (e: FocusEvent) => {this.cellFocusHandler(e)});
         return cellDOM
     }
 
@@ -533,7 +480,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
         for (let x = 0; x < this.grid.length; x += 1) {
             for (let y = 0; y < this.grid.length; y += 1) {
                 //  Build the cell element and place cell in grid element
-                this.gridEl.appendChild(this.newCell(document, x, y));
+                this.gridEl.appendChild(this.newCellDOM(document, x, y));
             }
         }
         //DEV: console.log("gridEl:")
