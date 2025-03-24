@@ -9,7 +9,7 @@ import { html } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WwWordPuzzlesCrossword, CwContext } from './webwriter-word-puzzles-crossword';
-import { WordClue, Cell, GenerationResults, defaultCell, generateCrossword, generateCrosswordFromList, newCellDOM } from '../lib/crossword-gen'
+import { WordClue, Cell, defaultCell, newCellDOM, GenerationResults, generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
 // TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
@@ -231,7 +231,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
     }
 
 
-    getContextFromCell(row: number, col: number): {across: boolean, clue: number} {
+    getContextFromCell(row: number, col: number): CrosswordContext {
         let cell: HTMLDivElement = this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
         let across: boolean
         let clue
@@ -336,6 +336,7 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
         let row = Number(cell.getAttribute("grid-row"))
         let col = Number(cell.getAttribute("grid-col"))
 
+        e.stopPropagation(); // Prevent default character insertion
         switch(e.key) {
             // Go to next clue
             case "Tab":
@@ -475,23 +476,15 @@ export class WwWordPuzzlesCwGrid extends WebwriterWordPuzzles {
      */
     newCrosswordGridDOM(document) {
         let gridEl = document.createElement('div');
-        this.gridEl = gridEl
-        this.gridEl.classList.add('grid')
+        gridEl.classList.add('grid')
         for (let x = 0; x < this.grid.length; x += 1) {
             for (let y = 0; y < this.grid.length; y += 1) {
                 //  Build the cell element and place cell in grid element
-                this.gridEl.appendChild(this.newCellDOM(document, x, y));
+                gridEl.appendChild(this.newCellDOM(document, x, y));
             }
         }
-        //DEV: console.log("gridEl:")
-        //DEV: console.log(this.gridEl)
+        this.gridEl = gridEl
         this.requestUpdate()
-        //DEV: console.log("Updated crossword grid DOM:")
-        //DEV: console.log(this.gridEl)
-        //DEV: console.log("Grid object:")
-        //DEV: console.log(this.grid)
-        //DEV: console.log("Words and clues:")
-        //DEV: console.log(this._wordsAndClues)
         return this.gridEl
     }
  

@@ -119,7 +119,6 @@ export function newCellDOM(document: Document, grid: Cell[][], x: number, y: num
     return cellDOM
 }
 
-
 /**
  * ```typescript
  * {

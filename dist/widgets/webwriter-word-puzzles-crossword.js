@@ -24357,6 +24357,7 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
     let nextCell;
     let row = Number(cell.getAttribute("grid-row"));
     let col = Number(cell.getAttribute("grid-col"));
+    e13.stopPropagation();
     switch (e13.key) {
       // Go to next clue
       case "Tab":
@@ -24473,13 +24474,13 @@ var WwWordPuzzlesCwGrid = class extends WebwriterWordPuzzles {
   */
   newCrosswordGridDOM(document2) {
     let gridEl = document2.createElement("div");
-    this.gridEl = gridEl;
-    this.gridEl.classList.add("grid");
+    gridEl.classList.add("grid");
     for (let x3 = 0; x3 < this.grid.length; x3 += 1) {
       for (let y4 = 0; y4 < this.grid.length; y4 += 1) {
-        this.gridEl.appendChild(this.newCellDOM(document2, x3, y4));
+        gridEl.appendChild(this.newCellDOM(document2, x3, y4));
       }
     }
+    this.gridEl = gridEl;
     this.requestUpdate();
     return this.gridEl;
   }
