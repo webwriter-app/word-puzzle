@@ -1858,10 +1858,17 @@ function generateCrossword(wordsClues) {
     }
     let wordsPlaced = nrWordsPlaced(wordsCluesGen);
     let wordsLeft = wordsCluesGen.length - nrWordsPlaced(wordsCluesGen);
-    if (wordsLeft > 0 && depth - wordsPlaced > wordsLeft * (wordsLeft - 1) / 2) {
-      return 1;
+    if (wordsLeft == 0 && bestGrid != null) {
+      if (bestGrid.length == wordsCluesGen.map((word) => word.word.length).reduce((max2, len) => Math.max(max2, len), 0)) {
+        return 0;
+      }
     }
     let wordsCluesCopy = wordsCluesGen.map((wC) => ({ ...wC }));
+    if (wordsLeft > 0 && depth - wordsPlaced > wordsLeft * (wordsLeft - 1) / 2 || wordsLeft == 0) {
+      if (inputGrid != null) {
+        return setBestGrid(inputGrid);
+      }
+    }
     let i9 = 0;
     while (i9 < wordsCluesCopy.length && (wordsCluesCopy[i9].x != null && wordsCluesCopy[i9].y != null)) {
       i9++;
@@ -1876,7 +1883,7 @@ function generateCrossword(wordsClues) {
         removePlacement(wordsCluesCopy, possiblePlacementsCw[i10]);
       }
       moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
-      generateCrosswordGrid(wordsCluesCopy, depth);
+      return generateCrosswordGrid(wordsCluesCopy, depth);
     } else {
       return setBestGrid(inputGrid);
     }

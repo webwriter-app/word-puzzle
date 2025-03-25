@@ -646,9 +646,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         //DEV: console.log("wordsCluesGen post-generateCrosswordFromList():")
         //DEV: console.log(wordsCluesGen)
 
-        // Return immediately if inputGrid is larger than the bestGrid
         if(bestGrid != null) {
             // TODO Check if number of words and clues for inputGrid is larger than bestGrid's and if so, don't do this
+            // Return immediately if inputGrid is larger than the bestGrid
             if(inputGrid.length > bestGrid.length) {
                 return 1
             }
@@ -664,12 +664,22 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         let wordsPlaced = nrWordsPlaced(wordsCluesGen)
         let wordsLeft = wordsCluesGen.length - nrWordsPlaced(wordsCluesGen)
 
-        // TODO Save the best grid up until this point, this supports best grid with not all words placed
-        if(wordsLeft > 0 && depth - wordsPlaced > (wordsLeft * (wordsLeft - 1)) / 2) {
-            return 1
+        // Return if best grid is as long as the longest word
+        if(wordsLeft == 0 && bestGrid != null) {
+            if(bestGrid.length == wordsCluesGen.map(word => word.word.length).reduce((max, len) => Math.max(max, len), 0)) {
+                return 0
+            }
         }
 
         let wordsCluesCopy = wordsCluesGen.map(wC => ({...wC}));
+        //
+        // TODO Fix the issue with the 0-ranking word thing. Just exclude such words
+        // Save the best grid up until this point, this supports best grid with not all words placed
+        if((wordsLeft > 0 && depth - wordsPlaced > (wordsLeft * (wordsLeft - 1)) / 2) || wordsLeft == 0) {
+            if(inputGrid != null) {
+                return setBestGrid(inputGrid)
+            }
+        }
 
         let i = 0
         while(i < wordsCluesCopy.length && (wordsCluesCopy[i].x != null && wordsCluesCopy[i].y != null)) {
@@ -691,7 +701,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 // Move the word to the end of the list, generate again at this level
                 moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
                 // Don't add to the depth since no word was added?
-                generateCrosswordGrid(wordsCluesCopy, depth)
+                return generateCrosswordGrid(wordsCluesCopy, depth)
         }
         // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {
