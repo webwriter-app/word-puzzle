@@ -14,7 +14,7 @@ export const crossword_styles = css`
         aspect-ratio: 16 / 9;
         width: 100%;
         align-content: left;
-        justify-content: space-around;
+        justify-content: center;
         display: flex;
         flex-wrap: wrap;
     }
@@ -25,6 +25,14 @@ export const crossword_styles = css`
         justify-content:space-between;
         margin-top: 10px;
         width: 100%;
+    }
+    #answer-check{
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+    #answer-check div{
+        margin-top: 0;
     }
     webwriter-crossword-cluebox {
         display:flex;

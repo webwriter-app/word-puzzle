@@ -1998,7 +1998,7 @@ function generateCrosswordFromList(wordsClues) {
             i9 = c7;
             break;
         }
-        grid[wordClue.x + i9][wordClue.y + j3].answer = wordClue.word[c7];
+        grid[wordClue.x + i9][wordClue.y + j3].answer = wordClue.word[c7].toUpperCase();
         grid[wordClue.x + i9][wordClue.y + j3].white = true;
         let direction = wordClue.across ? "across" : "down";
         if (grid[wordClue.x + i9][wordClue.y + j3].direction != null) {
@@ -2029,7 +2029,7 @@ var crossword_styles = i`
         aspect-ratio: 16 / 9;
         width: 100%;
         align-content: left;
-        justify-content: space-around;
+        justify-content: center;
         display: flex;
         flex-wrap: wrap;
     }
@@ -2040,6 +2040,14 @@ var crossword_styles = i`
         justify-content:space-between;
         margin-top: 10px;
         width: 100%;
+    }
+    #answer-check{
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+    #answer-check div{
+        margin-top: 0;
     }
     webwriter-crossword-cluebox {
         display:flex;
@@ -2344,6 +2352,12 @@ var grid_styles = i`
         }
         div.cell[black] {
             background-color: var(--sl-color-gray-400);
+        }
+        div.cell[correct] {
+            background-color: #E7F1CC;
+        }
+        div.cell[incorrect] {
+            background-color: #ffcccc;
         }
         div.cell:focus {
             background-color: lightblue;
@@ -24294,13 +24308,52 @@ var WebwriterCrosswordGrid = class extends WebwriterWordPuzzles {
     }
     return this.grid[x3][y4].number;
   }
+  /**
+   * Method for checking the answers.
+   */
+  checkAnswers(grid, gridDOM) {
+    DEV: console.log("Checking answers");
+    let cellDOM;
+    let cellDOMContents;
+    for (let i9 = 0; i9 < grid.length; i9++) {
+      for (let j3 = 0; j3 < grid.length; j3++) {
+        cellDOM = this.getCellDOM(i9, j3, gridDOM);
+        cellDOMContents = this.getCellDOM(i9, j3, gridDOM).querySelector(".cell-letter");
+        if (cellDOMContents) {
+          if (cellDOMContents.innerText == grid[i9][j3].answer) {
+            cellDOM.setAttribute("correct", "");
+          } else if (cellDOMContents.innerText != "") {
+            cellDOM.setAttribute("incorrect", "");
+          }
+        }
+      }
+    }
+    setTimeout(() => {
+      this.removeCellHighlighting(gridDOM);
+    }, 5e3);
+  }
+  removeCellHighlighting(gridDOM, inc) {
+    let correctCells = gridDOM.querySelectorAll("[correct]");
+    for (let cell of correctCells) {
+      cell.removeAttribute("correct");
+    }
+    if (inc) {
+      let incorrectCells = gridDOM.querySelectorAll("[incorrect]");
+      for (let cell of incorrectCells) {
+        cell.removeAttribute("incorrect");
+      }
+    }
+  }
   /** Function for getting a cell based on its location in the DOM grid.
    * 
    * @param {number} row the row number, 1-indexed
    * @param {number} col the column number, 1-indexed
    * @returns {HTMLDivElement} the DOM element of the cell
   */
-  getCellDOM(row, col) {
+  getCellDOM(row, col, gridDOM) {
+    if (gridDOM) {
+      return gridDOM.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
+    }
     return this.gridEl.querySelector('[grid-row="' + row + '"][grid-col="' + col + '"]');
   }
   /** Function for getting the next word in context of the direction and current clue number.
@@ -24409,6 +24462,7 @@ var WebwriterCrosswordGrid = class extends WebwriterWordPuzzles {
       default:
         if (isAlphaChar(e13.key)) {
           cell.querySelector(".cell-letter").textContent = e13.key.toUpperCase();
+          cell.removeAttribute("incorrect");
           this.nextEmptyCell(e13);
         }
     }
@@ -24485,10 +24539,7 @@ var WebwriterCrosswordGrid = class extends WebwriterWordPuzzles {
   render() {
     this.grid = generateCrosswordFromList(this._wordsClues);
     this.newCrosswordGridDOM(document);
-    return x`<div>
-                ${this.gridEl}
-            </div>
-            `;
+    return x`${this.gridEl}`;
   }
 };
 __decorateClass([
@@ -24985,6 +25036,12 @@ var WebwriterCrossword = class extends WebwriterWordPuzzles {
     this.setWordsCluesChildren(this._wordsClues);
     return x`<div class="wrapper">
                 ${this.gridW}
+                <sl-button id="answer-check" title="Check answers" class="answer-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
+                            <div style="justify-content:center;padding-top:2px;">
+                                Check answers
+                                <!-- <sl-icon></sl-icon> -->
+                            </div>
+                    </sl-button>
                 <div class="cw-cluebox-wrapper">
                 ${this.clueInpW}${this.clueW}
                 </div>

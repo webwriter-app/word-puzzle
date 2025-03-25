@@ -533,10 +533,7 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
     render() {
         this.grid = generateCrosswordFromList(this._wordsClues)
         this.newCrosswordGridDOM(document)
-        return (html`<div>
-                ${this.gridEl}
-            </div>
-            `)
+        return (html`${this.gridEl}`)
     }
 
 }

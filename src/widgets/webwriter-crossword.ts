@@ -196,10 +196,17 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
     }
 
 
+
     render() {
         this.setWordsCluesChildren(this._wordsClues)
         return (html`<div class="wrapper">
                 ${this.gridW}
+                <sl-button id="answer-check" title="Check answers" class="answer-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
+                            <div style="justify-content:center;padding-top:2px;">
+                                Check answers
+                                <!-- <sl-icon></sl-icon> -->
+                            </div>
+                    </sl-button>
                 <div class="cw-cluebox-wrapper">
                 ${this.clueInpW}${this.clueW}
                 </div>
