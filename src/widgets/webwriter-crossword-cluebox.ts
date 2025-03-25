@@ -8,7 +8,7 @@
 import { html, HTMLTemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { CwContext, WwWordPuzzlesCrossword } from './webwriter-word-puzzles-crossword';
+import { CwContext, WebwriterCrossword } from './webwriter-crossword';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
@@ -18,7 +18,7 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 
 //declare global {interface HTMLElementTagNameMap {
 //    "webwriter-word-puzzles": WebwriterWordPuzzles;
-//    "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
+//    "webwriter-crossword-cluebox": WwWordPuzzlesCwCluebox;
 //    }
 //}
 
@@ -28,8 +28,8 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
  * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("ww-word-puzzles-cw-cluebox")
-export class WwWordPuzzlesCwCluebox extends WebwriterWordPuzzles {
+@customElement("webwriter-crossword-cluebox")
+export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     localize = null
@@ -39,7 +39,7 @@ export class WwWordPuzzlesCwCluebox extends WebwriterWordPuzzles {
      * 
      * This one is intended for the crossword solver (i.e. student).
      * 
-     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
      */
     @query(".cluebox")
     accessor cluebox: HTMLTableElement

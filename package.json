@@ -1,7 +1,7 @@
 {
     "name": "@webwriter/word-puzzles",
     "version": "0.9.1",
-    "description": "WebWriter Widget for creating crossword puzzles and / or find-the-word puzzles.",
+    "description": "WebWriter Widget for creating crossword puzzles (and in the future, find-the-word puzzles).",
     "keywords": [
         "webwriter-widget"
     ],
@@ -24,14 +24,14 @@
         "typescript": "^5.7.2"
     },
     "exports": {
-        "./widgets/webwriter-word-puzzles-crossword.*": {
-            "source": "./src/widgets/webwriter-word-puzzles-crossword.ts",
-            "default": "./dist/widgets/webwriter-word-puzzles-crossword.*"
+        "./widgets/webwriter-crossword.*": {
+            "source": "./src/widgets/webwriter-crossword.ts",
+            "default": "./dist/widgets/webwriter-crossword.*"
         },
         "./package.json": "./package.json"
     },
     "editingConfig": {
-        "./widgets/webwriter-word-puzzles": {
+        "./widgets/webwriter-crossword": {
             "defining": true,
             "isolating": true
         }

@@ -8,11 +8,11 @@
 import { html, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
-import { WebwriterWordPuzzles as WwWordPuzzles } from './webwriter-word-puzzles';
-import { WwWordPuzzlesCwGrid } from './ww-word-puzzles-cw-grid';
+import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
+import { WebwriterCrosswordGrid } from './webwriter-crossword-grid';
 import { WordClue, defaultCell } from '../lib/crossword-gen';
-import { WwWordPuzzlesCwCluebox } from './ww-word-puzzles-cw-cluebox';
-import { WwWordPuzzlesCwClueboxInput } from './ww-word-puzzles-cw-cluebox-input';
+import { WebwriterCrosswordCluebox } from './webwriter-crossword-cluebox';
+import { WebwriterCrosswordClueboxInput } from './webwriter-crossword-cluebox-input';
 
 import { crossword_styles } from '../styles/styles'
 
@@ -24,11 +24,11 @@ import { SlButton, SlIcon, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
 
 
 declare global {interface HTMLElementTagNameMap {
-        "webwriter-word-puzzles": WwWordPuzzles;
-        "webwriter-word-puzzles-crossword": WwWordPuzzlesCrossword;
-        "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid;
-        "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox;
-        "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput;
+        "webwriter-word-puzzles": WebwriterWordPuzzles;
+        "webwriter-crossword": WebwriterCrossword;
+        "webwriter-crossword-grid": WebwriterCrosswordGrid;
+        "webwriter-crossword-cluebox": WebwriterCrosswordCluebox;
+        "webwriter-crossword-cluebox-input": WebwriterCrosswordClueboxInput;
     }
 }
 
@@ -59,21 +59,21 @@ export interface CwContext {
  * @extends { WwWordPuzzles  }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-word-puzzles-crossword")
-export class WwWordPuzzlesCrossword extends WwWordPuzzles {
+@customElement("webwriter-crossword")
+export class WebwriterCrossword extends WebwriterWordPuzzles {
 
     /**
      * @constructor
      * Constructor for the crossword puzzle
      * 
-     * Sets the {@link WwWordPuzzlesCrossword.width | width} and {@link WwWordPuzzlesCrossword.height | height} attributes
+     * Sets the {@link WebwriterCrossword.width | width} and {@link WebwriterCrossword.height | height} attributes
      * Dispatches an event to generate the crossword grid
      */
     constructor(dimension: number = 8) {
         super()
-        this.gridW = new WwWordPuzzlesCwGrid()
-        this.clueW = new WwWordPuzzlesCwCluebox()
-        this.clueInpW = new WwWordPuzzlesCwClueboxInput()
+        this.gridW = new WebwriterCrosswordGrid()
+        this.clueW = new WebwriterCrosswordCluebox()
+        this.clueInpW = new WebwriterCrosswordClueboxInput()
         this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
 
@@ -118,26 +118,26 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
-     * See the constructor {@link WwWordPuzzlesCrossword.newCrosswordGrid | newCrosswordGrid()}
+     * See the constructor {@link WebwriterCrossword.newCrosswordGrid | newCrosswordGrid()}
      */
-    @query('ww-word-puzzles-cw-grid')
-    private gridW: WwWordPuzzlesCwGrid
+    @query('webwriter-crossword-grid')
+    private gridW: WebwriterCrosswordGrid
 
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
-     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
      */
-    @query('ww-word-puzzles-cw-cluebox-input')
-    private clueInpW: WwWordPuzzlesCwClueboxInput
+    @query('webwriter-crossword-cluebox-input')
+    private clueInpW: WebwriterCrosswordClueboxInput
 
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
      * 
-     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
      */
-    @query('ww-word-puzzles-cw-cluebox')
-    private clueW: WwWordPuzzlesCwCluebox
+    @query('webwriter-crossword-cluebox')
+    private clueW: WebwriterCrosswordCluebox
 
 
     /**
@@ -171,10 +171,10 @@ export class WwWordPuzzlesCrossword extends WwWordPuzzles {
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
         "sl-drawer": SlDrawer,
-        "ww-word-puzzles-cw-grid": WwWordPuzzlesCwGrid,
-        "ww-word-puzzles-cw-cluebox": WwWordPuzzlesCwCluebox,
-        "ww-word-puzzles-cw-cluebox-input": WwWordPuzzlesCwClueboxInput,
-        "webwriter-word-puzzles-crossword": WwWordPuzzlesCrossword
+        "webwriter-crossword-grid": WebwriterCrosswordGrid,
+        "webwriter-crossword-cluebox": WebwriterCrosswordCluebox,
+        "webwriter-crossword-cluebox-input": WebwriterCrosswordClueboxInput,
+        "webwriter-word-puzzles-crossword": WebwriterCrossword
         };
     }
 

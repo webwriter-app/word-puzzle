@@ -3,54 +3,51 @@
  */
 import { css } from "lit";
 
-
 export const crossword_styles = css`
     :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-                display: none;
-            }
-            :host  {
-                overflow-x: auto;
-            }
-            div.wrapper {
-                aspect-ratio: 16 / 9;
-                width: 100%;
-                align-content: left;
-                justify-content: space-around;
-                display: flex;
-                flex-wrap: wrap;
-            }
+        display: none;
+    }
+    :host  {
+        overflow-x: auto;
+    }
+    div.wrapper {
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        align-content: left;
+        justify-content: space-around;
+        display: flex;
+        flex-wrap: wrap;
+    }
     div {
-            display:flex;
-            flex-wrap:wrap;
-            align-items: space-between;
-            justify-content:space-between;
-            margin-top: 10px;
-            width: 100%;
-        }
-ww-word-puzzles-cw-cluebox {
-            display:flex;
-            flex-wrap:wrap;
-            align-items: space-between;
-            justify-content:space-between;
-            margin-top: 10px;
-        }
-ww-word-puzzles-cw-cluebox-input {
-            display:contents;
-            flex-wrap:wrap;
-            align-items: space-between;
-            justify-content:space-between;
-            margin-top: 10px;
-        }
-
-div.cw-cluebox-wrapper {
-            display:flex;
-            flex-wrap:none;
-            align-items: space-between;
-            justify-content:center;
-            margin-top: 20px;
-            width: 100%;
-        }
-
+        display:flex;
+        flex-wrap:wrap;
+        align-items: space-between;
+        justify-content:space-between;
+        margin-top: 10px;
+        width: 100%;
+    }
+    webwriter-crossword-cluebox {
+        display:flex;
+        flex-wrap:wrap;
+        align-items: space-between;
+        justify-content:space-between;
+        margin-top: 10px;
+    }
+    webwriter-crossword-cluebox-input {
+        display:contents;
+        flex-wrap:wrap;
+        align-items: space-between;
+        justify-content:space-between;
+        margin-top: 10px;
+    }
+    div.cw-cluebox-wrapper {
+        display:flex;
+        flex-wrap:none;
+        align-items: space-between;
+        justify-content:center;
+        margin-top: 20px;
+        width: 100%;
+    }
 `
 
 /**

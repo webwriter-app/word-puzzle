@@ -8,7 +8,7 @@
 import { html, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WwWordPuzzlesCrossword } from './webwriter-word-puzzles-crossword';
+import { WebwriterCrossword } from './webwriter-crossword';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
@@ -29,8 +29,8 @@ import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
  * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("ww-word-puzzles-cw-cluebox-input")
-export class WwWordPuzzlesCwClueboxInput extends WebwriterWordPuzzles {
+@customElement("webwriter-crossword-cluebox-input")
+export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     localize = null
@@ -46,7 +46,7 @@ export class WwWordPuzzlesCwClueboxInput extends WebwriterWordPuzzles {
      * 
      * It's intended exclusively for use by crossword creators (i.e. teachers).
      * 
-     * See the constructor {@link WwWordPuzzlesCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
      */
     @query(".clueboxInput")
     accessor clueboxInput: HTMLTableElement
