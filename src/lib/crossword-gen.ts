@@ -883,7 +883,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
                         i = c
                         break
                 }
-                grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c]
+                grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c].toUpperCase()
                 grid[wordClue.x + i ][wordClue.y + j].white = true
 
                 let direction = wordClue.across ? "across" : "down"

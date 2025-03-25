@@ -339,6 +339,12 @@ export const grid_styles = css`
         div.cell[black] {
             background-color: var(--sl-color-gray-400);
         }
+        div.cell[correct] {
+            background-color: #E7F1CC;
+        }
+        div.cell[incorrect] {
+            background-color: #ffcccc;
+        }
         div.cell:focus {
             background-color: lightblue;
         }

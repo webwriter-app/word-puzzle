@@ -273,13 +273,54 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
             return this.grid[x][y].number
         }
 
+    /**
+     * Method for checking the answers.
+     */
+    checkAnswers(grid: Cell[][], gridDOM: HTMLDivElement) {
+        DEV: console.log("Checking answers")
+        let cellDOM: HTMLDivElement
+        let cellDOMContents: HTMLDivElement
+
+        for(let i = 0; i < grid.length; i++) {
+            for(let j = 0; j < grid.length; j++) {
+                cellDOM = this.getCellDOM(i, j, gridDOM)
+                cellDOMContents = (this.getCellDOM(i, j, gridDOM)).querySelector(".cell-letter")
+                if(cellDOMContents) {
+                    if(cellDOMContents.innerText == grid[i][j].answer) {
+                        cellDOM.setAttribute("correct", "")
+                    }
+                    else if(cellDOMContents.innerText != "") {
+                        cellDOM.setAttribute("incorrect", "")
+                    }
+                }
+            }
+        }
+        setTimeout(() => { this.removeCellHighlighting(gridDOM); }, 5000);
+    }
+
+    private removeCellHighlighting(gridDOM: HTMLDivElement, inc?: boolean) {
+        let correctCells = gridDOM.querySelectorAll("[correct]")
+            for(let cell of correctCells) {
+                cell.removeAttribute("correct")
+            }
+            if(inc) {
+                let incorrectCells = gridDOM.querySelectorAll("[incorrect]")
+                for(let cell of incorrectCells) {
+                    cell.removeAttribute("incorrect")
+                }
+            }
+    }
+
     /** Function for getting a cell based on its location in the DOM grid.
      * 
      * @param {number} row the row number, 1-indexed
      * @param {number} col the column number, 1-indexed
      * @returns {HTMLDivElement} the DOM element of the cell
     */
-    private getCellDOM(row: number, col: number): HTMLDivElement {
+    private getCellDOM(row: number, col: number, gridDOM?: HTMLDivElement): HTMLDivElement {
+        if(gridDOM) {
+            return gridDOM.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
+        }
         return this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
     }
 
@@ -390,6 +431,7 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
             default: 
                 if (isAlphaChar(e.key)) {
                     cell.querySelector('.cell-letter').textContent = e.key.toUpperCase()
+                    cell.removeAttribute("incorrect")
                     this.nextEmptyCell(e)
                 }
         }
