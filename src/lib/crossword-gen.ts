@@ -648,6 +648,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         // Return immediately if inputGrid is larger than the bestGrid
         if(bestGrid != null) {
+            // TODO Check if number of words and clues for inputGrid is larger than bestGrid's and if so, don't do this
             if(inputGrid.length > bestGrid.length) {
                 return 1
             }
@@ -663,6 +664,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         let wordsPlaced = nrWordsPlaced(wordsCluesGen)
         let wordsLeft = wordsCluesGen.length - nrWordsPlaced(wordsCluesGen)
 
+        // TODO Save the best grid up until this point, this supports best grid with not all words placed
         if(wordsLeft > 0 && depth - wordsPlaced > (wordsLeft * (wordsLeft - 1)) / 2) {
             return 1
         }
@@ -693,8 +695,12 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
         // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {
-            if(bestGrid == null) {
-                bestGrid = inputGrid
+            return setBestGrid(inputGrid)
+        }
+
+        function setBestGrid(grid: Cell[][]): number {
+           if(bestGrid == null) {
+                bestGrid = grid
                 // DEV: console.log("wordsCluesCopy:")
                 // DEV: console.log(wordsCluesCopy)
                 // DEV: console.log("wordsCluesGen:")
@@ -704,9 +710,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 DEV: console.log(bestGrid)
                 return 0
             }
-            else if(bestGrid.length > inputGrid.length && inputGrid.length != 0) {
+            else if(bestGrid.length > grid.length && grid.length != 0) {
                 if(nrWordsPlaced(bestWordsPlaced) <= nrWordsPlaced(wordsCluesCopy)) {
-                    bestGrid = inputGrid
+                    bestGrid = grid
                     bestWordsPlaced = wordsCluesCopy
                     DEV: console.log("New best grid:")
                     DEV: console.log(bestGrid)

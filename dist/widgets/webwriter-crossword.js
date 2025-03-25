@@ -1878,15 +1878,18 @@ function generateCrossword(wordsClues) {
       moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
       generateCrosswordGrid(wordsCluesCopy, depth);
     } else {
+      return setBestGrid(inputGrid);
+    }
+    function setBestGrid(grid) {
       if (bestGrid == null) {
-        bestGrid = inputGrid;
+        bestGrid = grid;
         bestWordsPlaced = wordsCluesCopy;
         DEV: console.log("New best grid:");
         DEV: console.log(bestGrid);
         return 0;
-      } else if (bestGrid.length > inputGrid.length && inputGrid.length != 0) {
+      } else if (bestGrid.length > grid.length && grid.length != 0) {
         if (nrWordsPlaced(bestWordsPlaced) <= nrWordsPlaced(wordsCluesCopy)) {
-          bestGrid = inputGrid;
+          bestGrid = grid;
           bestWordsPlaced = wordsCluesCopy;
           DEV: console.log("New best grid:");
           DEV: console.log(bestGrid);
