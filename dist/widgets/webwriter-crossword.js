@@ -1578,7 +1578,7 @@ function generateCrossword(wordsClues) {
   let rankedList;
   rankedList = sortWords();
   let clueCount = 0;
-  let epoch = 1500;
+  let epoch = 3e3;
   for (let i9 = 0; i9 < wordsClues.length; null) {
     rankings[i9] = rankWord(i9);
     i9++;
@@ -1727,7 +1727,7 @@ function generateCrossword(wordsClues) {
     let intersections = [];
     for (let i9 = 0; i9 < wordPlace.length; i9++) {
       for (let j3 = 0; j3 < wordGrid.length; j3++) {
-        if (wordPlace[i9] == wordGrid[j3]) {
+        if (wordPlace[i9].toUpperCase() == wordGrid[j3].toUpperCase()) {
           intersections.push([i9, j3]);
         }
       }
@@ -1985,7 +1985,7 @@ function generateCrosswordFromList(wordsClues) {
       }
     }
   }
-  let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1);
+  let dimension = Math.max(rightmost - leftmost + 2, bottommost - topmost + 2);
   let grid = [];
   for (let i9 = 0; i9 < dimension; i9++) {
     grid[i9] = [];

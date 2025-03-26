@@ -184,7 +184,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     let clueCount = 0 // @type{number}
 
     /** Number of iterations until the algorithm stops */
-    let epoch = 1500 // @type{number}
+    let epoch = 3000 // @type{number}
 
     // Rank the words
     for(let i = 0; i < wordsClues.length; null) {
@@ -424,7 +424,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
             for (let i = 0; i < wordPlace.length; i++) {
                 for (let j = 0; j < wordGrid.length; j++) {
-                    if(wordPlace[i] == wordGrid[j]) {
+                    if(wordPlace[i].toUpperCase() == wordGrid[j].toUpperCase()) {
                         intersections.push([i, j])
                     }
                 }
@@ -870,7 +870,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
         }
     }
 
-    let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1)
+    let dimension = Math.max(rightmost - leftmost + 2, bottommost - topmost + 2)
     let grid: Cell[][] = []
 
     for(let i = 0; i < dimension; i++) {
