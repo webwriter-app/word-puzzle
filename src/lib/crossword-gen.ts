@@ -700,8 +700,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 }
                 // Move the word to the end of the list, generate again at this level
                 moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i])
-                // Don't add to the depth since no word was added?
-                return generateCrosswordGrid(wordsCluesCopy, depth)
+                return generateCrosswordGrid(wordsCluesCopy, depth + 1)
         }
         // Why doesn't this work if wordsCluesGen is used instead of wordsCluesCopy?
         else {

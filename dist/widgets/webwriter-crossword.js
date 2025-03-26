@@ -1883,7 +1883,7 @@ function generateCrossword(wordsClues) {
         removePlacement(wordsCluesCopy, possiblePlacementsCw[i10]);
       }
       moveWordToEnd(wordsCluesCopy, wordsCluesCopy[i9]);
-      return generateCrosswordGrid(wordsCluesCopy, depth);
+      return generateCrosswordGrid(wordsCluesCopy, depth + 1);
     } else {
       return setBestGrid(inputGrid);
     }
@@ -2043,6 +2043,11 @@ var crossword_styles = i`
         display: flex;
         flex-wrap: wrap;
     }
+    div.button-div {
+        justify-content:center;
+        margin-bottom: 10px;
+        margin-top: 0px;
+    }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -2050,11 +2055,6 @@ var crossword_styles = i`
         justify-content:space-between;
         margin-top: 10px;
         width: 100%;
-    }
-    #answer-check{
-        position: absolute;
-        top: 20px;
-        right: 20px;
     }
     #answer-check div{
         margin-top: 0;
@@ -25044,14 +25044,17 @@ var WebwriterCrossword = class extends WebwriterWordPuzzles {
   }
   render() {
     this.setWordsCluesChildren(this._wordsClues);
-    return x`<div class="wrapper">
-                ${this.gridW}
+    return x`
+<div class="button-div">
                 <sl-button id="answer-check" title="Check answers" class="answer-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
                             <div style="justify-content:center;padding-top:2px;">
                                 Check answers
                                 <!-- <sl-icon></sl-icon> -->
                             </div>
                     </sl-button>
+</div>
+<div class="wrapper">
+                ${this.gridW}
                 <div class="cw-cluebox-wrapper">
                 ${this.clueInpW}${this.clueW}
                 </div>

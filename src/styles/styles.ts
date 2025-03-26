@@ -18,6 +18,11 @@ export const crossword_styles = css`
         display: flex;
         flex-wrap: wrap;
     }
+    div.button-div {
+        justify-content:center;
+        margin-bottom: 10px;
+        margin-top: 0px;
+    }
     div {
         display:flex;
         flex-wrap:wrap;
@@ -25,11 +30,6 @@ export const crossword_styles = css`
         justify-content:space-between;
         margin-top: 10px;
         width: 100%;
-    }
-    #answer-check{
-        position: absolute;
-        top: 20px;
-        right: 20px;
     }
     #answer-check div{
         margin-top: 0;
