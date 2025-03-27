@@ -517,11 +517,12 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         let horizontalPadding: number = 0, verticalPadding: number = 0
         let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1)
 
+        // TODO Fix this padding. It can break generation either way
         if(rightmost - leftmost >= bottommost - topmost) {
-            verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2)
+            verticalPadding = Math.floor((dimension - (bottommost - topmost + 2)) / 2)
         }
         else {
-            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
+            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 2)) / 2)
         }
 
 
