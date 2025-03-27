@@ -1644,15 +1644,15 @@ function generateCrossword(wordsClues) {
           }
           let noClash = true;
           let notAdjacent = true;
-          let col_shift = 0;
-          let row_shift = 0;
+          let col_shift = 1;
+          let row_shift = 1;
           if (possibleDirection == "across") {
             col_shift = newWordClue.word.length;
           } else {
             row_shift = newWordClue.word.length;
           }
-          if (possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
-            notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white;
+          if (possibleX - row_shift >= 0 && possibleY - col_shift >= 0) {
+            notAdjacent = notAdjacent && !inputGrid[possibleX - row_shift][possibleY - col_shift].white;
           }
           if (possibleX + row_shift < inputGrid.length && possibleY + col_shift < inputGrid.length) {
             notAdjacent = notAdjacent && !inputGrid[possibleX + row_shift][possibleY + col_shift].white;
@@ -1706,23 +1706,6 @@ function generateCrossword(wordsClues) {
     }
     return possiblePlacements;
   }
-  function selectPlacement(possiblePlacementOptions) {
-    let possiblePlacementsNoResize = [];
-    if (possiblePlacementOptions != null) {
-      for (let placementOption of possiblePlacementOptions) {
-        if (placementOption.x >= 0 && placementOption.y >= 0) {
-          possiblePlacementsNoResize.push({ ...placementOption });
-        }
-      }
-    }
-    let placement;
-    if (possiblePlacementsNoResize.length === 0) {
-      placement = possiblePlacementOptions[0];
-    } else {
-      placement = possiblePlacementsNoResize[0];
-    }
-    return placement;
-  }
   function intersecting(wordPlace, wordGrid) {
     let intersections = [];
     for (let i9 = 0; i9 < wordPlace.length; i9++) {
@@ -1738,8 +1721,8 @@ function generateCrossword(wordsClues) {
     let x3 = possiblePlcmnts[p4].x;
     let y4 = possiblePlcmnts[p4].y;
     if (possiblePlcmnts[p4].x < 0 || possiblePlcmnts[p4].y < 0) {
-      let shiftX = Math.abs(possiblePlcmnts[p4].x);
-      let shiftY = Math.abs(possiblePlcmnts[p4].y);
+      let shiftX = Math.abs(Math.max(possiblePlcmnts[p4].x, 0));
+      let shiftY = Math.abs(Math.max(possiblePlcmnts[p4].y, 0));
       for (let plcmnt of possiblePlcmnts) {
         plcmnt.x += shiftX;
         plcmnt.y += shiftY;
@@ -1769,17 +1752,13 @@ function generateCrossword(wordsClues) {
       if (wordClue.x != null && wordClue.y != null) {
         leftmost = leftmost > wordClue.y ? wordClue.y : leftmost;
         topmost = topmost > wordClue.x ? wordClue.x : topmost;
+        rightmost = rightmost < wordClue.y ? wordClue.y : rightmost;
+        bottommost = bottommost < wordClue.x ? wordClue.x : bottommost;
         if (wordClue.across) {
           if (rightmost < wordClue.y + wordClue.word.length - 1) {
             rightmost = wordClue.y + wordClue.word.length - 1;
           }
-          if (bottommost < wordClue.x) {
-            bottommost = wordClue.x;
-          }
         } else {
-          if (rightmost < wordClue.y) {
-            rightmost = wordClue.y;
-          }
           if (bottommost < wordClue.x + wordClue.word.length - 1) {
             bottommost = wordClue.x + wordClue.word.length - 1;
           }
@@ -1789,9 +1768,9 @@ function generateCrossword(wordsClues) {
     let horizontalPadding = 0, verticalPadding = 0;
     let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1);
     if (rightmost - leftmost >= bottommost - topmost) {
-      verticalPadding = Math.floor((dimension - (bottommost - topmost + 2)) / 2);
+      verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2);
     } else {
-      horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 2)) / 2);
+      horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2);
     }
     for (let wordClue of wordsClues2) {
       if (wordClue.x != null && wordClue.y != null) {
@@ -1806,15 +1785,6 @@ function generateCrossword(wordsClues) {
       }
     }
     return wordsClues2;
-  }
-  function blockingWord(inputGrid, word) {
-    let wordList = [];
-    for (let wordPlaced of currentWordsPlaced) {
-      if (wordPlaced.word != word)
-        wordList.push(wordPlaced);
-    }
-    generateCrosswordGrid(inputGrid, wordList);
-    return;
   }
   function rankWord(wordIndex) {
     let rank = 0;

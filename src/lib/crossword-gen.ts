@@ -304,8 +304,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     let notAdjacent = true
 
                     // Don't place a word if there is a white cell right before or after it starts
-                    let col_shift = 0
-                    let row_shift = 0
+                    let col_shift = 1
+                    let row_shift = 1
 
                     if(possibleDirection == "across"){
                         col_shift = newWordClue.word.length
@@ -314,8 +314,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                         row_shift = newWordClue.word.length
                     }
 
-                    if(possibleX - (row_shift === 0 ? 0 : 1) >= 0 && possibleY - (col_shift === 0 ? 0 : 1) >= 0) {
-                        notAdjacent = notAdjacent && !inputGrid[possibleX - (row_shift === 0 ? 0 : 1)][possibleY - (col_shift === 0 ? 0 : 1)].white
+                    if(possibleX - row_shift >= 0 && possibleY - col_shift >= 0) {
+                        notAdjacent = notAdjacent && !inputGrid[possibleX - row_shift][possibleY - col_shift].white
                     }
 
                     if(possibleX + row_shift < inputGrid.length && possibleY + col_shift < inputGrid.length) {
@@ -388,30 +388,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         return possiblePlacements
     }
 
-    function selectPlacement(possiblePlacementOptions: WordClue[]): WordClue {
-
-        let possiblePlacementsNoResize: WordClue[] = []
-
-        // Prioritize word placement that doesn't require resizing the grid
-        if(possiblePlacementOptions != null) {
-            for (let placementOption of possiblePlacementOptions) {
-                if (placementOption.x >= 0 && placementOption.y >= 0) {
-                    possiblePlacementsNoResize.push({...placementOption})
-                }
-            }
-        }
-        let placement: WordClue
-        if(possiblePlacementsNoResize.length === 0) {
-            placement = possiblePlacementOptions[0]
-        }
-        else {
-            placement = possiblePlacementsNoResize[0]
-        }
-        //DEV: console.log("placement for " + possiblePlacementOptions[0].word + ":")
-        //DEV: console.log(placement)
-        return placement
-    }
-
     /** Tuple for word intersections */
     type WordIntersections = [wordNew: number, wordGrid: number]
 
@@ -449,8 +425,8 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         let y = possiblePlcmnts[p].y
 
         if(possiblePlcmnts[p].x < 0 || possiblePlcmnts[p].y < 0) {
-            let shiftX = Math.abs(possiblePlcmnts[p].x)
-            let shiftY = Math.abs(possiblePlcmnts[p].y)
+            let shiftX = Math.abs(Math.max(possiblePlcmnts[p].x, 0))
+            let shiftY = Math.abs(Math.max(possiblePlcmnts[p].y, 0))
             // Shift the coordinates for the possible placements
             for(let plcmnt of possiblePlcmnts) {
                 plcmnt.x += shiftX
@@ -494,19 +470,15 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
             if(wordClue.x != null && wordClue.y != null) {
                 leftmost = leftmost > wordClue.y ? wordClue.y : leftmost
                 topmost = topmost > wordClue.x ? wordClue.x : topmost
+                rightmost = rightmost < wordClue.y ? wordClue.y : rightmost
+                bottommost = bottommost < wordClue.x ? wordClue.x : bottommost
 
                 if(wordClue.across) {
                     if(rightmost < wordClue.y + wordClue.word.length - 1) {
                         rightmost = wordClue.y + wordClue.word.length - 1
                     }
-                    if(bottommost < wordClue.x) {
-                        bottommost = wordClue.x
-                    }
                 }
                 else {
-                    if(rightmost < wordClue.y) {
-                        rightmost = wordClue.y
-                    }
                     if(bottommost < wordClue.x + wordClue.word.length - 1) {
                         bottommost = wordClue.x + wordClue.word.length - 1
                     }
@@ -517,12 +489,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         let horizontalPadding: number = 0, verticalPadding: number = 0
         let dimension = Math.max(rightmost - leftmost + 1, bottommost - topmost + 1)
 
-        // TODO Fix this padding. It can break generation either way
         if(rightmost - leftmost >= bottommost - topmost) {
-            verticalPadding = Math.floor((dimension - (bottommost - topmost + 2)) / 2)
+            verticalPadding = Math.floor((dimension - (bottommost - topmost + 1)) / 2)
         }
         else {
-            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 2)) / 2)
+            horizontalPadding = Math.floor((dimension - (rightmost - leftmost + 1)) / 2)
         }
 
 
@@ -543,36 +514,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         }
 
         return wordsClues
-    }
-
-    /** Helper function that determines which word would enable adding 
-     * multiple more to the grid, if any.
-     * 
-     * @param {string} word - the word which would be removed.
-     * @returns { Cell } - the grid without the word, if its removal was blocking other words. Null otherwise
-    */
-    function blockingWord(inputGrid: Cell[][], word: string): Cell[][] {
-        // Get copy of added words
-            // wordsPlaced but only the words
-        let wordList: WordClue[] = []
-
-        // TODO make it not depend on wordsPlaced, I guess? Just do it manually with the grid :/
-        // Maybe just use the scratchpad thing
-        for(let wordPlaced of currentWordsPlaced) {
-            if(wordPlaced.word != word)
-                wordList.push(wordPlaced)
-        }
-
-        //DEV: console.log("Word list without " + word + ": " + wordList)
-
-        // Add all the words except the blocking word
-        // 
-        generateCrosswordGrid(inputGrid, wordList)
-
-        // Identify whether other words could be added after that
-        // placeable()
-
-        return
     }
 
     /** Local helper function for ranking a word to place onto the grid next.
@@ -797,26 +738,6 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     }
 }
 
-/** Temporary type for returning information from generateCrosswordFromList()
- * whose grid sizing / padding parts are going to be moved to updatePlacements() instead
- * 
- * ```typescript
- * {
- *  grid: Cell[][],
- *  topmost: number,
- *  leftmost: number,
- *  verticalPadding: number,
- *  horizontalPadding: number
- * }
- * ```
- */
-interface GridAndShift {
-    grid: Cell[][],
-    topmost: number,
-    leftmost: number,
-    verticalPadding: number,
-    horizontalPadding: number
-}
     /**
      * Generates crossword puzzle based off of a list of words with their given placements.
      * 
