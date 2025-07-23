@@ -302,7 +302,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         const edit_button = html`
                 <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative">
                     ${this.renderClueboxInput()}
-                    <sl-button title="Ctrl+Enter" size="small" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword puzzle
+                    <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword puzzle
                                 <sl-icon slot="suffix" src=${magic_wand}></sl-icon>
                     </sl-button>
                 </sl-drawer>

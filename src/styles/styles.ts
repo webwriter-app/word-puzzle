@@ -121,6 +121,10 @@ export const cluebox_styles = css`
         gap: 10px;
         align-items: center;
     }
+    sl-drawer::part(footer){
+        display: flex;
+        justify-content: center;
+    }
     sl-drawer sl-button[variant="success"]::part(base) {
         background-color: #97BD64;
         font-weight: bold;
