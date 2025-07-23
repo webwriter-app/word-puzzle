@@ -180,6 +180,11 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         const tBody:  HTMLTableRowElement = trow.closest("tBody")
         if(tBody.childElementCount > 4) {
             trow.remove()
+        }else {
+            // Clear content if four or less rows remaining
+            const [td1, _, td2] = trow.querySelectorAll("td");
+            td1.textContent = "";
+            td2.textContent = "";
         }
     }
 
