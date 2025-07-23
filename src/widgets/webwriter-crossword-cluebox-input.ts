@@ -299,17 +299,18 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         */
         //DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
         //this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
-        const edit_button = html`<sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative" label="Clue input box">
-                ${this.renderClueboxInput()}
-                <sl-button title="Ctrl+Enter" slot="header-actions" size="small" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword
-                            <sl-icon slot="suffix" src=${magic_wand}></sl-icon>
-</sl-button>
-                </sl-drawer>
-                    <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
-                        <div style="justify-content:center;padding-top:2px;">
-                            <sl-icon src=${pencil_square}></sl-icon>
-                        </div>
+        const edit_button = html`
+                <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative">
+                    ${this.renderClueboxInput()}
+                    <sl-button title="Ctrl+Enter" size="small" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword puzzle
+                                <sl-icon slot="suffix" src=${magic_wand}></sl-icon>
                     </sl-button>
+                </sl-drawer>
+                <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
+                    <div style="justify-content:center;padding-top:2px;">
+                        <sl-icon src=${pencil_square}></sl-icon>
+                    </div>
+                </sl-button>
 `
                 
         return html`${!this._preview ? edit_button : html``}`

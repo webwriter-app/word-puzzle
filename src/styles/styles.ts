@@ -72,11 +72,11 @@ export const cluebox_styles = css`
         display:flex;
         flex-wrap:wrap;
         align-items: space-between;
-        justify-content:space-between;
+        justify-content: space-between;
         margin-top: 10px;
         width: 100%;
     }
-        table.clueboxInput {
+    table.clueboxInput {
         /*Temporary width and height*/
         /*min-width: 200px;*/
         width: 48%;
@@ -105,16 +105,21 @@ export const cluebox_styles = css`
         position: absolute;
     }
     sl-drawer::part(title){
-        font-size: 18px;
+        font-size: 20px;
+        font-weight: bold;
+        margin: 10px;
         padding: 10 var(--header-spacing);
         color: var(--sl-color-gray-700);
-        align-content: center;
     }
     sl-drawer::part(header-actions){
         padding: 10 var(--header-spacing);
     }
     sl-drawer::part(body){
         padding: 5 var(--body-spacing);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
     }
     sl-drawer sl-button[variant="success"]::part(base) {
         background-color: #97BD64;
