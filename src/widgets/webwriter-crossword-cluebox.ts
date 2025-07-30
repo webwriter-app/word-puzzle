@@ -12,6 +12,9 @@ import { CwContext, WebwriterCrossword } from './webwriter-crossword';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
+import {localized, msg} from "@lit/localize"
+import LOCALIZE from "../../localization/generated"
+
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
@@ -28,11 +31,12 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
  * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
+@localized()
 @customElement("webwriter-crossword-cluebox")
 export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
-    localize = null
+    public localize = LOCALIZE
 
     /**
      * The panel element of the crossword puzzle, containing the words and clues. (WIP)
@@ -137,7 +141,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>Across</th>
+                            <th>${msg("Across")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -150,7 +154,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>Down</th>
+                            <th>${msg("Down")}</th>
                         </tr>
                     </thead>
                     <tbody>

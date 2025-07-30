@@ -1,0 +1,42 @@
+<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="et">
+    <body>
+      <trans-unit id="s29df917c1b19b804">
+        <source>Across</source>
+        <target>Üle</target>
+      </trans-unit>
+      <trans-unit id="s032c13736048bf35">
+        <source>Down</source>
+        <target>Alla</target>
+      </trans-unit>
+      <trans-unit id="s11d431ec3d1ca364">
+        <source>Edit words</source>
+        <target>Sõnade redigeerimine</target>
+      </trans-unit>
+      <trans-unit id="s4b77b5180fde5e24">
+        <source>Check answers</source>
+        <target>Kontrollida vastuseid</target>
+      </trans-unit>
+      <trans-unit id="s4ff14b1526907732">
+        <source>Delete row</source>
+        <target>Kustuta rida</target>
+      </trans-unit>
+      <trans-unit id="s0f350bc4e538e3ea">
+        <source>Words</source>
+        <target>Sõnad</target>
+      </trans-unit>
+      <trans-unit id="sca3966636984e031">
+        <source>Add rows</source>
+        <target>Lisage read</target>
+      </trans-unit>
+      <trans-unit id="s289958fb66c0ec21">
+        <source>Clues</source>
+        <target>Vihjeid</target>
+      </trans-unit>
+      <trans-unit id="s255c598befd01e5a">
+        <source>Generate puzzle</source>
+        <target>Genereeri mõistatus</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

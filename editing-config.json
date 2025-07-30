@@ -1,0 +1,37 @@
+{
+  ".": {
+    "description": {
+      "de": "WebWriter Widget zum Erstellen von Kreuzworträtseln (und in Zukunft auch von Wortfindungsrätseln).",
+      "bg": "Уиджет за WebWriter за създаване на кръстословици (а в бъдеще и на пъзели за намиране на думи).",
+      "ar": "أداة WebWidget لإنشاء ألغاز الكلمات المتقاطعة (وفي المستقبل، ألغاز البحث عن الكلمات).",
+      "nl": "WebWriter Widget voor het maken van kruiswoordpuzzels (en in de toekomst vind-het-woord puzzels).",
+      "da": "WebWriter Widget til at lave krydsord (og i fremtiden find-ordet-gåder).",
+      "cs": "WebWriter Widget pro tvorbu křížovek (a v budoucnu i slovních hádanek).",
+      "et": "WebWriter Widget ristsõnade (ja tulevikus ka sõnade leidmise mõistatuste) loomiseks.",
+      "fi": "WebWriter Widget ristisanatehtävien luomiseen (ja tulevaisuudessa myös hakusanatehtävien luomiseen).",
+      "fr": "WebWriter Widget pour créer des mots croisés (et, à l'avenir, des mots cachés).",
+      "el": "WebWriter Widget για τη δημιουργία σταυρόλεξων (και στο μέλλον, παζλ εύρεσης λέξεων).",
+      "hu": "WebWriter Widget keresztrejtvények készítéséhez (és a jövőben a szókereső rejtvények készítéséhez).",
+      "it": "WebWriter Widget per la creazione di cruciverba (e in futuro di cruciverba).",
+      "lv": "WebWriter logrīks krustvārdu mīklu (un nākotnē - vārdu mīklu) izveidei.",
+      "lt": "\"WebWriter\" valdiklis, skirtas kryžiažodžiams (o ateityje - ir žodžių paieškos dėlionėms) kurti.",
+      "nb": "WebWriter Widget for å lage kryssord (og i fremtiden, finn-ordet-oppgaver).",
+      "pl": "Widżet WebWriter do tworzenia krzyżówek (a w przyszłości także do wyszukiwania słów).",
+      "pt-PT": "WebWriter Widget para criar palavras cruzadas (e, no futuro, quebra-cabeças de busca de palavras).",
+      "ro": "WebWriter Widget pentru crearea de cuvinte încrucișate (și, în viitor, puzzle-uri de tip \"găsește cuvântul\").",
+      "ru": "Виджет WebWriter для создания кроссвордов (а в будущем и головоломок \"найди слово\").",
+      "sk": "WebWriter Widget na vytváranie krížoviek (a v budúcnosti aj hádaniek typu \"nájdi slovo\").",
+      "sl": "Pripomoček WebWriter Widget za ustvarjanje križank (in v prihodnosti tudi besednih ugank).",
+      "es": "WebWriter Widget para crear crucigramas (y, en el futuro, palabras clave).",
+      "sv": "WebWriter Widget för att skapa korsord (och i framtiden hitta-ordet-pussel).",
+      "tr": "Bulmaca (ve gelecekte kelime bulmaca) oluşturmak için WebWriter Widget'ı.",
+      "uk": "Віджет WebWriter для створення кросвордів (а в майбутньому - головоломок).",
+      "pt-BR": "WebWriter Widget para criar palavras cruzadas (e, no futuro, quebra-cabeças de busca de palavras).",
+      "ko": "십자말풀이(그리고 앞으로는 낱말 맞추기 퍼즐)를 만들기 위한 WebWriter 위젯.",
+      "ja": "クロスワードパズル（将来的には単語探しパズルも）を作成するためのWebWriterウィジェット。",
+      "id": "Widget WebWriter untuk membuat teka-teki silang (dan di masa depan, teka-teki mencari kata).",
+      "zh-hant": "WebWriter Widget 用於製作填字游戲（未來還會用於尋找字謎）。",
+      "zh-hans": "WebWriter Widget，用于创建填字游戏（以及未来的找词游戏）。"
+    }
+  }
+}

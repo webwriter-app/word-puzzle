@@ -23,17 +23,21 @@ import minus from 'bootstrap-icons/icons/dash.svg';
 import magic_wand from 'bootstrap-icons/icons/magic.svg';
 import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
 
+import {localized, msg} from "@lit/localize"
+import LOCALIZE from "../../localization/generated"
+
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
+@localized()
 @customElement("webwriter-crossword-cluebox-input")
 export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
-    localize = null
+    public localize = LOCALIZE
 
     /**
      * Whether the current display is a preview
@@ -207,7 +211,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
                 <td contenteditable></td>
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-button title="Delete row" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                        <sl-button title="${msg("Delete row")}" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
                             <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
                         </sl-button>
                 </div>
@@ -278,17 +282,17 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
             </colgroup>
             <thead>
                 <tr>
-                    <th class="word-column">Words</th>
+                    <th class="word-column">${msg("Words")}</th>
                     <th class="button-header-cell"> 
                     <div class="plus-button-div">
-                        <sl-button title="Add rows" tabindex="-1" size="small" 
+                        <sl-button title="${msg("Add rows")}" tabindex="-1" size="small" 
                         class="plus-button" variant="default" 
                         circle @click=${(e) => this.addRow(e)}>
                         <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
                     </sl-button>
                     </div>
                     </th>
-                    <th class="clue-column">Clues</th>
+                    <th class="clue-column">${msg("Clues")}</th>
                 </tr>
             </thead>
             <tbody>
@@ -327,7 +331,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
                     ${this.renderClueboxInput()}
                     <sl-button title="Ctrl+Enter" variant="success" @click=${() => {this.triggerCwGeneration();}}>
                         <sl-icon slot="prefix" src=${magic_wand}></sl-icon>
-                        Generate puzzle
+                        ${msg("Generate puzzle")}
                     </sl-button>
                 </sl-drawer>
                 <!--<sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>

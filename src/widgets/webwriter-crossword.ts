@@ -18,6 +18,8 @@ import { crossword_styles } from '../styles/styles'
 import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
 import check_circle from 'bootstrap-icons/icons/check-circle.svg';
 
+import {localized, msg} from "@lit/localize"
+import LOCALIZE from "../../localization/generated"
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -62,8 +64,11 @@ export interface CwContext {
  * @extends { WwWordPuzzles  }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
+@localized()
 @customElement("webwriter-crossword")
 export class WebwriterCrossword extends WebwriterWordPuzzles {
+
+    public localize = LOCALIZE
 
     /**
      * @constructor
@@ -208,16 +213,16 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
                 <div class="cw-grid-wrapper">
                     ${this.gridW}
                     <div class="button-div">
-                        ${this.hasAttribute("contenteditable") ? html`<sl-button id="edit-words" title="Check answers" class="crossword-button" variant="default" @click=${() => this.clueInpW.showDrawer()}>
+                        ${this.hasAttribute("contenteditable") ? html`<sl-button id="edit-words" title="${msg("Edit words")}" class="crossword-button" variant="default" @click=${() => this.clueInpW.showDrawer()}>
                             <sl-icon slot="prefix" src=${pencil_square}></sl-icon>
                             <div class="button-content">
-                                Edit words
+                                ${msg("Edit words")}
                             </div>
                         </sl-button>` : html``}
-                        <sl-button id="answer-check" variant="success" title="Check answers" class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
+                        <sl-button id="answer-check" variant="success" title=${msg("Check answers")} class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
                             <sl-icon slot="prefix" src=${check_circle}></sl-icon>
                             <div class="button-content">
-                                Check answers
+                                ${msg("Check answers")}
                             </div>
                         </sl-button>
                     </div>
