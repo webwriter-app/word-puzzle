@@ -95,7 +95,6 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         this.dispatchEvent(setWordsClues)
     }
 
-
     /**
      * Event handler that triggers crossword generation
      */
@@ -130,7 +129,6 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
                 wordsAndClues.push({word: words[i], clueText: clues[i]})
             }
         }
-
         this.setWordsClues(wordsAndClues)
         return this._wordsClues
     }
@@ -178,7 +176,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         let button: HTMLButtonElement = (e.target)
         const trow:  HTMLTableRowElement = button.closest("tr")
         const tBody:  HTMLTableRowElement = trow.closest("tBody")
-        if(tBody.childElementCount > 4) {
+        if(tBody.childElementCount > 5) {
             trow.remove()
         }else {
             // Clear content if four or less rows remaining
@@ -224,6 +222,8 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         this.requestUpdate()
     }
 
+    
+
     renderClueboxInput() {
         //DEV: console.log("render cluebox input")
         const clueboxInputRender = []
@@ -252,15 +252,15 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
                     clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
                 }
             }
-            // Always have at least 4 rows present
-            if(i < 4) {
-                let empty = 4 - i
+            // Always have at least 5 rows present
+            if(i < 5) {
+                let empty = 5 - i
                 for(empty; empty > 0; empty--) {
                     clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
                 }
             }
         } else {
-            for(let i = 0; i < 4; i++) {
+            for(let i = 0; i < 5; i++) {
                 clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
             }
         }
@@ -298,26 +298,45 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
             `      
     }
 
+    reloadUnplacedMarkers(wordsClues: WordClue[]) {
+        const tbody = this.renderRoot?.querySelector('tbody');
+        if (!tbody) return;
+
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        for (const row of rows) {
+            const firstCell = row.querySelector('td');
+            const cellText = firstCell?.textContent?.trim();
+            if (wordsClues.find((wc) => wc.word == cellText && wc.x == null)) {
+                row.classList.add('cell-word-not-placed');
+            } else {
+                row.classList.remove('cell-word-not-placed');
+            }
+        }
+    }
+
     render() {
         /**
         * clueboxInput template
         */
         //DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
         //this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
-        const edit_button = html`
+        
+        const sl_drawer = html`
                 <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative">
                     ${this.renderClueboxInput()}
-                    <sl-button title="Ctrl+Enter" slot="footer" variant="success" @click=${() => this.triggerCwGeneration()}>Generate crossword puzzle
-                                <sl-icon slot="suffix" src=${magic_wand}></sl-icon>
+                    <sl-button title="Ctrl+Enter" variant="success" @click=${() => {this.triggerCwGeneration();}}>
+                        <sl-icon slot="prefix" src=${magic_wand}></sl-icon>
+                        Generate puzzle
                     </sl-button>
                 </sl-drawer>
-                <sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
+                <!--<sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
                     <div style="justify-content:center;padding-top:2px;">
-                        <sl-icon src=${pencil_square}></sl-icon>
+                        <sl-icon src=${pencil_square}></sl-icon>-->
                     </div>
                 </sl-button>
 `
                 
-        return html`${!this._preview ? edit_button : html``}`
+        return html`${!this._preview ? sl_drawer : html``}`
     }
 }

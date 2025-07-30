@@ -88,43 +88,26 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     }
     
     render() {
-        /** number of across clues */
-        let i = 0
-        /** number of down clues */
-        let j = 0
 
-        const clueboxTemplateCells = []
+        const clueboxTemplateCellsAcross = []
+        const clueboxTemplateCellsDown = []
 
         if(this._wordsClues != null) {
             for(let wordClue of this._wordsClues) {
                 if(wordClue.across) {
-                    i++
+                    clueboxTemplateCellsAcross.push(html`<tr><td clue="${wordClue.clueNumber}" across>${clueboxCellContents(wordClue)}</td></tr>`)
                 }
-                else
-                    j++
-            }
-
-            let sharedRows = Math.min(i, j)
-
-            // Add clues in the same row
-            for(let k = 0; k < sharedRows; k++) {
-                clueboxTemplateCells.push(html`<tr><td clue="${this._wordsClues[k].clueNumber}" across>${clueboxCellContents(this._wordsClues[k])}</td><td clue="${this._wordsClues[k+i].clueNumber}" down>${clueboxCellContents(this._wordsClues[k+i])}</td></tr>`)
-            }
-
-            // Add clues remaining clues in only across / down column
-            let diff = Math.abs(i - j)
-            let start = i > j ? sharedRows : sharedRows + i
-
-            for(let k = start; k < diff + start; k++) {
-                let cell = this._wordsClues[k].across ? 
-                    html`<tr><td clue="${this._wordsClues[k].clueNumber}" across>${clueboxCellContents(this._wordsClues[k])}</td><td></td></tr>`
-                    : 
-                    html`<tr><td></td><td clue="${this._wordsClues[k].clueNumber}" down>${clueboxCellContents(this._wordsClues[k])}</td></tr>`
-                    clueboxTemplateCells.push(cell)
+                else {
+                    clueboxTemplateCellsDown.push(html`<tr><td clue="${wordClue.clueNumber}" down>${clueboxCellContents(wordClue)}</td></tr>`)
+                }
             }
         }
-        else {
-                clueboxTemplateCells.push(html`<tr><td></td><td></td></tr>`)
+
+        if(clueboxTemplateCellsAcross.length == 0) {
+            clueboxTemplateCellsAcross.push(html`<tr><td style="text-align: center">No words</td></tr>`)
+        }
+        if(clueboxTemplateCellsDown.length == 0) {
+            clueboxTemplateCellsDown.push(html`<tr><td style="text-align: center">No words</td></tr>`)
         }
 
 
@@ -147,21 +130,34 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
         }
 
         return html`
-            <table class="cluebox">
-                <colgroup>
-                <col>
-                <col>
-            </colgroup>
-            <thead>
-                <tr>
-                    <th>Across</th>
-                    <th>Down</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${clueboxTemplateCells}
-            </tbody>
-            </table>
+            <div class="tables-wrapper">
+                <table class="cluebox">
+                    <colgroup>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Across</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${clueboxTemplateCellsAcross}
+                    </tbody>
+                </table>
+                <table class="cluebox">
+                    <colgroup>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Down</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${clueboxTemplateCellsDown}
+                    </tbody>
+                </table>
+            </div>
             `
     }
 }

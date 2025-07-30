@@ -15,6 +15,9 @@ import { WebwriterCrosswordCluebox } from './webwriter-crossword-cluebox';
 import { WebwriterCrosswordClueboxInput } from './webwriter-crossword-cluebox-input';
 
 import { crossword_styles } from '../styles/styles'
+import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
+import check_circle from 'bootstrap-icons/icons/check-circle.svg';
+
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -153,6 +156,7 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
         this.gridW._wordsClues = wordsClues
         this.clueW._wordsClues = wordsClues
         this.clueInpW._wordsClues = wordsClues
+        this.clueInpW.reloadUnplacedMarkers(wordsClues);
         //DEV: console.log("this._wordsAndClues:")
         //DEV: console.log(this._wordsAndClues)
     }
@@ -200,18 +204,27 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
     render() {
         this.setWordsCluesChildren(this._wordsClues)
         return (html`
-<div class="button-div">
-                <sl-button id="answer-check" title="Check answers" class="answer-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
-                            <div style="justify-content:center;padding-top:2px;">
-                                Check answers
-                                <!-- <sl-icon></sl-icon> -->
+            <div class="wrapper">
+                <div class="cw-grid-wrapper">
+                    ${this.gridW}
+                    <div class="button-div">
+                        ${this.hasAttribute("contenteditable") ? html`<sl-button id="edit-words" title="Check answers" class="crossword-button" variant="default" @click=${() => this.clueInpW.showDrawer()}>
+                            <sl-icon slot="prefix" src=${pencil_square}></sl-icon>
+                            <div class="button-content">
+                                Edit words
                             </div>
-                    </sl-button>
-</div>
-<div class="wrapper">
-                ${this.gridW}
+                        </sl-button>` : html``}
+                        <sl-button id="answer-check" variant="success" title="Check answers" class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
+                            <sl-icon slot="prefix" src=${check_circle}></sl-icon>
+                            <div class="button-content">
+                                Check answers
+                            </div>
+                        </sl-button>
+                    </div>
+                </div>
+
                 <div class="cw-cluebox-wrapper">
-                ${this.clueInpW}${this.clueW}
+                    ${this.clueInpW}${this.clueW}
                 </div>
             </div>
             `)

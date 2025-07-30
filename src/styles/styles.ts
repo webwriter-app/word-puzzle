@@ -12,24 +12,38 @@ export const crossword_styles = css`
     }
     div.wrapper {
         aspect-ratio: 16 / 9;
-        width: 100%;
-        align-content: left;
-        justify-content: center;
         display: flex;
+        justify-content: center;
+        margin: 20px;
+        gap: 0px;
         flex-wrap: wrap;
+        gap: 5px;
+    }
+    div.cw-grid-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        min-width: 50%;
     }
     div.button-div {
-        justify-content:center;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
         margin-bottom: 10px;
         margin-top: 0px;
-    }
-    div {
-        display:flex;
-        flex-wrap:wrap;
-        align-items: space-between;
-        justify-content:space-between;
-        margin-top: 10px;
         width: 100%;
+    }
+    .button-div .crossword-button {
+        width: 50%;
+        display: flex;
+    }
+    sl-button[variant="success"]::part(base) {
+        background-color: #97BD64;
+    }
+    .button-content {
+        font-weight: bold;
     }
     #answer-check div{
         margin-top: 0;
@@ -49,12 +63,11 @@ export const crossword_styles = css`
         margin-top: 10px;
     }
     div.cw-cluebox-wrapper {
-        display:flex;
-        flex-wrap:none;
-        align-items: space-between;
-        justify-content:center;
-        margin-top: 20px;
-        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-basis: 200px;
+        flex-grow: 1;
     }
 `
 
@@ -68,13 +81,20 @@ export const cluebox_styles = css`
     .hide-preview {
         display: none;
     }
-    div {
-        display:flex;
-        flex-wrap:wrap;
-        align-items: space-between;
-        justify-content: space-between;
-        margin-top: 10px;
-        width: 100%;
+    table {
+        max-width: 300px;
+        border-radius: 0.25rem;
+    }
+    table.clueboxInput thead {
+        position: sticky;
+        top: 4px;
+        z-index: 1000;
+    }
+    .tables-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
     }
     table.clueboxInput {
         /*Temporary width and height*/
@@ -85,11 +105,13 @@ export const cluebox_styles = css`
         height: fit-content;
         border: 2px solid var(--sl-color-gray-300);
         font-family: var(--sl-font-sans);
+        font-size: smaller;
         color: var(--sl-color-gray-700);
         background-color: var(--sl-color-gray-100);
         table-layout: fixed;
         margin-left: auto;
         margin-right: auto;
+        margin-bottom: 10px;
         /*flex-basis: content; */
     }
     .word-column {
@@ -123,13 +145,21 @@ export const cluebox_styles = css`
     }
     sl-drawer::part(footer){
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center
+    }
+    sl-drawer sl-button[variant="success"] {
+        position: sticky;
+        bottom: 10px;
     }
     sl-drawer sl-button[variant="success"]::part(base) {
         background-color: #97BD64;
         font-weight: bold;
+        min-width: 200px;
     }
     .minus-button {
+        display: flex;
         font-size: 10px;
     }
     table.clueboxInput > thead {
@@ -203,7 +233,7 @@ export const cluebox_styles = css`
     table.clueboxInput div.plus-button-div {
         display:table-cell;
         position: relative;
-        top: +1.4em;
+        top: +1.6em;
         padding-bottom: 10%
     }
     table.clueboxInput sl-button {
@@ -232,20 +262,19 @@ export const cluebox_styles = css`
         float: right;
         margin-right: +0.80em;
     }
+    .cell-word-not-placed {
+        background-color: var(--sl-color-danger-300);
+    }
     
     div.button-cell-div {
         display: table-cell;
         vertical-align: middle;
         padding-bottom: 10%
     }
-    div.sl-icon-div {
-        margin-top: 40%;
-    }
     td.button-cell sl-button::part(base) {
         transform: scale(0.80)
     }
     table.cluebox {
-        width: 80%;
         min-width: 300px;
         height: fit-content;
         border: 2px solid var(--sl-color-gray-300);
@@ -256,8 +285,6 @@ export const cluebox_styles = css`
         table-layout: fixed;
         text-align: center;
         justify-content: center;
-        margin-left: auto;
-        margin-right: auto;
         margin-bottom: 5px;
         line-height: normal;
     }
@@ -334,6 +361,7 @@ export const grid_styles = css`
             width: max-content;
             height: max-content;
             border: 2px solid var(--sl-color-gray-400);
+            border-radius: 0.25rem;
         }
         div.cell {
             display: grid;

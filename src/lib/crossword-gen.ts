@@ -238,10 +238,13 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     //DEV: console.log("bestWordsPlaced sorted by clue number and across / down:")
     //DEV: console.log(bestWordsPlaced)
 
-    wordsClues = bestWordsPlaced
+    // Bring words into inital order
+    const orderWordsClues = wordsClues.map((wc) => bestWordsPlaced.find((bw) => bw.word == wc.word && bw.clueText == wc.clueText) || null).filter((nn) => nn != null)
+
+    wordsClues = orderWordsClues
     DEV: console.log(bestGrid)
 
-    return {wordsAndClues: bestWordsPlaced, grid: bestGrid} 
+    return {wordsAndClues: orderWordsClues, grid: bestGrid} 
 
 
     // =====================================================================================
