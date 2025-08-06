@@ -37,6 +37,22 @@
         <source>Generate puzzle</source>
         <target>Генериране на пъзел</target>
       </trans-unit>
+      <trans-unit id="s00735d668cff3a0f">
+        <source>Puzzle Type</source>
+        <target>Тип пъзел</target>
+      </trans-unit>
+      <trans-unit id="s24a1e8050d72f287">
+        <source>Crossword</source>
+        <target>Кръстословица</target>
+      </trans-unit>
+      <trans-unit id="s99ab01c90f7f6dd0">
+        <source>Find the words</source>
+        <target>Намерете думите</target>
+      </trans-unit>
+      <trans-unit id="s853d5a0283b26daf">
+        <source>Show answers</source>
+        <target>Покажи отговорите</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

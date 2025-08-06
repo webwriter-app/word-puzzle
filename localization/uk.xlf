@@ -37,6 +37,22 @@
         <source>Generate puzzle</source>
         <target>Створіть пазл</target>
       </trans-unit>
+      <trans-unit id="s00735d668cff3a0f">
+        <source>Puzzle Type</source>
+        <target>Тип головоломки</target>
+      </trans-unit>
+      <trans-unit id="s24a1e8050d72f287">
+        <source>Crossword</source>
+        <target>Кросворд</target>
+      </trans-unit>
+      <trans-unit id="s99ab01c90f7f6dd0">
+        <source>Find the words</source>
+        <target>Знайдіть слова</target>
+      </trans-unit>
+      <trans-unit id="s853d5a0283b26daf">
+        <source>Show answers</source>
+        <target>Показати відповіді</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

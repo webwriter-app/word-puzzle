@@ -65,7 +65,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * Does nothing I guess
      */
-    constructor() {
+    constructor(private parentComponent: WebwriterCrossword) {
         super()
     }
 
@@ -96,8 +96,14 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
         const clueboxTemplateCellsAcross = []
         const clueboxTemplateCellsDown = []
 
+        const clueboxFindTheWords = []
+
         if(this._wordsClues != null) {
             for(let wordClue of this._wordsClues) {
+                // For find the words
+                clueboxFindTheWords.push(html`<tr><td clue="${wordClue.clueNumber}" across>${wordClue.word}</td></tr>`)
+
+                // For crossword
                 if(wordClue.across) {
                     clueboxTemplateCellsAcross.push(html`<tr><td clue="${wordClue.clueNumber}" across>${clueboxCellContents(wordClue)}</td></tr>`)
                 }
@@ -135,6 +141,22 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
 
         return html`
             <div class="tables-wrapper">
+                ${this.parentComponent.type == "find-the-words" ? html`
+                <table class="cluebox">
+                    <colgroup>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>${msg("Words")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${clueboxFindTheWords}
+                    </tbody>
+                </table>`
+                :
+                html`
                 <table class="cluebox">
                     <colgroup>
                         <col>
@@ -160,7 +182,8 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
                     <tbody>
                         ${clueboxTemplateCellsDown}
                     </tbody>
-                </table>
+                </table>`
+                }
             </div>
             `
     }

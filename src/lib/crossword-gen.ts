@@ -79,31 +79,58 @@ export function defaultCell(): Cell {
 * @returns {HTMLDivElement} the DOM element for the _cell_
 * Source: crosswords-js, partially
 */
-export function newCellDOM(document: Document, grid: Cell[][], x: number, y: number) {
+export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string) {
     const cellDOM: HTMLDivElement = document.createElement('div');
     cellDOM.className = 'cell'
     cellDOM.style.gridRowStart = (x+1).toString()
     cellDOM.style.gridColumnStart = (y+1).toString()
     cellDOM.setAttribute("grid-row", (x).toString())
     cellDOM.setAttribute("grid-col", (y).toString())
+
     // This is just temporary for testing
     try {
     if (!grid[x][y].white) {
-        cellDOM.setAttribute("black", "")
-        cellDOM.setAttribute("answer", "false");
-        cellDOM.contentEditable = "false";
+        if(type == "crossword") {
+            cellDOM.setAttribute("black", "")
+            cellDOM.setAttribute("answer", "false");
+            cellDOM.contentEditable = "false";
+
+        }else {
+            cellDOM.setAttribute("white", "")
+            cellDOM.setAttribute("answer", "false");
+            cellDOM.contentEditable = "false";
+    
+            const cellLetter = document.createElement('div');
+            cellLetter.classList.add('cell-letter')
+            const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            cellLetter.innerText = randomLetter
+            cellDOM.appendChild(cellLetter)
+
+        }
     }
     else {
-        cellDOM.contentEditable = "true";
+        if(type == "crossword") {
+            cellDOM.contentEditable = "true";
+        }else {
+            cellDOM.contentEditable = "false";
+        }
         cellDOM.removeAttribute("black")
         cellDOM.setAttribute("answer", "true");
         cellDOM.setAttribute("direction", grid[x][y].direction);
         // Create div for adding a letter
         const cellLetter = document.createElement('div');
         cellLetter.classList.add('cell-letter')
+        // Add x and y data to the cell and letter for checking in find the words if the cursor was dragged over the correct characters
+        cellDOM.setAttribute('data-x', x.toString());
+        cellDOM.setAttribute('data-y', y.toString());
+        cellLetter.setAttribute('data-x', x.toString());
+        cellLetter.setAttribute('data-y', y.toString());
+        if(type == "find-the-words") {
+            cellLetter.innerText = letter
+        }
         cellDOM.appendChild(cellLetter)
         // Add a small div for the clue number if the cell has one
-        if (grid[x][y].number) {
+        if (type == "crossword" && grid[x][y].number) {
             const numberText = document.createElement('div');
             numberText.classList.add('clue-label');
             numberText.contentEditable = "false";

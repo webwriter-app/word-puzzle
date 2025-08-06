@@ -37,6 +37,22 @@
         <source>Generate puzzle</source>
         <target>Sukurti dėlionę</target>
       </trans-unit>
+      <trans-unit id="s00735d668cff3a0f">
+        <source>Puzzle Type</source>
+        <target>Dėlionės tipas</target>
+      </trans-unit>
+      <trans-unit id="s24a1e8050d72f287">
+        <source>Crossword</source>
+        <target>Kryžiažodis</target>
+      </trans-unit>
+      <trans-unit id="s99ab01c90f7f6dd0">
+        <source>Find the words</source>
+        <target>Raskite žodžius</target>
+      </trans-unit>
+      <trans-unit id="s853d5a0283b26daf">
+        <source>Show answers</source>
+        <target>Rodyti atsakymus</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

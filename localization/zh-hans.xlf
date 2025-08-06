@@ -37,6 +37,22 @@
         <source>Generate puzzle</source>
         <target>生成谜题</target>
       </trans-unit>
+      <trans-unit id="s00735d668cff3a0f">
+        <source>Puzzle Type</source>
+        <target>拼图类型</target>
+      </trans-unit>
+      <trans-unit id="s24a1e8050d72f287">
+        <source>Crossword</source>
+        <target>填字游戏</target>
+      </trans-unit>
+      <trans-unit id="s99ab01c90f7f6dd0">
+        <source>Find the words</source>
+        <target>查找单词</target>
+      </trans-unit>
+      <trans-unit id="s853d5a0283b26daf">
+        <source>Show answers</source>
+        <target>显示答案</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

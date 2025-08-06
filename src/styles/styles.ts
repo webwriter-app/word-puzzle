@@ -69,6 +69,26 @@ export const crossword_styles = css`
         flex-basis: 200px;
         flex-grow: 1;
     }
+
+    .container {
+        display: flex;
+        height: max-content;
+        border-width: 2px;
+        border-style: solid;
+        border-radius: 5px;
+        border-color: #6a6a6a;
+    }
+
+    .sidebar {
+        border: 1px solid #ccc;
+        padding: 10px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        height: max-content;
+        z-index: 2;
+    }
 `
 
 /**
@@ -113,9 +133,6 @@ export const cluebox_styles = css`
         margin-right: auto;
         margin-bottom: 10px;
         /*flex-basis: content; */
-    }
-    .word-column {
-        width: 30%; /* Temporary width and height*/
     }
     .clue-column {
         width: 70%; /* Temporary width and height*/
@@ -233,7 +250,7 @@ export const cluebox_styles = css`
     table.clueboxInput div.plus-button-div {
         display:table-cell;
         position: relative;
-        top: +1.6em;
+        top: +0.5em;
         padding-bottom: 10%
     }
     table.clueboxInput sl-button {
@@ -351,6 +368,7 @@ export const grid_styles = css`
             background-color: white;
         }
         div.grid {
+            position: relative;
             display: grid;
             flex-basis: content;
             grid-template-columns: auto;
@@ -405,6 +423,7 @@ export const grid_styles = css`
             width: 100%;
             position: center;
             font-size: 18pt;
+            user-select: none;
         }
         .clue-label {
             grid-column-start: 1;

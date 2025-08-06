@@ -25,7 +25,7 @@ import LOCALIZE from "../../localization/generated"
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
 // Buttons
-import { SlButton, SlIcon, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
+import { SlButton, SlIcon, SlAlert, SlDrawer, SlChangeEvent, SlSelect, SlOption } from '@shoelace-style/shoelace';
 
 
 declare global {interface HTMLElementTagNameMap {
@@ -79,9 +79,9 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
      */
     constructor(dimension: number = 8) {
         super()
-        this.gridW = new WebwriterCrosswordGrid()
-        this.clueW = new WebwriterCrosswordCluebox()
-        this.clueInpW = new WebwriterCrosswordClueboxInput()
+        this.gridW = new WebwriterCrosswordGrid(this)
+        this.clueW = new WebwriterCrosswordCluebox(this)
+        this.clueInpW = new WebwriterCrosswordClueboxInput(this)
         this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
 
@@ -153,6 +153,13 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
      */
     @property({ type: Object, state: true, attribute: false})
     _cwContext: CwContext
+    
+
+    /**
+     * Type of word puzzle
+     */
+    @property({ type: String, attribute: true, reflect: true })
+    public accessor type: 'crossword' | 'find-the-words' = 'crossword';
 
 
     setWordsCluesChildren(wordsClues: WordClue[]) {
@@ -180,6 +187,8 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
         "sl-icon": SlIcon,
         "sl-alert": SlAlert,
         "sl-drawer": SlDrawer,
+        'sl-select': SlSelect,
+        'sl-option': SlOption,
         "webwriter-crossword-grid": WebwriterCrosswordGrid,
         "webwriter-crossword-cluebox": WebwriterCrosswordCluebox,
         "webwriter-crossword-cluebox-input": WebwriterCrosswordClueboxInput,
@@ -209,6 +218,23 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
     render() {
         this.setWordsCluesChildren(this._wordsClues)
         return (html`
+            <aside class="settings" part="options">
+                <sl-select
+                    label=${msg("Puzzle Type")}
+                    .value=${this.type}
+                    @sl-change=${(e: SlChangeEvent) => {
+                        this.type = (e.target as SlSelect).value as any;
+                        this.requestUpdate();
+                        this.gridW.requestUpdate();
+                        this.clueW.requestUpdate();
+                        this.clueInpW.requestUpdate();
+                    }}
+                    name="puzzleType"
+                >
+                    <sl-option value="crossword">${msg("Crossword")}</sl-option>
+                    <sl-option value="find-the-words">${msg("Find the words")}</sl-option>
+                </sl-select>
+            </aside>
             <div class="wrapper">
                 <div class="cw-grid-wrapper">
                     ${this.gridW}
@@ -219,12 +245,12 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
                                 ${msg("Edit words")}
                             </div>
                         </sl-button>` : html``}
-                        <sl-button id="answer-check" variant="success" title=${msg("Check answers")} class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
+                        ${this.type == "crossword" || this.hasAttribute("contenteditable") ? html`<sl-button id="answer-check" variant="success" title=${this.type == "crossword" ? msg("Check answers") : msg("Show answers")} class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
                             <sl-icon slot="prefix" src=${check_circle}></sl-icon>
                             <div class="button-content">
-                                ${msg("Check answers")}
+                                ${this.type == "crossword" ? msg("Check answers") : msg("Show answers")}
                             </div>
-                        </sl-button>
+                        </sl-button>` : html``}
                     </div>
                 </div>
 

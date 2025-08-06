@@ -72,7 +72,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
      * 
      * Does nothing I guess
      */
-    constructor() {
+    constructor(private parentComponent: WebwriterCrossword) {
         super()
     }
 
@@ -198,17 +198,19 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
     addRow(e: Event) {
         let newRow = this.clueboxInput.tBodies[0].insertRow()
 
-        render(this.new_row_template_inner, newRow)
+        render(this.new_row_template_inner(), newRow)
     }
 
     /**
      * Lit HTML template for adding a new row to cluebox input element.
      * Used in {@link WwWordPuzzlesCwCluebox.addRow() | addRow()}
      */
-    new_row_template_inner = html`
+    new_row_template_inner() {
+        return html`
                 <td contenteditable></td>
+                ${this.parentComponent.type == "crossword" ? html`
                 <td></td>
-                <td contenteditable></td>
+                <td contenteditable></td>` : html``}
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
                         <sl-button title="${msg("Delete row")}" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
@@ -216,7 +218,9 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
                         </sl-button>
                 </div>
                 </td>
-                `
+        `
+    
+    }
     onPreviewToggle(contenteditable: boolean): void {
         //DEV: console.log("Preview processing for crossword-cluebox")
         this._preview = !contenteditable
@@ -244,30 +248,37 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
             let i = 0
             for(i < 0; i < this._wordsClues.length; i++) {
                 if(this._wordsClues[i].word != "") {
-                    clueboxInputRender.push(this._wordsClues[i].clueText != "" 
-                        ? html`<tr><td contenteditable>${this._wordsClues[i].word}</td>
-                        <td></td><td contenteditable>${this._wordsClues[i].clueText}</td>${clueboxButtonCell}</tr>`
-                        : html`<td contenteditable>${this._wordsClues[i].word}</td>
-                        <td></td><td contenteditable></td>
-                        ${clueboxButtonCell}</tr>`
-                        )
+                    if(this.parentComponent.type == "crossword") {
+                        clueboxInputRender.push(this._wordsClues[i].clueText != "" 
+                            ? html`<tr><td contenteditable>${this._wordsClues[i].word}</td>
+                            <td></td><td contenteditable>${this._wordsClues[i].clueText}</td>${clueboxButtonCell}</tr>`
+                            : html`<td contenteditable>${this._wordsClues[i].word}</td>
+                            <td></td><td contenteditable></td>
+                            ${clueboxButtonCell}</tr>`
+                            )
+
+                    }else {
+                        clueboxInputRender.push(html`<tr><td contenteditable>${this._wordsClues[i].word}</td><td></td>${clueboxButtonCell}</tr>`)
+                    }
                 }
                 else {
-                    clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
+                    clueboxInputRender.push(html`<tr>${this.new_row_template_inner()}</tr>`)
                 }
             }
             // Always have at least 5 rows present
             if(i < 5) {
                 let empty = 5 - i
                 for(empty; empty > 0; empty--) {
-                    clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
+                    clueboxInputRender.push(html`<tr>${this.new_row_template_inner()}</tr>`)
                 }
             }
         } else {
             for(let i = 0; i < 5; i++) {
-                clueboxInputRender.push(html`<tr>${this.new_row_template_inner}</tr>`)
+                clueboxInputRender.push(html`<tr>${this.new_row_template_inner()}</tr>`)
             }
         }
+
+        const wordColumnWidthStyle = this.parentComponent.type == "crossword" ? "width: 30%" : "width: 100%"
 
 
         /** 
@@ -276,13 +287,13 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
         return html`
             <table class="clueboxInput" @keydown=${this.ctrlHandler}>
                 <colgroup>
-                <col class="word-column">
+                <col style=${wordColumnWidthStyle}>
                 <col class="button-column">
-                <col class="clue-column">
+                ${this.parentComponent.type == "crossword" ? html`<col class="clue-column">` : html``}
             </colgroup>
             <thead>
                 <tr>
-                    <th class="word-column">${msg("Words")}</th>
+                    <th style=${wordColumnWidthStyle}>${msg("Words")}</th>
                     <th class="button-header-cell"> 
                     <div class="plus-button-div">
                         <sl-button title="${msg("Add rows")}" tabindex="-1" size="small" 
@@ -292,7 +303,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
                     </sl-button>
                     </div>
                     </th>
-                    <th class="clue-column">${msg("Clues")}</th>
+                    ${this.parentComponent.type == "crossword" ? html`<th class="clue-column">${msg("Clues")}</th>` : html``}
                 </tr>
             </thead>
             <tbody>
