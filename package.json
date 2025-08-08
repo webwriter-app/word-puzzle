@@ -1,6 +1,6 @@
 {
   "name": "@webwriter/word-puzzles",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WebWriter Widget for creating crossword puzzles (and in the future, find-the-word puzzles).",
   "keywords": [
     "webwriter-widget",
