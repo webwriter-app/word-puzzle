@@ -1,65 +1,23 @@
-# Word Puzzles Widget
+# WebWriter Word Puzzle Widget
 
-## Proposed structure
+This is a widget for [WebWriter](https://webwriter.app/), implemented as part of a Bachelor's thesis. It allows a user to generate a crossword puzzle based off of a list of words and clues that they provide. The structure of the widget was designed with extensibility in mind, to make it possible to eventually add other types of word puzzles, such as find-the-word puzzles.
 
-I've been told I shouldn't abstract things yet, but rather that I should implement the puzzles separately and then try to simplify things.
+It was developed using the [Lit](https://lit.dev/) framework.
 
-Nonetheless here's what I think it might look like later:
+## Source Folder Structure
 
-```mermaid
-classDiagram
-    LitElementWw <|-- Puzzle
-    Puzzle <|-- Crossword
-    Puzzle <|-- WordSearch
-    Puzzle ..> Grid
-    Grid o-- Cell
-    Cell <|-- CrossCell
-    Cell <|-- FindCell
-    
-    
-    class LitElementWw
+- `src/`
+    - `lib/crossword-gen.ts`
+    - `styles/styles.ts`
+    - `widgets/`
+        - `webwriter-crossword-cluebox-input.ts`
+        - `webwriter-crossword-cluebox.ts`
+        - `webwriter-crossword-grid.ts`
+        - `webwriter-crossword.ts`
+        - `webwriter-word-puzzles.ts`
 
-    class Puzzle{
-        <<abstract>>
-      +Grid grid
-      +? dictionary
-      +addInput()
-      +generate(PuzzleType, Options)
-    }
+Under `src/lib/crossword-gen.ts` is a library containing the algorithm to generate the crossword puzzle, along with other utilities. These are used in the widget.
 
-    Puzzle <.. Dictionary
-    
-    class Crossword{
-    +? panel
-      -generate(Options)
-    }
+`src/styles/styles.ts` contains the styling for the components of the widget.
 
-    note for Dictionary "Also clues. Optional for find thew ord"
-    class Dictionary{
-        +(String, String)\ \ (word, definition)
-    }
-
-    class WordSearch{
-      -generate(Options)
-    }
-
-    namespace puzzleGrid {
-    %% For crossword / find the word puzzle
-    class Grid {
-        +Cell cell[][]
-    }
-
-    class Cell {
-        +char letter
-        bool selected
-        bool answer
-    }
-
-    class CrossCell {
-        bool unused
-    }
-    class FindCell {
-    }
-
-    }
-```
+The code for the different components of the widget is under `src/widgets/`.
