@@ -61,6 +61,7 @@
       "source": "./src/widgets/webwriter-crossword.ts",
       "default": "./dist/widgets/webwriter-crossword.*"
     },
+    "./snippets/Crossword-Animals.html": "./snippets/Crossword-Animals.html",
     "./package.json": "./package.json",
     "./icon": "./icon.svg",
     "./editing-config.json": "./editing-config.json"
