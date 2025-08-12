@@ -62,6 +62,7 @@
       "default": "./dist/widgets/webwriter-crossword.*"
     },
     "./snippets/Crossword-Animals.html": "./snippets/Crossword-Animals.html",
+    "./snippets/Find-The-Words-Fruits.html": "./snippets/Find-The-Words-Fruits.html",
     "./package.json": "./package.json",
     "./icon": "./icon.svg",
     "./editing-config.json": "./editing-config.json"
