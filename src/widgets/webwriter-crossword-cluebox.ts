@@ -39,14 +39,17 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     public localize = LOCALIZE
 
     /**
-     * The panel element of the crossword puzzle, containing the words and clues. (WIP)
+     * The panel elements of the crossword puzzle, containing the words and clues. (WIP)
      * 
      * This one is intended for the crossword solver (i.e. student).
      * 
      * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
      */
-    @query(".cluebox")
-    accessor cluebox: HTMLTableElement
+    @query(".clueboxAcross")
+    accessor clueboxAcross: HTMLTableElement
+
+    @query(".clueboxDown")
+    accessor clueboxDown: HTMLTableElement
 
     /**
      * The list of words grouped with their clues, direction, and word number.
@@ -81,15 +84,24 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
      * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
      */
     highlightContext(context: CwContext): void {
-        if(this.cluebox.querySelector('table.cluebox td[current]') != null) {
-            this.cluebox.querySelector('table.cluebox td[current]').removeAttribute("current")
+        // Remove any existing "current" attributes from both tables
+        this.clueboxAcross.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
+        this.clueboxDown.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
+    
+        if (context.across != null && context.clue != null) {
+            const targetTable = context.across ? this.clueboxAcross : this.clueboxDown;
+            if (targetTable) {
+                const newCell = targetTable.querySelector(`td[clue="${context.clue}"]`);
+                if (newCell) {
+                    newCell.setAttribute("current", "");
+                }
+            }
         }
-        if(context.across != null && context.clue != null) {
-            const newCell = this.cluebox.querySelector('table.cluebox td[clue="' + context.clue + '"][' + (context.across ? "across" : "down") + ']')
-            newCell.setAttribute("current", "")
-        }
-        return
     }
+    
+    
+    
+    
     
     render() {
 
@@ -157,7 +169,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
                 </table>`
                 :
                 html`
-                <table class="cluebox">
+                <table class="cluebox clueboxAcross">
                     <colgroup>
                         <col>
                     </colgroup>
@@ -170,7 +182,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
                         ${clueboxTemplateCellsAcross}
                     </tbody>
                 </table>
-                <table class="cluebox">
+                <table class="cluebox clueboxDown">
                     <colgroup>
                         <col>
                     </colgroup>
