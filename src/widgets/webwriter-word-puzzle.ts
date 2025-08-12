@@ -101,7 +101,7 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
     }
 
     setContextHandler(e: CustomEvent) {
-        if(e.detail.acrossContext)
+        if(e.detail.across)
             DEV: console.log("set-context: across, clue " + e.detail.clue)
         else
             DEV: console.log("set-context: down, clue " + e.detail.clue)

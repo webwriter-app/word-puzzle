@@ -111,7 +111,7 @@ export class WebwriterWordPuzzleCluebox extends WebwriterWordPuzzles {
                 }
             // Highlight correctly found word for Find the words puzzles
             }else {
-                const newCell = this.wordsbox.querySelector(`td[clue="${context.clue}"]`);
+                const newCell = this.wordsbox.querySelector(`td[clue="${context.clue}"][${context.across ? "across" : "down"}]`);
                 if (newCell) {
                     newCell.setAttribute("current", "");
                 }
@@ -132,14 +132,18 @@ export class WebwriterWordPuzzleCluebox extends WebwriterWordPuzzles {
 
         if(this._wordsClues != null) {
             for(let wordClue of this._wordsClues) {
-                // For find the words
-                clueboxFindTheWords.push(html`<tr><td clue="${wordClue.clueNumber}" across>${wordClue.word}</td></tr>`)
-
-                // For crossword
                 if(wordClue.across) {
+                    // For find the words
+                    clueboxFindTheWords.push(html`<tr><td clue="${wordClue.clueNumber}" across>${wordClue.word}</td></tr>`)
+
+                    // For crossword
                     clueboxTemplateCellsAcross.push(html`<tr><td clue="${wordClue.clueNumber}" across>${clueboxCellContents(wordClue)}</td></tr>`)
                 }
                 else {
+                    // For find the words
+                    clueboxFindTheWords.push(html`<tr><td clue="${wordClue.clueNumber}" down>${wordClue.word}</td></tr>`)
+
+                    // For crossword
                     clueboxTemplateCellsDown.push(html`<tr><td clue="${wordClue.clueNumber}" down>${clueboxCellContents(wordClue)}</td></tr>`)
                 }
             }

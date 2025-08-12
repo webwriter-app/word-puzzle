@@ -401,7 +401,7 @@ export class WebwriterWordPuzzleGrid extends WebwriterWordPuzzles {
             // Change direction context if the current cell goes in both directions
             case " ":
                 if(cell.getAttribute("direction") == "both") {
-                    this.setContext({across: !this._cwContext.across, clue: this.getClueNumber(!this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col")))})
+                    this.setContext({across: this._cwContext.across, clue: this.getClueNumber(this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col")))})
                 }
                 break;
             // NAVIGATION ========================================================
