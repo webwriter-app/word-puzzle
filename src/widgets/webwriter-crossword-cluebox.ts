@@ -39,9 +39,17 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     public localize = LOCALIZE
 
     /**
+     * The panel elements of the find the words puzzle, containing the words.
+     * 
+     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
+     */
+    @query(".wordsbox")
+    accessor wordsbox: HTMLTableElement
+
+    /**
      * The panel elements of the crossword puzzle, containing the words and clues. (WIP)
      * 
-     * This one is intended for the crossword solver (i.e. student).
+     * These ones are intended for the crossword solver (i.e. student).
      * 
      * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
      */
@@ -77,21 +85,33 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     }
 
     /**
-     * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context.
+     * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context for crosswords
+     * and highlights the words that were already found for the Find the words puzzles.
      * 
      * @param newContext 
      * @param oldContext 
      * @returns {boolean} always returns false to prevent re-rendering the whole cluebox component.
      */
     highlightContext(context: CwContext): void {
-        // Remove any existing "current" attributes from both tables
-        this.clueboxAcross.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
-        this.clueboxDown.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
-    
+        // Remove any existing "current" attributes from both tables if it is a crossword
+        if(this.parentComponent.type == "crossword") {
+            this.clueboxAcross.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
+            this.clueboxDown.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
+        }
+
         if (context.across != null && context.clue != null) {
-            const targetTable = context.across ? this.clueboxAcross : this.clueboxDown;
-            if (targetTable) {
-                const newCell = targetTable.querySelector(`td[clue="${context.clue}"]`);
+            // Highlight current context for crosswords
+            if(this.parentComponent.type == "crossword") {
+                const targetTable = context.across ? this.clueboxAcross : this.clueboxDown;
+                if (targetTable) {
+                    const newCell = targetTable.querySelector(`td[clue="${context.clue}"]`);
+                    if (newCell) {
+                        newCell.setAttribute("current", "");
+                    }
+                }
+            // Highlight correctly found word for Find the words puzzles
+            }else {
+                const newCell = this.wordsbox.querySelector(`td[clue="${context.clue}"]`);
                 if (newCell) {
                     newCell.setAttribute("current", "");
                 }
@@ -154,7 +174,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
         return html`
             <div class="tables-wrapper">
                 ${this.parentComponent.type == "find-the-words" ? html`
-                <table class="cluebox">
+                <table class="cluebox wordsbox">
                     <colgroup>
                         <col>
                     </colgroup>

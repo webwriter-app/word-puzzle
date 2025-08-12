@@ -658,6 +658,8 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
                     for(var i = 0; i < word.word.length; i++) {
                         const cellDOM = word.across ? this.getCellDOM(word.x, word.y + i, this.gridEl) : this.getCellDOM(word.x + i, word.y, this.gridEl)
                         cellDOM.setAttribute("correct", "")
+                        // Highlight the word in the words table
+                        this.setContext({across: word.across, clue: this.getClueNumber(word.across, word.x, word.y)})
                     }
                 }
 
