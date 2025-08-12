@@ -218,7 +218,7 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
     render() {
         this.setWordsCluesChildren(this._wordsClues)
         return (html`
-            <aside class="settings" part="options">
+            ${this.hasAttribute("contenteditable") ? html`<aside class="settings" part="options">
                 <sl-select
                     label=${msg("Puzzle Type")}
                     .value=${this.type}
@@ -234,7 +234,7 @@ export class WebwriterCrossword extends WebwriterWordPuzzles {
                     <sl-option value="crossword">${msg("Crossword")}</sl-option>
                     <sl-option value="find-the-words">${msg("Find the words")}</sl-option>
                 </sl-select>
-            </aside>
+            </aside>` : html``}
             <div class="wrapper">
                 <div class="cw-grid-wrapper">
                     ${this.gridW}
