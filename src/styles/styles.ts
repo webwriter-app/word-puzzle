@@ -48,14 +48,14 @@ export const crossword_styles = css`
     #answer-check div{
         margin-top: 0;
     }
-    webwriter-crossword-cluebox {
+    webwriter-word-puzzle-cluebox {
         display:flex;
         flex-wrap:wrap;
         align-items: space-between;
         justify-content:space-between;
         margin-top: 10px;
     }
-    webwriter-crossword-cluebox-input {
+    webwriter-word-puzzle-cluebox-input {
         display:contents;
         flex-wrap:wrap;
         align-items: space-between;
@@ -92,7 +92,7 @@ export const crossword_styles = css`
 `
 
 /**
- * Styles for the crossword cluebox.
+ * Styles for the word-puzzle cluebox.
  */
 export const cluebox_styles = css`
     [nopreview] {
@@ -354,7 +354,7 @@ export const cluebox_styles = css`
 `
 
 /**
- * Styles for the crossword grid.
+ * Styles for the word-puzzle grid.
  * clue-label based off of crossword-js
  */
 export const grid_styles = css`

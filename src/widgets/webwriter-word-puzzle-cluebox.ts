@@ -8,7 +8,7 @@
 import { html, HTMLTemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { CwContext, WebwriterCrossword } from './webwriter-crossword';
+import { CwContext, WebwriterWordPuzzle } from './webwriter-word-puzzle';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
@@ -32,8 +32,8 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @localized()
-@customElement("webwriter-crossword-cluebox")
-export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
+@customElement("webwriter-word-puzzle-cluebox")
+export class WebwriterWordPuzzleCluebox extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     public localize = LOCALIZE
@@ -41,7 +41,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
     /**
      * The panel elements of the find the words puzzle, containing the words.
      * 
-     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterWordPuzzle.newClueBox | newClueBox()}
      */
     @query(".wordsbox")
     accessor wordsbox: HTMLTableElement
@@ -51,7 +51,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * These ones are intended for the crossword solver (i.e. student).
      * 
-     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterWordPuzzle.newClueBox | newClueBox()}
      */
     @query(".clueboxAcross")
     accessor clueboxAcross: HTMLTableElement
@@ -76,7 +76,7 @@ export class WebwriterCrosswordCluebox extends WebwriterWordPuzzles {
      * 
      * Does nothing I guess
      */
-    constructor(private parentComponent: WebwriterCrossword) {
+    constructor(private parentComponent: WebwriterWordPuzzle) {
         super()
     }
 

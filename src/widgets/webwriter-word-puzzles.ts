@@ -13,18 +13,18 @@ import {customElement, property, query, queryAssignedElements} from 'lit/decorat
  * 
  * @module crossword
  */
-import { WebwriterCrossword } from './webwriter-crossword';
-import { WebwriterCrosswordGrid } from './webwriter-crossword-grid';
-import { WebwriterCrosswordCluebox } from './webwriter-crossword-cluebox';
+import { WebwriterWordPuzzle } from './webwriter-word-puzzle';
+import { WebwriterWordPuzzleGrid } from './webwriter-word-puzzle-grid';
+import { WebwriterWordPuzzleCluebox } from './webwriter-word-puzzle-cluebox';
 //import {customElement, property, query, queryAssignedElements} from 'lit/decorators.js';
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 setBasePath('./node_modules/@shoelace-style/shoelace/dist');
 
 declare global {interface HTMLElementTagNameMap {
     "webwriter-word-puzzles": WebwriterWordPuzzles;
-    "webwriter-crossword": WebwriterCrossword;
-    "webwriter-crossword-grid": WebwriterCrosswordGrid;
-    "webwriter-crossword-cluebox": WebwriterCrosswordCluebox;
+    "webwriter-word-puzzle": WebwriterWordPuzzle;
+    "webwriter-word-puzzle-grid": WebwriterWordPuzzleGrid;
+    "webwriter-word-puzzle-cluebox": WebwriterWordPuzzleCluebox;
   }
 }
 
@@ -44,10 +44,10 @@ export class WebwriterWordPuzzles extends LitElementWw {
   /**
    * @property {WebWriterWordPuzzlesCrossword} crossword 
    * Probably unused, tbh
-   * @see {@link /src/widgets/webwriter-crossword.ts | other file}
+   * @see {@link /src/widgets/webwriter-word-puzzle.ts | other file}
    */
   @property({attribute: false})
-  accessor crossword: WebwriterCrossword
+  accessor crossword: WebwriterWordPuzzle
 
   static get styles() {
     return css`

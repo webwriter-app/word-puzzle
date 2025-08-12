@@ -8,7 +8,7 @@
 import { html } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterCrossword, CwContext } from './webwriter-crossword';
+import { WebwriterWordPuzzle, CwContext } from './webwriter-word-puzzle';
 import { WordClue, Cell, defaultCell, newCellDOM, GenerationResults, generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
@@ -26,8 +26,8 @@ const DEFAULT_DIMENSION: number = 9
  * @extends { WebwriterWordPuzzles  }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-crossword-grid")
-export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
+@customElement("webwriter-word-puzzle-grid")
+export class WebwriterWordPuzzleGrid extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     /**
@@ -46,7 +46,7 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
-     * See the constructor {@link WebwriterCrossword.newCrosswordGrid | newCrosswordGrid()}
+     * See the constructor {@link WebwriterWordPuzzle.newCrosswordGrid | newCrosswordGrid()}
      */
     @property({ type: HTMLDivElement, state: true, attribute: false})
     gridEl: HTMLDivElement
@@ -90,7 +90,7 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
      * 
      * Pretty much just makes a grid with 9x9 dimensions
      */
-    constructor(private parentComponent: WebwriterCrossword) {
+    constructor(private parentComponent: WebwriterWordPuzzle) {
         super()
         this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
         this._cwContext = {across: null, clue: null}
@@ -351,7 +351,7 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
     }
 
     /**
-     * Constructor for the cells of the {@link WebwriterCrossword.gridEl | grid} DOM element.
+     * Constructor for the cells of the {@link WebwriterWordPuzzle.gridEl | grid} DOM element.
      * 
      * @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
      * @param {number} x the row of the cell, 0-indexed
@@ -517,7 +517,7 @@ export class WebwriterCrosswordGrid extends WebwriterWordPuzzles {
     // It should compare the text content of the cell with the answer in this.grid
 
      /**
-     * Build / construct the {@link WebwriterCrossword.gridEl | grid} DOM element that will contain the words and clues
+     * Build / construct the {@link WebwriterWordPuzzle.gridEl | grid} DOM element that will contain the words and clues
      *
      * Dimensions are based on {@link this.grid | grid}.
      *

@@ -8,7 +8,7 @@
 import { html, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
-import { WebwriterCrossword } from './webwriter-crossword';
+import { WebwriterWordPuzzle } from './webwriter-word-puzzle';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
@@ -33,8 +33,8 @@ import LOCALIZE from "../../localization/generated"
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @localized()
-@customElement("webwriter-crossword-cluebox-input")
-export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
+@customElement("webwriter-word-puzzle-cluebox-input")
+export class WebwriterWordPuzzleClueboxInput extends WebwriterWordPuzzles {
     // All methods have the same names as in crosswords-js
 
     public localize = LOCALIZE
@@ -50,7 +50,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
      * 
      * It's intended exclusively for use by crossword creators (i.e. teachers).
      * 
-     * See the constructor {@link WebwriterCrossword.newClueBox | newClueBox()}
+     * See the constructor {@link WebwriterWordPuzzle.newClueBox | newClueBox()}
      */
     @query(".clueboxInput")
     accessor clueboxInput: HTMLTableElement
@@ -72,7 +72,7 @@ export class WebwriterCrosswordClueboxInput extends WebwriterWordPuzzles {
      * 
      * Does nothing I guess
      */
-    constructor(private parentComponent: WebwriterCrossword) {
+    constructor(private parentComponent: WebwriterWordPuzzle) {
         super()
     }
 
