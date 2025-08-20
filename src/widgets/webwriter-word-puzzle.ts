@@ -3,12 +3,10 @@
  * 
  * @packageDocumentation
  * @module crossword
- * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, PropertyValues } from 'lit';
+import { html, LitElement, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
-import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzleGrid } from './webwriter-word-puzzle-grid';
 import { WordClue, defaultCell } from '../lib/crossword-gen';
 import { WebwriterWordPuzzleCluebox } from './webwriter-word-puzzle-cluebox';
@@ -26,14 +24,11 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 
 // Buttons
 import { SlButton, SlIcon, SlAlert, SlDrawer, SlChangeEvent, SlSelect, SlOption } from '@shoelace-style/shoelace';
+import { LitElementWw } from '@webwriter/lit';
 
 
 declare global {interface HTMLElementTagNameMap {
-        "webwriter-word-puzzles": WebwriterWordPuzzles;
         "webwriter-word-puzzle": WebwriterWordPuzzle;
-        "webwriter-word-puzzle-grid": WebwriterWordPuzzleGrid;
-        "webwriter-word-puzzle-cluebox": WebwriterWordPuzzleCluebox;
-        "webwriter-word-puzzle-cluebox-input": WebwriterWordPuzzleClueboxInput;
     }
 }
 
@@ -61,14 +56,12 @@ export interface CwContext {
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
- * @extends { WwWordPuzzles  }
- * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @localized()
 @customElement("webwriter-word-puzzle")
-export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
+export class WebwriterWordPuzzle extends LitElementWw {
 
-    public localize = LOCALIZE
+    protected localize = LOCALIZE
 
     /**
      * @constructor
@@ -93,14 +86,14 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
         this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
     }
 
-    generateCwHandler() {
+    protected generateCwHandler() {
         DEV: console.log("generateCw triggered")
         this.clueInpW._wordsClues = this.gridW.generateCrossword(this.clueInpW._wordsClues)
-        this.clueW._wordsClues = this._wordsClues
-        this.clueW.requestUpdate()
+        this.clueW._wordsClues = this._wordsClues;
+        (this.clueW as any).requestUpdate()
     }
 
-    setContextHandler(e: CustomEvent) {
+    protected setContextHandler(e: CustomEvent) {
         if(e.detail.across)
             DEV: console.log("set-context: across, clue " + e.detail.clue)
         else
@@ -162,7 +155,7 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
     public accessor type: 'crossword' | 'find-the-words' = 'crossword';
 
 
-    setWordsCluesChildren(wordsClues: WordClue[]) {
+    protected setWordsCluesChildren(wordsClues: WordClue[]) {
         //DEV: console.log("Setting words and clues in children.")
         this._wordsClues = wordsClues
         this.gridW._wordsClues = wordsClues
@@ -181,7 +174,7 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
     }
 
     // Registering custom elements
-    static get scopedElements() {
+    protected static get scopedElements() {
         return {
         "sl-button": SlButton,
         "sl-icon": SlIcon,
@@ -191,8 +184,7 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
         'sl-option': SlOption,
         "webwriter-word-puzzle-grid": WebwriterWordPuzzleGrid,
         "webwriter-word-puzzle-cluebox": WebwriterWordPuzzleCluebox,
-        "webwriter-word-puzzle-cluebox-input": WebwriterWordPuzzleClueboxInput,
-        "webwriter-word-puzzles-crossword": WebwriterWordPuzzle
+        "webwriter-word-puzzle-cluebox-input": WebwriterWordPuzzleClueboxInput
         };
     }
 
@@ -207,7 +199,7 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
         this.gridW.generateCrossword(this._wordsClues)
     }
 
-    onPreviewToggle(newValue: boolean): boolean {
+    protected onPreviewToggle(newValue: boolean): boolean {
         //DEV: console.log("Preview toggled")
         this.clueInpW.onPreviewToggle(newValue)
         return newValue 
@@ -225,9 +217,9 @@ export class WebwriterWordPuzzle extends WebwriterWordPuzzles {
                     @sl-change=${(e: SlChangeEvent) => {
                         this.type = (e.target as SlSelect).value as any;
                         this.requestUpdate();
-                        this.gridW.requestUpdate();
-                        this.clueW.requestUpdate();
-                        this.clueInpW.requestUpdate();
+                        (this.gridW as any).requestUpdate();
+                        (this.clueW as any).requestUpdate();
+                        (this.clueInpW as any).requestUpdate();
                     }}
                     name="puzzleType"
                 >

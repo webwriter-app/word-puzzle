@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/widgets/webwriter-word-puzzle.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Crossword element for word puzzle widget. Includes grid and clue panel elements.",
+          "name": "WebwriterWordPuzzle",
+          "members": [
+            {
+              "kind": "field",
+              "name": "localize",
+              "privacy": "protected",
+              "default": "LOCALIZE"
+            },
+            {
+              "kind": "method",
+              "name": "generateCwHandler",
+              "privacy": "protected"
+            },
+            {
+              "kind": "method",
+              "name": "setContextHandler",
+              "privacy": "protected",
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "CustomEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "_wordsClues",
+              "type": {
+                "text": "WordClue[]"
+              },
+              "description": "The list of words grouped with their clues, direction, and word number.",
+              "attribute": "_wordsClues",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "gridW",
+              "type": {
+                "text": "WebwriterWordPuzzleGrid"
+              },
+              "privacy": "private",
+              "description": "The DOM grid element of the crossword puzzle. Contains the cells\n\nSee the constructor WebwriterWordPuzzle.newCrosswordGrid| newCrosswordGrid()",
+              "default": "new WebwriterWordPuzzleGrid(this)"
+            },
+            {
+              "kind": "field",
+              "name": "clueInpW",
+              "type": {
+                "text": "WebwriterWordPuzzleClueboxInput"
+              },
+              "privacy": "private",
+              "description": "The panel element of the crossword puzzle, containing the words and clues. (WIP)\n\nSee the constructor WebwriterWordPuzzle.newClueBox| newClueBox()",
+              "default": "new WebwriterWordPuzzleClueboxInput(this)"
+            },
+            {
+              "kind": "field",
+              "name": "clueW",
+              "type": {
+                "text": "WebwriterWordPuzzleCluebox"
+              },
+              "privacy": "private",
+              "description": "The panel element of the crossword puzzle, containing the words and clues. (WIP)\n\nSee the constructor WebwriterWordPuzzle.newClueBox| newClueBox()",
+              "default": "new WebwriterWordPuzzleCluebox(this)"
+            },
+            {
+              "kind": "field",
+              "name": "_cwContext",
+              "type": {
+                "text": "CwContext"
+              },
+              "description": "Current crossword context; across and clue number"
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'crossword' | 'find-the-words'"
+              },
+              "privacy": "public",
+              "default": "'crossword'",
+              "description": "Type of word puzzle",
+              "attribute": "type",
+              "reflects": true
+            },
+            {
+              "kind": "method",
+              "name": "setWordsCluesChildren",
+              "privacy": "protected",
+              "parameters": [
+                {
+                  "name": "wordsClues",
+                  "type": {
+                    "text": "WordClue[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "scopedElements",
+              "privacy": "protected",
+              "static": true,
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "generateCrossword",
+              "privacy": "protected",
+              "description": "Generates crossword puzzle based off of words in the clue box and \nwrites it to the DOM.\n\nBased off of Agarwal and Joshi 2020"
+            },
+            {
+              "kind": "method",
+              "name": "onPreviewToggle",
+              "privacy": "protected",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "newValue",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "grid"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "_wordsClues",
+              "type": {
+                "text": "WordClue[]"
+              },
+              "description": "The list of words grouped with their clues, direction, and word number.",
+              "fieldName": "_wordsClues"
+            },
+            {
+              "name": "type",
+              "type": {
+                "text": "'crossword' | 'find-the-words'"
+              },
+              "default": "'crossword'",
+              "description": "Type of word puzzle",
+              "fieldName": "type"
+            }
+          ],
+          "superclass": {
+            "name": "LitElementWw",
+            "package": "@webwriter/lit"
+          },
+          "tagName": "webwriter-word-puzzle",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "WebwriterWordPuzzle",
+          "declaration": {
+            "name": "WebwriterWordPuzzle",
+            "module": "src/widgets/webwriter-word-puzzle.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "webwriter-word-puzzle",
+          "declaration": {
+            "name": "WebwriterWordPuzzle",
+            "module": "src/widgets/webwriter-word-puzzle.ts"
+          }
+        }
+      ]
+    }
+  ]
+}
