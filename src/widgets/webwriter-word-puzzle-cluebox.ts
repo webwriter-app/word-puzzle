@@ -7,7 +7,6 @@
  */
 import { html, HTMLTemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { CwContext, WebwriterWordPuzzle } from './webwriter-word-puzzle';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
@@ -19,21 +18,13 @@ import LOCALIZE from "../../localization/generated"
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
 
-//declare global {interface HTMLElementTagNameMap {
-//    "webwriter-word-puzzles": WebwriterWordPuzzles;
-//    "webwriter-crossword-cluebox": WwWordPuzzlesCwCluebox;
-//    }
-//}
-
-
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
- * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @localized()
 @customElement("webwriter-word-puzzle-cluebox")
-export class WebwriterWordPuzzleCluebox extends WebwriterWordPuzzles {
+export class WebwriterWordPuzzleCluebox extends LitElement {
     // All methods have the same names as in crosswords-js
 
     public localize = LOCALIZE
