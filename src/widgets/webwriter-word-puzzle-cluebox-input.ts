@@ -7,7 +7,6 @@
  */
 import { html, render } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzle } from './webwriter-word-puzzle';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
@@ -29,12 +28,11 @@ import LOCALIZE from "../../localization/generated"
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
- * @extends { WebwriterWordPuzzles }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @localized()
 @customElement("webwriter-word-puzzle-cluebox-input")
-export class WebwriterWordPuzzleClueboxInput extends WebwriterWordPuzzles {
+export class WebwriterWordPuzzleClueboxInput extends LitElememt {
     // All methods have the same names as in crosswords-js
 
     public localize = LOCALIZE
@@ -78,15 +76,6 @@ export class WebwriterWordPuzzleClueboxInput extends WebwriterWordPuzzles {
 
     static get styles() {
         return cluebox_styles
-    }
-
-    // Registering custom elements
-    static get scopedElements() {
-        return {
-        "sl-button": SlButton,
-        "sl-icon": SlIcon,
-        "sl-drawer": SlDrawer
-        };
     }
 
     /**
