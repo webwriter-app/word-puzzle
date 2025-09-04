@@ -3,11 +3,9 @@
  * 
  * @packageDocumentation
  * @module crossword
- * @mergeModuleWith webwriter-word-puzzles
  */
 import { html } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { WebwriterWordPuzzles } from './webwriter-word-puzzles';
 import { WebwriterWordPuzzle, CwContext } from './webwriter-word-puzzle';
 import { WordClue, Cell, defaultCell, newCellDOM, GenerationResults, generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
@@ -23,11 +21,10 @@ const DEFAULT_DIMENSION: number = 9
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
- * @extends { WebwriterWordPuzzles  }
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
 @customElement("webwriter-word-puzzle-grid")
-export class WebwriterWordPuzzleGrid extends WebwriterWordPuzzles {
+export class WebwriterWordPuzzleGrid extends LitElement {
     // All methods have the same names as in crosswords-js
 
     /**
@@ -104,11 +101,6 @@ export class WebwriterWordPuzzleGrid extends WebwriterWordPuzzles {
         return grid_styles
     }
 
-    static get scopedElements() {
-        return {
-        "sl-alert": SlAlert
-        };
-    }
     // TODO Add event listener for adding the focus class based on the clue number and direction
 
 
