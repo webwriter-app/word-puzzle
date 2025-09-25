@@ -32,7 +32,7 @@ import LOCALIZE from "../../localization/generated"
  */
 @localized()
 @customElement("webwriter-word-puzzle-cluebox-input")
-export class WebwriterWordPuzzleClueboxInput extends LitElememt {
+export class WebwriterWordPuzzleClueboxInput extends LitElement {
     // All methods have the same names as in crosswords-js
 
     public localize = LOCALIZE
