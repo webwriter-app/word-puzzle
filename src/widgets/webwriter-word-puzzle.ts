@@ -20,6 +20,7 @@ import {localized, msg} from "@lit/localize"
 import LOCALIZE from "../../localization/generated"
 
 // Shoelace
+// @ts-ignore
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
 // Buttons

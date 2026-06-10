@@ -354,6 +354,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         const cellDOM = newCellDOM(document, this.grid, this.parentComponent.type, x, y, letter)
         cellDOM.addEventListener('keydown', (e) => { this.cellKeydownHandler(e) });
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {this.cellFocusHandler(e)});
+        cellDOM.addEventListener('beforeinput', (e: InputEvent) => { this.cellBeforeInputHandler(e) });
 
         return cellDOM
     }
@@ -438,6 +439,22 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         }
     }
 
+
+    /**
+     * Handles text input on Chrome on Android, where keydown does not work correctly.
+     * See https://stackoverflow.com/questions/36753548/keycode-on-android-is-always-229
+     */
+    private cellBeforeInputHandler(e: InputEvent) {
+        if (e.inputType !== "insertText" || !e.data) return;
+        const isAlphaChar = (str: string) => /^[a-zA-Z]$/.test(str);
+        const char = e.data.split("").find(c => isAlphaChar(c));
+        e.preventDefault();
+        if (!char) return;
+        const cell = e.target as HTMLDivElement;
+        cell.querySelector(".cell-letter").textContent = char.toUpperCase();
+        cell.removeAttribute("incorrect");
+        this.nextEmptyCell();
+    }
 
     /** Handler for when a cell gains focus. Sets the clue and direction context
      * 
