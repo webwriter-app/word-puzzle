@@ -573,27 +573,21 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             let startIndexY = 0;
             let lineEl = null;
 
-            this.gridEl.addEventListener('mousedown', (e) => {
+            const startDrag = (clientX: number, clientY: number, target: HTMLElement) => {
                 isDragging = true;
 
                 // Store the indices of the cell on which the dragging is started
-                const cellLetter = e.target as HTMLElement;
-                startIndexX = parseInt(cellLetter.getAttribute('data-x'), 10);
-                startIndexY = parseInt(cellLetter.getAttribute('data-y'), 10);
+                startIndexX = parseInt(target.getAttribute('data-x'), 10);
+                startIndexY = parseInt(target.getAttribute('data-y'), 10);
 
                 // Store the coordinates of the start dragging point for visualization
                 const rect = this.svgEl.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                startX = x;
-                startY = y;
-
+                startX = clientX - rect.left;
+                startY = clientY - rect.top;
                 // Remove old line if still existing
                 if (lineEl && lineEl.parentNode) {
                     lineEl.parentNode.removeChild(lineEl);
                 }
-                lineEl = null;
 
                 // Create the new line
                 lineEl = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -605,79 +599,102 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 lineEl.setAttribute("stroke-width", "25");
                 lineEl.setAttribute("stroke-opacity", "0.5");
                 lineEl.setAttribute("stroke-linecap", "round");
-                
 
                 this.svgEl.appendChild(lineEl);
-            });
+            };
 
-            this.gridEl.addEventListener('mousemove', (e) => {
+            const moveDrag = (clientX: number, clientY: number) => {
                 if (!isDragging || !lineEl) {
-                    lineEl.parentNode.removeChild(lineEl);
+                    if (lineEl && lineEl.parentNode) {
+                        lineEl.parentNode.removeChild(lineEl);
+                    }
                     lineEl = null;
                     return
                 };
 
                 const rect = this.svgEl.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                lineEl.setAttribute("x2", clientX - rect.left);
+                lineEl.setAttribute("y2", clientY - rect.top);
+            };
 
-                const currentX = x;
-                const currentY = y;
-
-                lineEl.setAttribute("x2", currentX);
-                lineEl.setAttribute("y2", currentY);
-            });
-
-            this.gridEl.addEventListener('mouseup', (e) => {
-                const cellLetter = e.target as HTMLElement;
-
+            const endDrag = (endEl: HTMLElement) => {
                 // Get the indices of the cell on which the mouse was ended dragging
-                const endIndexX = parseInt(cellLetter.getAttribute('data-x'), 10);
-                const endIndexY = parseInt(cellLetter.getAttribute('data-y'), 10);
+                const endIndexX = parseInt(endEl?.getAttribute('data-x'), 10);
+                const endIndexY = parseInt(endEl?.getAttribute('data-y'), 10);
 
-                // Calculate the start of the word indices and end of the word indices
-                // The use could potentially draw over the words from the end of the word to the start
-                // In that case the coordinates are switched and this works because words can only be horizontal or vertical
-                const startWordIndexX = Math.min(startIndexX, endIndexX)
-                const startWordIndexY = Math.min(startIndexY, endIndexY)
+                if (!isNaN(endIndexX) && !isNaN(endIndexY)) {
+                    // Calculate the start of the word indices and end of the word indices
+                    // The use could potentially draw over the words from the end of the word to the start
+                    // In that case the coordinates are switched and this works because words can only be horizontal or vertical
+                    const startWordIndexX = Math.min(startIndexX, endIndexX)
+                    const startWordIndexY = Math.min(startIndexY, endIndexY)
 
-                const endWordIndexX = Math.max(startIndexX, endIndexX)
-                const endWordIndexY = Math.max(startIndexY, endIndexY)
+                    const endWordIndexX = Math.max(startIndexX, endIndexX)
+                    const endWordIndexY = Math.max(startIndexY, endIndexY)
 
+                    // Check if the word over which was drawn is in the word list
+                    const word = this._wordsClues.find((w) => {
+                        // Not the right word if the gragging was not started on the correct character
+                        if(w.x != startWordIndexX || w.y != startWordIndexY) {
+                            return false;
+                        }
 
-                // Check if the word over which was drawn is in the word list
-                const word = this._wordsClues.find((w) => {
-                    // Not the right word if the gragging was not started on the correct character
-                    if(w.x != startWordIndexX || w.y != startWordIndexY) {
-                        return false;
-                    }
+                        // Check if it is the correct word by looking if the dragging was ended on the correct character
+                        // Please dont wonder that x and y are not the normal way. Them seems to be switched in the implementation
+                        // X is for rows, Y for columns
+                        if(w.across) {
+                            return w.x == endWordIndexX && w.y + w.word.length - 1 == endWordIndexY
+                        }else {
+                            return w.x + w.word.length - 1 == endWordIndexX && w.y == endWordIndexY
+                        }
+                    })
 
-                    // Check if it is the correct word by looking if the dragging was ended on the correct character
-                    // Please dont wonder that x and y are not the normal way. Them seems to be switched in the implementation
-                    // X is for rows, Y for columns
-                    if(w.across) {
-                        return w.x == endWordIndexX && w.y + w.word.length - 1 == endWordIndexY
-                    }else {
-                        return w.x + w.word.length - 1 == endWordIndexX && w.y == endWordIndexY
-                    }
-                })
-
-                // Mark word as correct if a word was found
-                if(word) {
-                    for(var i = 0; i < word.word.length; i++) {
-                        const cellDOM = word.across ? this.getCellDOM(word.x, word.y + i, this.gridEl) : this.getCellDOM(word.x + i, word.y, this.gridEl)
-                        cellDOM.setAttribute("correct", "")
-                        // Highlight the word in the words table
-                        this.setContext({across: word.across, clue: this.getClueNumber(word.across, word.x, word.y)})
+                    // Mark word as correct if a word was found
+                    if(word) {
+                        for(var i = 0; i < word.word.length; i++) {
+                            const cellDOM = word.across ? this.getCellDOM(word.x, word.y + i, this.gridEl) : this.getCellDOM(word.x + i, word.y, this.gridEl)
+                            cellDOM.setAttribute("correct", "")
+                            // Highlight the word in the words table
+                            this.setContext({across: word.across, clue: this.getClueNumber(word.across, word.x, word.y)})
+                        }
                     }
                 }
-
 
                 isDragging = false;
                 if (lineEl && lineEl.parentNode) {
                     lineEl.parentNode.removeChild(lineEl);
                 }
                 lineEl = null;
+            };
+
+            this.gridEl.addEventListener('mousedown', (e) => {
+                startDrag(e.clientX, e.clientY, e.target as HTMLElement);
+            });
+
+            this.gridEl.addEventListener('mousemove', (e) => {
+                moveDrag(e.clientX, e.clientY);
+            });
+
+            this.gridEl.addEventListener('mouseup', (e) => {
+                endDrag(e.target as HTMLElement);
+            });
+            
+            this.gridEl.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                startDrag(touch.clientX, touch.clientY, e.target as HTMLElement);
+            }, { passive: false });
+
+            this.gridEl.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                moveDrag(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            this.gridEl.addEventListener('touchend', (e) => {
+                const touch = e.changedTouches[0];
+                const endEl = this.shadowRoot?.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
+                endDrag(endEl);
             });
         }
 
