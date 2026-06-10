@@ -334,22 +334,20 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     let notAdjacent = true
 
                     // Don't place a word if there is a white cell right before or after it starts
-                    let col_shift = 1
-                    let row_shift = 1
-
-                    if(possibleDirection == "across"){
-                        col_shift = newWordClue.word.length
-                    }
-                    else {
-                        row_shift = newWordClue.word.length
-                    }
-
-                    if(possibleX - row_shift >= 0 && possibleY - col_shift >= 0) {
-                        notAdjacent = notAdjacent && !inputGrid[possibleX - row_shift][possibleY - col_shift].white
-                    }
-
-                    if(possibleX + row_shift < inputGrid.length && possibleY + col_shift < inputGrid.length) {
-                        notAdjacent = notAdjacent && !inputGrid[possibleX + row_shift][possibleY + col_shift].white
+                    if(possibleDirection == "across") {
+                        if(possibleX >= 0 && possibleX < inputGrid.length && possibleY - 1 >= 0) {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY - 1].white
+                        }
+                        if(possibleX >= 0 && possibleX < inputGrid.length && possibleY + newWordClue.word.length < inputGrid.length) {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY + newWordClue.word.length].white
+                        }
+                    } else {
+                        if(possibleX - 1 >= 0 && possibleY >= 0 && possibleY < inputGrid.length) {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY].white
+                        }
+                        if(possibleX + newWordClue.word.length < inputGrid.length && possibleY >= 0 && possibleY < inputGrid.length) {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX + newWordClue.word.length][possibleY].white
+                        }
                     }
 
                     for (let i = 0; i < newWordClue.word.length; i++) {
