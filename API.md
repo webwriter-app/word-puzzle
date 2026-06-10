@@ -1,5 +1,5 @@
-# Word,Puzzle (`@webwriter/word-puzzle@1.0.3`)
-[License: MIT](LICENSE) | Version: 1.0.3
+# Word Puzzle (`@webwriter/word-puzzle@1.0.6`)
+[License: MIT](LICENSE) | Version: 1.0.6
 
 Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.
 
@@ -8,8 +8,8 @@ Crossword and word search puzzle creation tool featuring customizable grids, clu
 
 | Name | Import Path |
 | :--: | :---------: |
-| Crossword Animals | @webwriter/word-puzzle/snippets/Crossword-Animals.html |
-| Find The Words Fruits | @webwriter/word-puzzle/snippets/Find-The-Words-Fruits.html |
+| Crossword Animals | `@webwriter/word-puzzle/snippets/Crossword-Animals.html` |
+| Find The Words Fruits | `@webwriter/word-puzzle/snippets/Find-The-Words-Fruits.html` |
 
 
 
@@ -59,4 +59,4 @@ npm install @webwriter/word-puzzle
 
 
 ---
-*Generated with @webwriter/build@1.6.0*
+*Generated with @webwriter/build@1.9.1*
