@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Rodyti atsakymus`,
 's99ab01c90f7f6dd0': `Raskite žodžius`,
 'sca3966636984e031': `Pridėti eilučių`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

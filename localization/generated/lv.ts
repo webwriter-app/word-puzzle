@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Rādīt atbildes`,
 's99ab01c90f7f6dd0': `Atrodiet vārdus`,
 'sca3966636984e031': `Pievienot rindas`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

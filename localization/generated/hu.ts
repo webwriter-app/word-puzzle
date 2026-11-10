@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Válaszok megjelenítése`,
 's99ab01c90f7f6dd0': `Keresse meg a szavakat`,
 'sca3966636984e031': `Sorok hozzáadása`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

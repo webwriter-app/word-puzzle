@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Zobrazit odpovědi`,
 's99ab01c90f7f6dd0': `Najděte slova`,
 'sca3966636984e031': `Přidání řádků`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

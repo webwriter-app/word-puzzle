@@ -371,7 +371,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      */
     private cellKeydownHandler(e: KeyboardEvent) {
         e.preventDefault(); // Prevent default character insertion
-        const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
+        const isAlphaChar = str => /^\p{L}$/u.test(str);
         let cell: HTMLDivElement = (e.target)
         let nextCell: HTMLDivElement
 
@@ -446,8 +446,8 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      */
     private cellBeforeInputHandler(e: InputEvent) {
         if (e.inputType !== "insertText" || !e.data) return;
-        const isAlphaChar = (str: string) => /^[a-zA-Z]$/.test(str);
-        const char = e.data.split("").find(c => isAlphaChar(c));
+        const isAlphaChar = (str: string) => /^\p{L}$/u.test(str);
+        const char = Array.from(e.data.normalize("NFC")).find(isAlphaChar);
         e.preventDefault();
         if (!char) return;
         const cell = e.target as HTMLDivElement;

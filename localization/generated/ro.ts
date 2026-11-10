@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Arată răspunsurile`,
 's99ab01c90f7f6dd0': `Găsiți cuvintele`,
 'sca3966636984e031': `Adăugați rânduri`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

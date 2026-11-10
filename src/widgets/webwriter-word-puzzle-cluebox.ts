@@ -11,8 +11,7 @@ import { CwContext, WebwriterWordPuzzle } from './webwriter-word-puzzle';
 import { WordClue } from '../lib/crossword-gen';
 import { cluebox_styles } from '../styles/styles'
 
-import {localized, msg} from "@lit/localize"
-import LOCALIZE from "../../localization/generated"
+import {localizeElement} from "../../localization/localizer";
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -22,12 +21,11 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@localized()
 @customElement("webwriter-word-puzzle-cluebox")
 export class WebwriterWordPuzzleCluebox extends LitElement {
     // All methods have the same names as in crosswords-js
 
-    public localize = LOCALIZE
+    private readonly msg = localizeElement(this);
 
     /**
      * The panel elements of the find the words puzzle, containing the words.
@@ -175,7 +173,7 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>${msg("Words")}</th>
+                            <th>${this.msg("Words")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -190,7 +188,7 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>${msg("Across")}</th>
+                            <th>${this.msg("Across")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -203,7 +201,7 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>${msg("Down")}</th>
+                            <th>${this.msg("Down")}</th>
                         </tr>
                     </thead>
                     <tbody>

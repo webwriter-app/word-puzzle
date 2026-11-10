@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Näytä vastaukset`,
 's99ab01c90f7f6dd0': `Etsi sanat`,
 'sca3966636984e031': `Lisää rivejä`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

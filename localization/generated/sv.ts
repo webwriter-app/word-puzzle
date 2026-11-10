@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Visa svar`,
 's99ab01c90f7f6dd0': `Hitta orden`,
 'sca3966636984e031': `Lägg till rader`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

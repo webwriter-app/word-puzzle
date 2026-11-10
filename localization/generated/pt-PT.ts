@@ -22,5 +22,6 @@
 's853d5a0283b26daf': `Mostrar respostas`,
 's99ab01c90f7f6dd0': `Encontrar as palavras`,
 'sca3966636984e031': `Adicionar linhas`,
+'sfb25b0bc01e67b0d': `Puzzle`,
     };
   

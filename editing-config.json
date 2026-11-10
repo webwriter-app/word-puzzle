@@ -31,7 +31,73 @@
       "ja": "カスタマイズ可能なグリッド、ヒント、インタラクティブな解答を特徴とするクロスワードとワード検索パズル作成ツール。",
       "id": "Alat pembuatan teka-teki silang dan teka-teki pencarian kata yang menampilkan kisi-kisi yang dapat disesuaikan, petunjuk, dan pemecahan interaktif.",
       "zh-hant": "填字遊戲和字謎創作工具，具有可自訂的網格、線索和互動解謎功能。",
-      "zh-hans": "填字游戏和单词搜索谜题制作工具，具有可定制的网格、线索和互动解题功能。"
+      "zh-hans": "填字游戏和单词搜索谜题制作工具，具有可定制的网格、线索和互动解题功能。",
+      "_": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "en": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "en-US": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "en-GB": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "en-CA": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "en-AU": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "en-IN": "Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.",
+      "zh": "填字游戏和单词搜索谜题制作工具，具有可定制的网格、线索和互动解题功能。",
+      "zh-Hans": "填字游戏和单词搜索谜题制作工具，具有可定制的网格、线索和互动解题功能。",
+      "zh-Hant": "填字遊戲和字謎創作工具，具有可自訂的網格、線索和互動解謎功能。",
+      "pt": "Ferramenta de criação de palavras cruzadas e de quebra-cabeças de pesquisa de palavras com grelhas personalizáveis, pistas e resolução interactiva.",
+      "no": "Verktøy for å lage kryssord og ordsøk med tilpassbare rutenett, ledetråder og interaktiv løsning."
+    },
+    "label": {
+      "_": "Word Puzzle",
+      "en": "Word Puzzle",
+      "en-US": "Word Puzzle",
+      "en-GB": "Word Puzzle",
+      "en-CA": "Word Puzzle",
+      "en-AU": "Word Puzzle",
+      "en-IN": "Word Puzzle",
+      "fr": "Jeu de lettres",
+      "de": "Worträtsel",
+      "es": "Rompecabezas de palabras"
+    }
+  },
+  "./widgets/webwriter-word-puzzle": {
+    "label": {
+      "_": "Word Puzzle",
+      "en": "Word Puzzle",
+      "en-US": "Word Puzzle",
+      "en-GB": "Word Puzzle",
+      "en-CA": "Word Puzzle",
+      "en-AU": "Word Puzzle",
+      "en-IN": "Word Puzzle",
+      "fr": "Jeu de lettres",
+      "de": "Worträtsel",
+      "es": "Rompecabezas de palabras"
+    }
+  },
+  "./snippets/Crossword-Animals": {
+    "label": {
+      "_": "Crossword-Animals",
+      "en": "Crossword-Animals",
+      "en-US": "Crossword-Animals",
+      "en-GB": "Crossword-Animals",
+      "en-CA": "Crossword-Animals",
+      "en-AU": "Crossword-Animals",
+      "en-IN": "Crossword-Animals",
+      "fr": "Mots croisés : animaux",
+      "de": "Kreuzworträtsel: Tiere",
+      "es": "Crucigrama: animales"
+    }
+  },
+  "./snippets/Find-The-Words-Fruits": {
+    "label": {
+      "_": "Find-The-Words-Fruits",
+      "en": "Find-The-Words-Fruits",
+      "en-US": "Find-The-Words-Fruits",
+      "en-GB": "Find-The-Words-Fruits",
+      "en-CA": "Find-The-Words-Fruits",
+      "en-AU": "Find-The-Words-Fruits",
+      "en-IN": "Find-The-Words-Fruits",
+      "fr": "Mots mêlés : fruits",
+      "de": "Wortsuchrätsel: Obst",
+      "es": "Sopa de letras: frutas"
     }
   }
 }

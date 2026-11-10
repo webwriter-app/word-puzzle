@@ -15,6 +15,7 @@
 's00735d668cff3a0f': `Puzzle Type`,
 's24a1e8050d72f287': `Crossword`,
 's99ab01c90f7f6dd0': `Find the words`,
+'sfb25b0bc01e67b0d': `Puzzle`,
 's11d431ec3d1ca364': `Edit words`,
 's4b77b5180fde5e24': `Check answers`,
 's853d5a0283b26daf': `Show answers`,
