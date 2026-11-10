@@ -108,18 +108,17 @@ export class WebwriterWordPuzzle extends LitElementWw {
         this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
 
-        this.setWordsCluesChildren(this._wordsClues)
+        this.setWordsCluesChildren(this._wordsClues, false)
 
         this.addEventListener("keydown", stopCtrlPropagation )
         this.addEventListener("generateCw", this.generateCwHandler )
         this.addEventListener("set-context", this.setContextHandler)
-        this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
+        this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail, true))
     }
 
     protected generateCwHandler() {
         DEV: console.log("generateCw triggered")
-        this.clueInpW._wordsClues = this.gridW.generateCrossword(this.clueInpW._wordsClues)
-        this.clueW._wordsClues = this._wordsClues;
+        this.setWordsCluesChildren(this.gridW.generateCrossword(this.clueInpW._wordsClues), true);
         (this.clueW as any).requestUpdate()
     }
 
@@ -185,7 +184,7 @@ export class WebwriterWordPuzzle extends LitElementWw {
     public accessor type: 'crossword' | 'find-the-words' = 'crossword';
 
 
-    protected setWordsCluesChildren(wordsClues: WordClue[], persist = true) {
+    protected setWordsCluesChildren(wordsClues: WordClue[], persist = false) {
         //DEV: console.log("Setting words and clues in children.")
         this._wordsClues = wordsClues
         if (persist) writeData(this, { wordsClues });
@@ -256,7 +255,7 @@ export class WebwriterWordPuzzle extends LitElementWw {
 
 
     render() {
-        this.setWordsCluesChildren(this._wordsClues)
+        this.setWordsCluesChildren(this._wordsClues, false)
         return (html`
             <div class="wrapper">
                 <div class="cw-grid-wrapper">
