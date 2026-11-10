@@ -24,4 +24,3 @@
 'sca3966636984e031': `Dodaj wiersze`,
 'sfb25b0bc01e67b0d': `Puzzle`,
     };
-  

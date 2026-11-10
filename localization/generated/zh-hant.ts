@@ -24,4 +24,3 @@
 's289958fb66c0ec21': `Clues`,
 's255c598befd01e5a': `Generate puzzle`,
     };
-  

@@ -24,4 +24,3 @@
 'sca3966636984e031': `Přidání řádků`,
 'sfb25b0bc01e67b0d': `Puzzle`,
     };
-  

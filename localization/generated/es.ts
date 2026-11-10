@@ -24,4 +24,3 @@
 'sca3966636984e031': `Añadir filas`,
 'sfb25b0bc01e67b0d': `Pasatiempo`,
     };
-  

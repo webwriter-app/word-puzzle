@@ -24,4 +24,3 @@
 'sca3966636984e031': `Dodajanje vrstic`,
 'sfb25b0bc01e67b0d': `Puzzle`,
     };
-  
