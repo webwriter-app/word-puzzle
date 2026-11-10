@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="sr-ijekavsk" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s4ff14b1526907732">
+  <source>Delete row</source>
+<target>Обриши ред</target></trans-unit>
+<trans-unit id="sca3966636984e031">
+  <source>Add rows</source>
+<target>Додај редове</target></trans-unit>
+<trans-unit id="s289958fb66c0ec21">
+  <source>Clues</source>
+<target>Одреднице</target></trans-unit>
+<trans-unit id="s255c598befd01e5a">
+  <source>Generate puzzle</source>
+<target>Направи слагалицу</target></trans-unit>
+<trans-unit id="s0f350bc4e538e3ea">
+  <source>Words</source>
+<target>Ријечи</target></trans-unit>
+<trans-unit id="s29df917c1b19b804">
+  <source>Across</source>
+<target>Водоравно</target></trans-unit>
+<trans-unit id="s032c13736048bf35">
+  <source>Down</source>
+<target>Усправно</target></trans-unit>
+<trans-unit id="s00735d668cff3a0f">
+  <source>Puzzle Type</source>
+<target>Врста слагалице</target></trans-unit>
+<trans-unit id="s24a1e8050d72f287">
+  <source>Crossword</source>
+<target>Укрштене ријечи</target></trans-unit>
+<trans-unit id="s99ab01c90f7f6dd0">
+  <source>Find the words</source>
+<target>Пронађи ријечи</target></trans-unit>
+<trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>Слагалица</target></trans-unit>
+<trans-unit id="s11d431ec3d1ca364">
+  <source>Edit words</source>
+<target>Уреди ријечи</target></trans-unit>
+<trans-unit id="s4b77b5180fde5e24">
+  <source>Check answers</source>
+<target>Провјери одговоре</target></trans-unit>
+<trans-unit id="s853d5a0283b26daf">
+  <source>Show answers</source>
+<target>Прикажи одговоре</target></trans-unit>
+</body>
+</file>
+</xliff>

@@ -79,7 +79,7 @@ export function defaultCell(): Cell {
 * @returns {HTMLDivElement} the DOM element for the _cell_
 * Source: crosswords-js, partially
 */
-export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string) {
+export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string, locale = "en", fillerGraphemes: string[] = []) {
     const cellDOM: HTMLDivElement = document.createElement('div');
     cellDOM.className = 'cell'
     cellDOM.style.gridRowStart = (x+1).toString()
@@ -102,7 +102,9 @@ export function newCellDOM(document: Document, grid: Cell[][], type: string, x: 
     
             const cellLetter = document.createElement('div');
             cellLetter.classList.add('cell-letter')
-            const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            const randomLetter = fillerGraphemes.length
+                ? fillerGraphemes[Math.floor(Math.random() * fillerGraphemes.length)]
+                : "";
             cellLetter.innerText = randomLetter
             cellDOM.appendChild(cellLetter)
 
@@ -159,6 +161,45 @@ export interface GenerationResults {
     grid: Cell[][]
 }
 
+const graphemeSegmenters = new Map<string, Intl.Segmenter>();
+
+/** Split text into user-perceived characters using locale-aware grapheme rules. */
+export function splitGraphemes(text: string, locale = "en"): string[] {
+    const lang = locale || "en";
+    let segmenter = graphemeSegmenters.get(lang);
+    if (!segmenter) {
+        segmenter = new Intl.Segmenter(lang, { granularity: "grapheme" });
+        graphemeSegmenters.set(lang, segmenter);
+    }
+    return Array.from(segmenter.segment(text.normalize("NFC")), ({ segment }) => segment);
+}
+
+/** Words keep spaces and hyphens in their labels. Grid cells hold letters only. */
+export function wordGraphemes(word: string, locale = "en"): string[] {
+    return splitGraphemes(word, locale).filter(grapheme => /\p{L}/u.test(grapheme));
+}
+
+/** Uppercase one grapheme without allowing case expansion to occupy extra cells. */
+export function displayGrapheme(grapheme: string, locale = "en"): string {
+    const normalized = grapheme.normalize("NFC");
+    const upper = normalized.toLocaleUpperCase(locale);
+    return splitGraphemes(upper, locale).length === 1 ? upper : normalized;
+}
+
+/** Get the first letter grapheme from keyboard or IME text for a single grid cell. */
+export function firstLetterGrapheme(text: string, locale = "en"): string | undefined {
+    return wordGraphemes(text, locale)[0];
+}
+
+function sameGrapheme(a: string, b: string, locale: string): boolean {
+    return a.normalize("NFC").toLocaleLowerCase(locale) === b.normalize("NFC").toLocaleLowerCase(locale);
+}
+
+/** Create a filler alphabet from graphemes in the puzzle words. */
+export function getFillerGraphemes(words: WordClue[], locale = "en"): string[] {
+    return Array.from(new Set(words.flatMap(({ word }) => wordGraphemes(word, locale).map(letter => displayGrapheme(letter, locale)))));
+}
+
 function deleteElement<Type>(list: Type[], element: Type): Type {
     list.splice(list.indexOf(element), 1)
     return element
@@ -171,12 +212,12 @@ function deleteElement<Type>(list: Type[], element: Type): Type {
      * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {WordClue[]} 
      */
-export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
+export function generateCrossword(wordsClues: WordClue[], locale = "en"): GenerationResults {
 
     // TODO Figure out generation / backtracking recursively
 
     // Calculate minimum dimensions of crossword
-    const minDim = wordsClues.map(word => word.word.length).reduce((max, len) => Math.max(max, len), 0)
+    const minDim = wordsClues.map(word => wordGraphemes(word.word, locale).length).reduce((max, len) => Math.max(max, len), 0)
 
     /** The best grid found so far.
      * Smallest grid with the largest amount of words placed
@@ -189,9 +230,9 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     let scratchWordsPlaced: WordClue[] = []  // @type {string[]}
 
     // Initialize scratchpadGrid
-    for(let i = 0; i < wordsClues.reduce((accumulator, currentValue) => accumulator + currentValue.word.length, 0); i++) {
+    for(let i = 0; i < wordsClues.reduce((accumulator, currentValue) => accumulator + wordGraphemes(currentValue.word, locale).length, 0); i++) {
         scratchpadGrid[i] = []
-        for (let j = 0; j < wordsClues.reduce((accumulator, currentValue) => accumulator + currentValue.word.length, 0); j++) {
+        for (let j = 0; j < wordsClues.reduce((accumulator, currentValue) => accumulator + wordGraphemes(currentValue.word, locale).length, 0); j++) {
             scratchpadGrid[i][j] = defaultCell()
         }
     }
@@ -287,7 +328,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
     function placeable(inputGrid: Cell[][], wordsCluesPl: WordClue[], newWordClue: WordClue, firstWord?: boolean): WordClue[] {
         if (firstWord) {
             let possiblePlacementX = Math.floor(minDim/2 - 1);
-            let possiblePlacementY = Math.floor(minDim/2) - Math.floor(newWordClue.word.length/2);
+            let possiblePlacementY = Math.floor(minDim/2) - Math.floor(wordGraphemes(newWordClue.word, locale).length/2);
 
             let possiblePlacement: WordClue = {...newWordClue}
 
@@ -306,7 +347,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         // Go through all of its possible intersections with the new word
         for (let placedWord of wordsCluesPl) {
             if(placedWord.x != null && placedWord.y != null && placedWord.across != null) {
-                let intersections = intersecting(newWordClue.word, placedWord.word)
+                let intersections = intersecting(newWordClue.word, placedWord.word, locale)
                 let possibleDirection: string
                 if (placedWord.across) {
                     possibleDirection = "down"
@@ -332,31 +373,32 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                     // Test for collisions with existing words and whether adjacent squares would be white
                     let noClash = true
                     let notAdjacent = true
+                    const newWordGraphemes = wordGraphemes(newWordClue.word, locale);
 
                     // Don't place a word if there is a white cell right before or after it starts
                     if(possibleDirection == "across") {
                         if(possibleX >= 0 && possibleX < inputGrid.length && possibleY - 1 >= 0) {
                             notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY - 1].white
                         }
-                        if(possibleX >= 0 && possibleX < inputGrid.length && possibleY + newWordClue.word.length < inputGrid.length) {
-                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY + newWordClue.word.length].white
+                        if(possibleX >= 0 && possibleX < inputGrid.length && possibleY + newWordGraphemes.length < inputGrid.length) {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX][possibleY + newWordGraphemes.length].white
                         }
                     } else {
                         if(possibleX - 1 >= 0 && possibleY >= 0 && possibleY < inputGrid.length) {
                             notAdjacent = notAdjacent && !inputGrid[possibleX - 1][possibleY].white
                         }
-                        if(possibleX + newWordClue.word.length < inputGrid.length && possibleY >= 0 && possibleY < inputGrid.length) {
-                            notAdjacent = notAdjacent && !inputGrid[possibleX + newWordClue.word.length][possibleY].white
+                        if(possibleX + newWordGraphemes.length < inputGrid.length && possibleY >= 0 && possibleY < inputGrid.length) {
+                            notAdjacent = notAdjacent && !inputGrid[possibleX + newWordGraphemes.length][possibleY].white
                         }
                     }
 
-                    for (let i = 0; i < newWordClue.word.length; i++) {
+                    for (let i = 0; i < newWordGraphemes.length; i++) {
                         if (possibleDirection == "across") {
                             if (i != intersection[0]) {
                                 if(i + possibleY >= 0 && i + possibleY < inputGrid.length) {
                                     // Don't place a word if there is a collision where the char isn't the same
                                     if (possibleX >= 0 && possibleX < inputGrid.length) {
-                                        if(newWordClue.word[i] != inputGrid[possibleX][possibleY + i].answer) {
+                                        if(!sameGrapheme(newWordGraphemes[i], inputGrid[possibleX][possibleY + i].answer ?? "", locale)) {
                                             noClash = noClash && !inputGrid[possibleX][possibleY + i].white
                                         }
                                     }
@@ -376,7 +418,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                                 if(i + possibleX >= 0 && i + possibleX < inputGrid.length) {
                                     // Don't place a word if there is a collision where the char isn't the same
                                     if (possibleY >= 0 && possibleY < inputGrid.length) {
-                                        if(newWordClue.word[i] != inputGrid[possibleX + i][possibleY].answer) {
+                                        if(!sameGrapheme(newWordGraphemes[i], inputGrid[possibleX + i][possibleY].answer ?? "", locale)) {
                                             noClash = noClash && !inputGrid[possibleX + i][possibleY].white
                                         }
                                     }
@@ -423,12 +465,14 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * 
      * @returns { [number, number] } - indices of the words that match. [wordPlace, wordGrid]
     */
-    function intersecting(wordPlace: string, wordGrid: string): WordIntersections[] {
+    function intersecting(wordPlace: string, wordGrid: string, locale: string): WordIntersections[] {
             let intersections: WordIntersections[] = []
+            const placedLetters = wordGraphemes(wordPlace, locale);
+            const gridLetters = wordGraphemes(wordGrid, locale);
 
-            for (let i = 0; i < wordPlace.length; i++) {
-                for (let j = 0; j < wordGrid.length; j++) {
-                    if(wordPlace[i].toUpperCase() == wordGrid[j].toUpperCase()) {
+            for (let i = 0; i < placedLetters.length; i++) {
+                for (let j = 0; j < gridLetters.length; j++) {
+                    if(sameGrapheme(placedLetters[i], gridLetters[j], locale)) {
                         intersections.push([i, j])
                     }
                 }
@@ -502,13 +546,15 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
                 bottommost = bottommost < wordClue.x ? wordClue.x : bottommost
 
                 if(wordClue.across) {
-                    if(rightmost < wordClue.y + wordClue.word.length - 1) {
-                        rightmost = wordClue.y + wordClue.word.length - 1
+                    const wordLength = wordGraphemes(wordClue.word, locale).length;
+                    if(rightmost < wordClue.y + wordLength - 1) {
+                        rightmost = wordClue.y + wordLength - 1
                     }
                 }
                 else {
-                    if(bottommost < wordClue.x + wordClue.word.length - 1) {
-                        bottommost = wordClue.x + wordClue.word.length - 1
+                    const wordLength = wordGraphemes(wordClue.word, locale).length;
+                    if(bottommost < wordClue.x + wordLength - 1) {
+                        bottommost = wordClue.x + wordLength - 1
                     }
                 }
             }
@@ -557,10 +603,10 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
         
         for(let i = 0; i < wordsClues.length; i++) {
             if (i != wordIndex) {
-                wordLoop: for(let letter of wordsClues[wordIndex].word) {
+                wordLoop: for(let letter of wordGraphemes(wordsClues[wordIndex].word, locale)) {
                     // Iterate over the letters of every word
-                    letterLoop: for (let letterOther of wordsClues[i].word) {
-                        if (letter == letterOther) {
+                    letterLoop: for (let letterOther of wordGraphemes(wordsClues[i].word, locale)) {
+                        if (sameGrapheme(letter, letterOther, locale)) {
                             rank += 1
                             break wordLoop
                         }
@@ -612,7 +658,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         ///DEV: console.log("wordsCluesGen pre-generateCrosswordFromList():")
         ///DEV: console.log(wordsCluesGen)
-        let inputGrid = generateCrosswordFromList(wordsCluesGen)
+        let inputGrid = generateCrosswordFromList(wordsCluesGen, locale)
         //DEV: console.log("wordsCluesGen post-generateCrosswordFromList():")
         //DEV: console.log(wordsCluesGen)
 
@@ -636,7 +682,7 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
 
         // Return if best grid is as long as the longest word
         if(wordsLeft == 0 && bestGrid != null) {
-            if(bestGrid.length == wordsCluesGen.map(word => word.word.length).reduce((max, len) => Math.max(max, len), 0)) {
+            if(bestGrid.length == wordsCluesGen.map(word => wordGraphemes(word.word, locale).length).reduce((max, len) => Math.max(max, len), 0)) {
                 return 0
             }
         }
@@ -772,11 +818,11 @@ export function generateCrossword(wordsClues: WordClue[]): GenerationResults {
      * @param {WordClue[]} wordsClues The list of words and clues from which to generate the crossword
      * @returns {Cell[][]} The crossword object
      */
-export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
+export function generateCrosswordFromList(wordsClues: WordClue[], locale = "en"): Cell[][] {
 
     // Initialization
     //DEV: console.log("Crossword generation from list triggered")
-    if(wordsClues == null) {
+    if(!wordsClues?.length) {
         let grid: Cell[][] = []
 
             for(let i = 0; i < 8; i++) {
@@ -802,8 +848,9 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
             topmost = topmost > wordClue.x ? wordClue.x : topmost
 
             if(wordClue.across) {
-                if(rightmost < wordClue.y + wordClue.word.length - 1) {
-                    rightmost = wordClue.y + wordClue.word.length - 1
+                const wordLength = wordGraphemes(wordClue.word, locale).length;
+                if(rightmost < wordClue.y + wordLength - 1) {
+                    rightmost = wordClue.y + wordLength - 1
                 }
                 if(bottommost < wordClue.x) {
                     bottommost = wordClue.x
@@ -813,8 +860,9 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
                 if(rightmost < wordClue.y) {
                     rightmost = wordClue.y
                 }
-                if(bottommost < wordClue.x + wordClue.word.length - 1) {
-                    bottommost = wordClue.x + wordClue.word.length - 1
+                const wordLength = wordGraphemes(wordClue.word, locale).length;
+                if(bottommost < wordClue.x + wordLength - 1) {
+                    bottommost = wordClue.x + wordLength - 1
                 }
             }
         }
@@ -836,7 +884,8 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
                 grid[wordClue.x][wordClue.y].number = wordClue.clueNumber
             }
 
-            for(let c = 0; c < wordClue.word.length; c++) {
+            const letters = wordGraphemes(wordClue.word, locale);
+            for(let c = 0; c < letters.length; c++) {
 
                 let i = 0, j = 0
 
@@ -848,7 +897,7 @@ export function generateCrosswordFromList(wordsClues: WordClue[]): Cell[][] {
                         i = c
                         break
                 }
-                grid[wordClue.x + i ][wordClue.y + j].answer = wordClue.word[c].toUpperCase()
+                grid[wordClue.x + i ][wordClue.y + j].answer = displayGrapheme(letters[c], locale)
                 grid[wordClue.x + i ][wordClue.y + j].white = true
 
                 let direction = wordClue.across ? "across" : "down"
