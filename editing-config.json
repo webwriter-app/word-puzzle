@@ -105,7 +105,16 @@
       "so": "Samee halxiraalayaal erayo isdhaafsan iyo ciyaaro eray-raadin leh shabag la beddeli karo, tilmaamo iyo xal isdhexgal ah.",
       "ti": "ብዝቕየር መርበብ፡ ፍንጪን ተሳትፎኣዊ ፍታሕን ናይ ቃላት መስቀልን መድለዪ ቃላትን ፍጠሩ።",
       "sw": "Unda mafumbo ya maneno mtambuka na utafutaji wa maneno kwa gridi zinazoweza kubadilishwa, vidokezo na utatuzi shirikishi.",
-      "ha": "Ƙirƙiri kacici-kacicin kalmomi masu tsallake juna da wasannin neman kalmomi da raga mai sauyawa, alamun taimako da warwarewa kai tsaye."
+      "ha": "Ƙirƙiri kacici-kacicin kalmomi masu tsallake juna da wasannin neman kalmomi da raga mai sauyawa, alamun taimako da warwarewa kai tsaye.",
+      "yue-Hans": "制作填字游戏同揾字游戏嘅工具，提供可自订嘅方格、提示同互动解题功能。",
+      "yue-Hant": "製作填字遊戲同搵字遊戲嘅工具，提供可自訂嘅方格、提示同互動解題功能。",
+      "kmr": "Amûra çêkirina puzzleya xaçepirs û lêgerîna peyvan, bi torên xweşkirinbar, şîroveyan û çareserkirina înteraktîf.",
+      "kmr-Latn": "Amûra çêkirina puzzleya xaçepirs û lêgerîna peyvan, bi torên xweşkirinbar, şîroveyan û çareserkirina înteraktîf.",
+      "kmr-Arab": "ئاموورا چێکرنا پوززلەیا خاچەپرس ئوو لێگەرینا پەیڤان, ب تۆرێن خوەشکرنبار, شیرۆڤەیان ئوو چارەسەرکرنا ئینتەراکتیف.",
+      "ckb": "ئامرازی دروستکردنی پازلی وشەی تێکەڵ و گەڕان بەدوای وشە، لەگەڵ تۆڕی دڵخواز، ڕوونکردنەوە و چارەسەری کارلێک‌لێکراو.",
+      "ckb-Arab": "ئامرازی دروستکردنی پازلی وشەی تێکەڵ و گەڕان بەدوای وشە، لەگەڵ تۆڕی دڵخواز، ڕوونکردنەوە و چارەسەری کارلێک‌لێکراو.",
+      "af-ZA": "Skep blokkiesraaisels en woordsoekraaisels met roosters en leidrade wat jy kan aanpas en interaktief kan oplos.",
+      "af-NA": "Skep blokkiesraaisels en woordsoekraaisels met roosters en leidrade wat jy kan aanpas en interaktief kan oplos."
     },
     "label": {
       "_": "Word Puzzle",
@@ -210,7 +219,16 @@
       "so": "Halxiraalayaasha erayada",
       "ti": "ናይ ቃላት ሕንቅልሕንቅሊተይ",
       "sw": "Mafumbo ya maneno",
-      "ha": "Wasannin kacici-kacicin kalmomi"
+      "ha": "Wasannin kacici-kacicin kalmomi",
+      "yue-Hans": "文字拼图",
+      "yue-Hant": "文字拼圖",
+      "kmr": "Puzzleya peyvan",
+      "kmr-Latn": "Puzzleya peyvan",
+      "kmr-Arab": "پوززلەیا پەیڤان",
+      "ckb": "پازلێ وشەیی",
+      "ckb-Arab": "پازلێ وشەیی",
+      "af-ZA": "Woordraaisel",
+      "af-NA": "Woordraaisel"
     }
   },
   "./widgets/webwriter-word-puzzle": {
@@ -317,7 +335,16 @@
       "so": "Halxiraalayaasha erayada",
       "ti": "ናይ ቃላት ሕንቅልሕንቅሊተይ",
       "sw": "Mafumbo ya maneno",
-      "ha": "Wasannin kacici-kacicin kalmomi"
+      "ha": "Wasannin kacici-kacicin kalmomi",
+      "yue-Hans": "文字拼图",
+      "yue-Hant": "文字拼圖",
+      "kmr": "Puzzleya peyvan",
+      "kmr-Latn": "Puzzleya peyvan",
+      "kmr-Arab": "پوززلەیا پەیڤان",
+      "ckb": "پازلێ وشەیی",
+      "ckb-Arab": "پازلێ وشەیی",
+      "af-ZA": "Woordraaisel",
+      "af-NA": "Woordraaisel"
     }
   },
   "./snippets/Crossword-Animals": {
@@ -424,7 +451,16 @@
       "so": "Erayo isdhaafsan oo xayawaan ah",
       "ti": "መስቀል ቃላት እንስሳታት",
       "sw": "Maneno mtambuka kuhusu wanyama",
-      "ha": "Kalmomin dabbobi masu tsallake juna"
+      "ha": "Kalmomin dabbobi masu tsallake juna",
+      "yue-Hans": "填字游戏－动物",
+      "yue-Hant": "填字遊戲－動物",
+      "kmr": "Xaçepirs-heywan",
+      "kmr-Latn": "Xaçepirs-heywan",
+      "kmr-Arab": "خاچەپرس-هەیوان",
+      "ckb": "پازلی ئاژەڵان",
+      "ckb-Arab": "پازلی ئاژەڵان",
+      "af-ZA": "Blokkiesraaisel – Diere",
+      "af-NA": "Blokkiesraaisel – Diere"
     }
   },
   "./snippets/Find-The-Words-Fruits": {
@@ -531,7 +567,16 @@
       "so": "Raadi magacyada miraha",
       "ti": "ኣስማት ፍረታት ድለዩ",
       "sw": "Tafuta majina ya matunda",
-      "ha": "Nemo sunayen ’ya’yan itace"
+      "ha": "Nemo sunayen ’ya’yan itace",
+      "yue-Hans": "揾字游戏－水果",
+      "yue-Hant": "搵字遊戲－水果",
+      "kmr": "Peyvan bibîne-fêkî",
+      "kmr-Latn": "Peyvan bibîne-fêkî",
+      "kmr-Arab": "پەیڤان ببینە-فێکی",
+      "ckb": "وشەکانی میوە بدۆزەوە",
+      "ckb-Arab": "وشەکانی میوە بدۆزەوە",
+      "af-ZA": "Woordsoek – Vrugte",
+      "af-NA": "Woordsoek – Vrugte"
     }
   }
 }
