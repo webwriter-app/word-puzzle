@@ -7,7 +7,7 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { WebwriterWordPuzzle, CwContext } from './webwriter-word-puzzle';
-import { WordClue, Cell, defaultCell, newCellDOM, GenerationResults, generateCrossword, generateCrosswordFromList } from '../lib/crossword-gen'
+import { WordClue, Cell, defaultCell, newCellDOM, GenerationResults, generateCrossword, generateCrosswordFromList, wordGraphemes, displayGrapheme, firstLetterGrapheme, getFillerGraphemes } from '../lib/crossword-gen'
 import { grid_styles } from '../styles/styles'
 
 // TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
@@ -80,6 +80,18 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     @state()
     cur_col: number // @type {boolean}
 
+    private composingCell: HTMLDivElement | null = null;
+    private skipCompositionInput: { cell: HTMLDivElement; data: string } | null = null;
+
+    private get locale(): string {
+        const language = this.parentComponent.lang || document.documentElement.lang || "en";
+        try {
+            return Intl.getCanonicalLocales(language)[0] ?? "en";
+        } catch {
+            return "en";
+        }
+    }
+
 
     /**
      * @constructor
@@ -108,14 +120,14 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * For handling a keypress in the crossword grid. Goes to next relevant cell
      * 
     */
-    private nextEmptyCell(e?: KeyboardEvent) {
+    private nextEmptyCell(e?: Event) {
         // Idk how to get typescript to stop crying about this even though it works
         let currentCell: HTMLDivElement
         if(e == null) {
             currentCell = this.getCellDOM(this.cur_row, this.cur_col)
         }
         else {
-            currentCell = e.target
+            currentCell = e.target as HTMLDivElement
         }
 
         let nextWord: WordClue
@@ -127,7 +139,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
 
         let timeoutLimit = 0
         for(let wordClue of this._wordsClues) {
-            timeoutLimit += wordClue.word.length
+            timeoutLimit += wordGraphemes(wordClue.word, this.locale).length
         }
         timeoutLimit = timeoutLimit * 10
 
@@ -231,7 +243,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     }
 
 
-    getContextFromCell(row: number, col: number): CrosswordContext {
+    getContextFromCell(row: number, col: number): CwContext {
         let cell: HTMLDivElement = this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
         let across: boolean
         let clue
@@ -350,11 +362,13 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @param {number} y the column of the cell, 0-indexed
      * @returns {HTMLDivElement} the DOM element for the cell
      */
-    protected newCellDOM(document: Document, x: number, y: number, letter: string) {
-        const cellDOM = newCellDOM(document, this.grid, this.parentComponent.type, x, y, letter)
+    protected newCellDOM(document: Document, x: number, y: number, letter: string, fillerGraphemes: string[] = []) {
+        const cellDOM = newCellDOM(document, this.grid, this.parentComponent.type, x, y, letter, this.locale, fillerGraphemes)
         cellDOM.addEventListener('keydown', (e) => { this.cellKeydownHandler(e) });
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {this.cellFocusHandler(e)});
         cellDOM.addEventListener('beforeinput', (e: InputEvent) => { this.cellBeforeInputHandler(e) });
+        cellDOM.addEventListener('compositionstart', (e: CompositionEvent) => { this.cellCompositionStartHandler(e) });
+        cellDOM.addEventListener('compositionend', (e: CompositionEvent) => { this.cellCompositionEndHandler(e) });
 
         return cellDOM
     }
@@ -370,9 +384,12 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * Overrides / prevents the default character insertion
      */
     private cellKeydownHandler(e: KeyboardEvent) {
+        if (e.isComposing || e.keyCode === 229 || this.composingCell) {
+            e.stopPropagation();
+            return;
+        }
         e.preventDefault(); // Prevent default character insertion
-        const isAlphaChar = str => /^[a-zA-Z]$/.test(str);
-        let cell: HTMLDivElement = (e.target)
+        let cell = e.target as HTMLDivElement
         let nextCell: HTMLDivElement
 
         // For arrow keys
@@ -429,13 +446,10 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             case "Backspace":
             case "Delete":
                 cell.querySelector('.cell-letter').textContent = ""
+                break;
             // Insert character
             default: 
-                if (isAlphaChar(e.key)) {
-                    cell.querySelector('.cell-letter').textContent = e.key.toUpperCase()
-                    cell.removeAttribute("incorrect")
-                    this.nextEmptyCell(e)
-                }
+                this.commitCellText(e.key, cell);
         }
     }
 
@@ -445,15 +459,54 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * See https://stackoverflow.com/questions/36753548/keycode-on-android-is-always-229
      */
     private cellBeforeInputHandler(e: InputEvent) {
+        if (e.inputType === "insertFromComposition") {
+            e.preventDefault();
+            return;
+        }
         if (e.inputType !== "insertText" || !e.data) return;
-        const isAlphaChar = (str: string) => /^[a-zA-Z]$/.test(str);
-        const char = e.data.split("").find(c => isAlphaChar(c));
+        const cell = e.currentTarget as HTMLDivElement;
+        // Let the browser/IME own intermediate composition text. It is reduced
+        // to one grapheme once compositionend fires.
+        if (e.isComposing || this.composingCell === cell) return;
+        if (this.skipCompositionInput?.cell === cell && this.skipCompositionInput.data === e.data) {
+            e.preventDefault();
+            this.skipCompositionInput = null;
+            return;
+        }
         e.preventDefault();
-        if (!char) return;
-        const cell = e.target as HTMLDivElement;
-        cell.querySelector(".cell-letter").textContent = char.toUpperCase();
+        this.commitCellText(e.data, cell);
+    }
+
+    private cellCompositionStartHandler(e: CompositionEvent): void {
+        this.composingCell = e.currentTarget as HTMLDivElement;
+        e.stopPropagation();
+    }
+
+    private cellCompositionEndHandler(e: CompositionEvent): void {
+        const cell = e.currentTarget as HTMLDivElement;
+        if (this.composingCell === cell) this.composingCell = null;
+        const committedText = e.data || cell.querySelector(".cell-letter")?.textContent || "";
+        this.skipCompositionInput = { cell, data: committedText };
+        setTimeout(() => {
+            if (this.skipCompositionInput?.cell === cell && this.skipCompositionInput.data === committedText) {
+                this.skipCompositionInput = null;
+            }
+        }, 0);
+        this.commitCellText(committedText, cell);
+    }
+
+    private commitCellText(text: string, cell: HTMLDivElement): void {
+        const grapheme = firstLetterGrapheme(text, this.locale);
+        if (!grapheme) return;
+        const letterCell = cell.querySelector(".cell-letter");
+        if (!letterCell) return;
+        letterCell.textContent = displayGrapheme(grapheme, this.locale);
         cell.removeAttribute("incorrect");
-        this.nextEmptyCell();
+        // Composition may have inserted a text node directly into the editable cell.
+        for (const node of Array.from(cell.childNodes)) {
+            if (node.nodeType === Node.TEXT_NODE) node.remove();
+        }
+        this.nextEmptyCell({ target: cell } as unknown as Event);
     }
 
     /** Handler for when a cell gains focus. Sets the clue and direction context
@@ -461,8 +514,9 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @param {FocusEvent} e - the event. Its target attribute is used
     */
     private cellFocusHandler(e: FocusEvent) {
-        this.cur_row = Number((e.target).getAttribute("grid-row"))
-        this.cur_col = Number((e.target).getAttribute("grid-col"))
+        const cell = e.target as HTMLDivElement;
+        this.cur_row = Number(cell.getAttribute("grid-row"))
+        this.cur_col = Number(cell.getAttribute("grid-col"))
         //
         // Needs to be corrected bc it's 1-indexed in the DOM
         let x = this.cur_row
@@ -513,7 +567,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @returns {WordClue[]} 
      */
     generateCrossword(wordsCluesInput: WordClue[]): WordClue[] {
-        let {wordsAndClues, grid} = generateCrossword(wordsCluesInput)
+        let {wordsAndClues, grid} = generateCrossword(wordsCluesInput, this.locale)
         this.setWordsClues(wordsAndClues)
         this.grid = grid
 
@@ -537,10 +591,13 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     newCrosswordGridDOM(document) {
         let gridEl = document.createElement('div');
         gridEl.classList.add('grid')
+        const fillerGraphemes = this.parentComponent.type === "find-the-words"
+            ? getFillerGraphemes(this._wordsClues ?? [], this.locale)
+            : [];
         for (let x = 0; x < this.grid.length; x += 1) {
             for (let y = 0; y < this.grid.length; y += 1) {
                 //  Build the cell element and place cell in grid element
-                gridEl.appendChild(this.newCellDOM(document, x, y, this.grid[x][y].answer));
+                gridEl.appendChild(this.newCellDOM(document, x, y, this.grid[x][y].answer, fillerGraphemes));
             }
         }
 
@@ -560,7 +617,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     }
 
     render() {
-        this.grid = generateCrosswordFromList(this._wordsClues)
+        this.grid = generateCrosswordFromList(this._wordsClues, this.locale)
         this.newCrosswordGridDOM(document)
 
 
@@ -643,15 +700,15 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                         // Please dont wonder that x and y are not the normal way. Them seems to be switched in the implementation
                         // X is for rows, Y for columns
                         if(w.across) {
-                            return w.x == endWordIndexX && w.y + w.word.length - 1 == endWordIndexY
+                            return w.x == endWordIndexX && w.y + wordGraphemes(w.word, this.locale).length - 1 == endWordIndexY
                         }else {
-                            return w.x + w.word.length - 1 == endWordIndexX && w.y == endWordIndexY
+                            return w.x + wordGraphemes(w.word, this.locale).length - 1 == endWordIndexX && w.y == endWordIndexY
                         }
                     })
 
                     // Mark word as correct if a word was found
                     if(word) {
-                        for(var i = 0; i < word.word.length; i++) {
+                        for(var i = 0; i < wordGraphemes(word.word, this.locale).length; i++) {
                             const cellDOM = word.across ? this.getCellDOM(word.x, word.y + i, this.gridEl) : this.getCellDOM(word.x + i, word.y, this.gridEl)
                             cellDOM.setAttribute("correct", "")
                             // Highlight the word in the words table

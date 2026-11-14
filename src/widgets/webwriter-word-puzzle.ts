@@ -16,16 +16,17 @@ import { crossword_styles } from '../styles/styles'
 import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
 import check_circle from 'bootstrap-icons/icons/check-circle.svg';
 
-import {localized, msg} from "@lit/localize"
-import LOCALIZE from "../../localization/generated"
+import type { MsgFn } from "@lit/localize";
+import { effectiveLanguage, localizeElement, nativeLanguageAttributes, sourceMsg} from "../../localization/localizer";
 
 // Shoelace
 // @ts-ignore
 import "@shoelace-style/shoelace/dist/themes/light.css";
 
 // Buttons
-import { SlButton, SlIcon, SlAlert, SlDrawer, SlChangeEvent, SlSelect, SlOption } from '@shoelace-style/shoelace';
+import { SlButton, SlIcon, SlAlert, SlDrawer, SlSelect, SlOption } from '@shoelace-style/shoelace';
 import { LitElementWw } from '@webwriter/lit';
+import { readData, writeData } from '../lib/data';
 
 
 declare global {interface HTMLElementTagNameMap {
@@ -58,11 +59,55 @@ export interface CwContext {
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  */
-@localized()
 @customElement("webwriter-word-puzzle")
 export class WebwriterWordPuzzle extends LitElementWw {
+    static dataType = "application/json";
 
-    protected localize = LOCALIZE
+    static override get observedAttributes() { return nativeLanguageAttributes(this, super.observedAttributes); }
+
+    override get lang(): string { return effectiveLanguage(this); }
+    override set lang(value: string) { this.setAttribute("lang", value); }
+    private readonly msg = localizeElement(this, true);
+    readonly options = WebwriterWordPuzzle.buildOptions(this.msg);
+    readonly actions = WebwriterWordPuzzle.buildActions(this.msg);
+
+    static get options(): Record<string, any> { return this.buildOptions(sourceMsg); }
+
+    private static buildOptions(msg: MsgFn): Record<string, any> {
+        return {
+            type: {
+                type: "select",
+                group: "puzzle",
+                label: { get _() { return msg("Puzzle Type"); } },
+                options: [
+                    { value: "crossword", label: { get _() { return msg("Crossword"); } } },
+                    { value: "find-the-words", label: { get _() { return msg("Find the words"); } } },
+                ],
+            },
+        };
+    }
+
+    readonly optionGroups = WebwriterWordPuzzle.buildOptionGroups(this.msg);
+
+    static get optionGroups(): Record<string, any> { return this.buildOptionGroups(sourceMsg); }
+
+    private static buildOptionGroups(msg: MsgFn): Record<string, any> {
+        return {
+            puzzle: { label: { get _() { return msg("Puzzle"); } }, collapsible: true, advanced: false },
+        };
+    }
+
+    static get actions(): Record<string, any> { return this.buildActions(sourceMsg); }
+
+    private static buildActions(msg: MsgFn): Record<string, any> {
+        return {
+            editWords: { label: { get _() { return msg("Edit words"); } }, group: "puzzle", icon: "Edit", intent: "default" },
+            checkAnswers: { label: { get _() { return msg("Check answers"); } }, group: "puzzle", icon: "Check", intent: "default" },
+        };
+    }
+
+    editWords() { this.clueInpW.showDrawer(); }
+    checkAnswers() { this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl); }
 
     /**
      * @constructor
@@ -73,24 +118,24 @@ export class WebwriterWordPuzzle extends LitElementWw {
      */
     constructor(dimension: number = 8) {
         super()
+        this._wordsClues = readData<{wordsClues: WordClue[]}>(this).wordsClues ?? [];
         this.gridW = new WebwriterWordPuzzleGrid(this)
         this.clueW = new WebwriterWordPuzzleCluebox(this)
         this.clueInpW = new WebwriterWordPuzzleClueboxInput(this)
         this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
 
-        this.setWordsCluesChildren(this._wordsClues)
+        this.setWordsCluesChildren(this._wordsClues, false)
 
         this.addEventListener("keydown", stopCtrlPropagation )
         this.addEventListener("generateCw", this.generateCwHandler )
         this.addEventListener("set-context", this.setContextHandler)
-        this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail))
+        this.addEventListener("set-words-clues", (e: CustomEvent) => this.setWordsCluesChildren(e.detail, true))
     }
 
     protected generateCwHandler() {
         DEV: console.log("generateCw triggered")
-        this.clueInpW._wordsClues = this.gridW.generateCrossword(this.clueInpW._wordsClues)
-        this.clueW._wordsClues = this._wordsClues;
+        this.setWordsCluesChildren(this.gridW.generateCrossword(this.clueInpW._wordsClues), true);
         (this.clueW as any).requestUpdate()
     }
 
@@ -113,8 +158,8 @@ export class WebwriterWordPuzzle extends LitElementWw {
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
-    @property({ type: Array, attribute: true, reflect: true})
-    accessor _wordsClues: WordClue[]
+    @property({ type: Array, attribute: false, state: true })
+    accessor _wordsClues: WordClue[] = []
 
 
     /**
@@ -156,15 +201,26 @@ export class WebwriterWordPuzzle extends LitElementWw {
     public accessor type: 'crossword' | 'find-the-words' = 'crossword';
 
 
-    protected setWordsCluesChildren(wordsClues: WordClue[]) {
+    protected setWordsCluesChildren(wordsClues: WordClue[], persist = false) {
         //DEV: console.log("Setting words and clues in children.")
         this._wordsClues = wordsClues
+        if (persist) writeData(this, { wordsClues });
         this.gridW._wordsClues = wordsClues
         this.clueW._wordsClues = wordsClues
         this.clueInpW._wordsClues = wordsClues
         this.clueInpW.reloadUnplacedMarkers(wordsClues);
         //DEV: console.log("this._wordsAndClues:")
         //DEV: console.log(this._wordsAndClues)
+    }
+
+    dataChanged(text: string | null): void {
+        if (!text) return;
+        try {
+            const data = JSON.parse(text);
+            if (Array.isArray(data.wordsClues)) this.setWordsCluesChildren(data.wordsClues, false);
+        } catch {
+            // Leave malformed authored data untouched for repair in the document.
+        }
     }
     /**
      * Styles
@@ -206,42 +262,32 @@ export class WebwriterWordPuzzle extends LitElementWw {
         return newValue 
     }
 
+    protected updated(changedProperties: PropertyValues): void {
+        if (!changedProperties.has("type")) return;
+        (this.gridW as any)?.requestUpdate();
+        (this.clueW as any)?.requestUpdate();
+        (this.clueInpW as any)?.requestUpdate();
+    }
+
 
 
     render() {
-        this.setWordsCluesChildren(this._wordsClues)
+        this.setWordsCluesChildren(this._wordsClues, false)
         return (html`
-            ${this.hasAttribute("contenteditable") ? html`<aside class="settings" part="options">
-                <sl-select
-                    label=${msg("Puzzle Type")}
-                    .value=${this.type}
-                    @sl-change=${(e: SlChangeEvent) => {
-                        this.type = (e.target as SlSelect).value as any;
-                        this.requestUpdate();
-                        (this.gridW as any).requestUpdate();
-                        (this.clueW as any).requestUpdate();
-                        (this.clueInpW as any).requestUpdate();
-                    }}
-                    name="puzzleType"
-                >
-                    <sl-option value="crossword">${msg("Crossword")}</sl-option>
-                    <sl-option value="find-the-words">${msg("Find the words")}</sl-option>
-                </sl-select>
-            </aside>` : html``}
             <div class="wrapper">
                 <div class="cw-grid-wrapper">
                     ${this.gridW}
                     <div class="button-div">
-                        ${this.hasAttribute("contenteditable") ? html`<sl-button id="edit-words" title="${msg("Edit words")}" class="crossword-button" variant="default" @click=${() => this.clueInpW.showDrawer()}>
+                        ${this.hasAttribute("contenteditable") ? html`<sl-button id="edit-words" title="${this.msg("Edit words")}" class="crossword-button" variant="default" @click=${() => this.clueInpW.showDrawer()}>
                             <sl-icon slot="prefix" src=${pencil_square}></sl-icon>
                             <div class="button-content">
-                                ${msg("Edit words")}
+                                ${this.msg("Edit words")}
                             </div>
                         </sl-button>` : html``}
-                        ${this.type == "crossword" || this.hasAttribute("contenteditable") ? html`<sl-button id="answer-check" variant="success" title=${this.type == "crossword" ? msg("Check answers") : msg("Show answers")} class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
+                        ${this.type == "crossword" || this.hasAttribute("contenteditable") ? html`<sl-button id="answer-check" variant="success" title=${this.type == "crossword" ? this.msg("Check answers") : this.msg("Show answers")} class="crossword-button" variant="default" @click=${() => this.gridW.checkAnswers(this.gridW.grid, this.gridW.gridEl)}>
                             <sl-icon slot="prefix" src=${check_circle}></sl-icon>
                             <div class="button-content">
-                                ${this.type == "crossword" ? msg("Check answers") : msg("Show answers")}
+                                ${this.type == "crossword" ? this.msg("Check answers") : this.msg("Show answers")}
                             </div>
                         </sl-button>` : html``}
                     </div>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="th" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s4ff14b1526907732">
+  <source>Delete row</source>
+<target>ลบแถว</target></trans-unit>
+<trans-unit id="sca3966636984e031">
+  <source>Add rows</source>
+<target>เพิ่มแถว</target></trans-unit>
+<trans-unit id="s289958fb66c0ec21">
+  <source>Clues</source>
+<target>คำใบ้</target></trans-unit>
+<trans-unit id="s255c598befd01e5a">
+  <source>Generate puzzle</source>
+<target>สร้างปริศนา</target></trans-unit>
+<trans-unit id="s0f350bc4e538e3ea">
+  <source>Words</source>
+<target>คำศัพท์</target></trans-unit>
+<trans-unit id="s29df917c1b19b804">
+  <source>Across</source>
+<target>แนวนอน</target></trans-unit>
+<trans-unit id="s032c13736048bf35">
+  <source>Down</source>
+<target>แนวตั้ง</target></trans-unit>
+<trans-unit id="s00735d668cff3a0f">
+  <source>Puzzle Type</source>
+<target>ประเภทปริศนา</target></trans-unit>
+<trans-unit id="s24a1e8050d72f287">
+  <source>Crossword</source>
+<target>อักษรไขว้</target></trans-unit>
+<trans-unit id="s99ab01c90f7f6dd0">
+  <source>Find the words</source>
+<target>ค้นหาคำ</target></trans-unit>
+<trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>ปริศนา</target></trans-unit>
+<trans-unit id="s11d431ec3d1ca364">
+  <source>Edit words</source>
+<target>แก้ไขคำศัพท์</target></trans-unit>
+<trans-unit id="s4b77b5180fde5e24">
+  <source>Check answers</source>
+<target>ตรวจคำตอบ</target></trans-unit>
+<trans-unit id="s853d5a0283b26daf">
+  <source>Show answers</source>
+<target>แสดงคำตอบ</target></trans-unit>
+</body>
+</file>
+</xliff>

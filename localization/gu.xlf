@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="gu" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s4ff14b1526907732">
+  <source>Delete row</source>
+<target>પંક્તિ કાઢો</target></trans-unit>
+<trans-unit id="sca3966636984e031">
+  <source>Add rows</source>
+<target>પંક્તિઓ ઉમેરો</target></trans-unit>
+<trans-unit id="s289958fb66c0ec21">
+  <source>Clues</source>
+<target>સંકેતો</target></trans-unit>
+<trans-unit id="s255c598befd01e5a">
+  <source>Generate puzzle</source>
+<target>કોયડો બનાવો</target></trans-unit>
+<trans-unit id="s0f350bc4e538e3ea">
+  <source>Words</source>
+<target>શબ્દો</target></trans-unit>
+<trans-unit id="s29df917c1b19b804">
+  <source>Across</source>
+<target>આડા</target></trans-unit>
+<trans-unit id="s032c13736048bf35">
+  <source>Down</source>
+<target>ઊભા</target></trans-unit>
+<trans-unit id="s00735d668cff3a0f">
+  <source>Puzzle Type</source>
+<target>કોયડાનો પ્રકાર</target></trans-unit>
+<trans-unit id="s24a1e8050d72f287">
+  <source>Crossword</source>
+<target>શબ્દચોકડી</target></trans-unit>
+<trans-unit id="s99ab01c90f7f6dd0">
+  <source>Find the words</source>
+<target>શબ્દો શોધો</target></trans-unit>
+<trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>કોયડો</target></trans-unit>
+<trans-unit id="s11d431ec3d1ca364">
+  <source>Edit words</source>
+<target>શબ્દો સંપાદિત કરો</target></trans-unit>
+<trans-unit id="s4b77b5180fde5e24">
+  <source>Check answers</source>
+<target>જવાબ તપાસો</target></trans-unit>
+<trans-unit id="s853d5a0283b26daf">
+  <source>Show answers</source>
+<target>જવાબ બતાવો</target></trans-unit>
+</body>
+</file>
+</xliff>

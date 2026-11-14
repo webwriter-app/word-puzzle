@@ -2,8 +2,8 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    
-    
+
+
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -22,5 +22,5 @@
 's853d5a0283b26daf': `Vis svar`,
 's99ab01c90f7f6dd0': `Find ordene`,
 'sca3966636984e031': `Tilføj rækker`,
+'sfb25b0bc01e67b0d': `Gåde`,
     };
-  
