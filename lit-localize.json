@@ -112,7 +112,7 @@
   "output": {
     "mode": "runtime",
     "outputDir": "./localization/generated",
-    "localeCodesModule": "./localization/generated/locale-codes.js"
+    "localeCodesModule": "./localization/generated/locale-codes.ts"
   },
   "interchange": {
     "format": "xliff",

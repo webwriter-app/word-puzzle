@@ -134,20 +134,23 @@
   "author": "Alexia Weiss",
   "repository": "github:webwriter-app/word-puzzle",
   "scripts": {
-    "prepublishOnly": "npx @webwriter/build",
-    "debug": "npx @webwriter/build dev"
+    "prepublishOnly": "npx @webwriter/build --shared-dependencies",
+    "dev": "npx @webwriter/build dev --shared-dependencies"
   },
   "dependencies": {
     "@lit/localize": "^0.12.2",
-    "@shoelace-style/shoelace": "^2.19.1",
-    "@webwriter/lit": "^3.0.0",
-    "bootstrap-icons": "^1.13.2",
-    "font-awesome": "^4.7.0",
-    "less": "^4.9.1",
-    "lit": "^3.2.0"
+    "@shoelace-style/shoelace": "^2.20.1",
+    "@tabler/icons": "^3.52.0",
+    "@webwriter/lit": "^3.2.0",
+    "@webwriter/widget": "^1.2.0",
+    "lit": "^3.3.0"
   },
   "devDependencies": {
-    "@webwriter/build": "^1.13.1",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@webwriter/build": "^1.14.0",
+    "chai": "^6.3.0",
+    "mocha": "^12.0.3",
     "typescript": "^7.0.2"
   },
   "exports": {
@@ -158,6 +161,22 @@
     "./snippets/Crossword-Animals.html": "./snippets/Crossword-Animals.html",
     "./snippets/Find-The-Words-Fruits.html": "./snippets/Find-The-Words-Fruits.html",
     "./package.json": "./package.json",
+    "./tests/permissions.*": {
+      "source": "./tests/permissions.test.ts",
+      "default": "./dist/tests/permissions.*"
+    },
+    "./tests/data.*": {
+      "source": "./tests/data.test.ts",
+      "default": "./dist/tests/data.*"
+    },
+    "./tests/localize.*": {
+      "source": "./tests/localize.test.ts",
+      "default": "./dist/tests/localize.*"
+    },
+    "./tests/unicode.*": {
+      "source": "./tests/unicode.test.ts",
+      "default": "./dist/tests/unicode.*"
+    },
     "./icon": "./icon.svg",
     "./editing-config.json": "./editing-config.json",
     "./custom-elements.json": "./custom-elements.json"

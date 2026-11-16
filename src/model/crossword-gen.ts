@@ -5,6 +5,8 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
+import { wordGraphemes, displayGrapheme, sameGrapheme } from "./graphemes";
+
 
 /**
  * Cell object for the crossword grid.
@@ -21,11 +23,11 @@
 export interface Cell {
     white: boolean;
 /** The correct character */
-    answer?: string; // Correct letter
+    answer?: string | null; // Correct letter
 /** The clue number. Can be null for white cells */
-    number?: number;
+    number?: number | null;
 /** Direction of the word. Down, across, both, or null */
-    direction?: string;
+    direction?: string | null;
 }
 
 /** Custom data type for words placed on the grid.
@@ -45,15 +47,15 @@ export interface WordClue {
     /** The word in question */
     word: string,
     /** The text for the clue */
-    clueText?: string,
+    clueText?: string | null,
     /** (0-indexed) starting x-coordinate of the word on the grid*/
-    x?: number,
+    x?: number | null,
     /** (0-indexed) starting y-coordinate of the word on the grid*/
-    y?: number,
+    y?: number | null,
     /** Whether the word is across or down */
-    across?: boolean,
+    across?: boolean | null,
     /** Number of the clue */
-    clueNumber?: number
+    clueNumber?: number | null
 }
 
 
@@ -69,84 +71,6 @@ export function defaultCell(): Cell {
     }
 }
 
-/**
-* Constructor for the cells of the {@link WwWordPuzzlesCrossword.gridEl | grid} DOM element.
-*
-* @param {Document} document the root node of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model#DOM_tree_structure)
-* @param {number} x the row of the cell, 0-indexed
-* @param {number} y the column of the cell, 0-indexed
-* eventual @param {HTMLDivElement} modelCell the representation of this grid cell in the  _crosswordModel_.
-* @returns {HTMLDivElement} the DOM element for the _cell_
-* Source: crosswords-js, partially
-*/
-export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string, locale = "en", fillerGraphemes: string[] = []) {
-    const cellDOM: HTMLDivElement = document.createElement('div');
-    cellDOM.className = 'cell'
-    cellDOM.style.gridRowStart = (x+1).toString()
-    cellDOM.style.gridColumnStart = (y+1).toString()
-    cellDOM.setAttribute("grid-row", (x).toString())
-    cellDOM.setAttribute("grid-col", (y).toString())
-
-    // This is just temporary for testing
-    try {
-    if (!grid[x][y].white) {
-        if(type == "crossword") {
-            cellDOM.setAttribute("black", "")
-            cellDOM.setAttribute("answer", "false");
-            cellDOM.contentEditable = "false";
-
-        }else {
-            cellDOM.setAttribute("white", "")
-            cellDOM.setAttribute("answer", "false");
-            cellDOM.contentEditable = "false";
-    
-            const cellLetter = document.createElement('div');
-            cellLetter.classList.add('cell-letter')
-            const randomLetter = fillerGraphemes.length
-                ? fillerGraphemes[Math.floor(Math.random() * fillerGraphemes.length)]
-                : "";
-            cellLetter.innerText = randomLetter
-            cellDOM.appendChild(cellLetter)
-
-        }
-    }
-    else {
-        if(type == "crossword") {
-            cellDOM.contentEditable = "true";
-        }else {
-            cellDOM.contentEditable = "false";
-        }
-        cellDOM.removeAttribute("black")
-        cellDOM.setAttribute("answer", "true");
-        cellDOM.setAttribute("direction", grid[x][y].direction);
-        // Create div for adding a letter
-        const cellLetter = document.createElement('div');
-        cellLetter.classList.add('cell-letter')
-        // Add x and y data to the cell and letter for checking in find the words if the cursor was dragged over the correct characters
-        cellDOM.setAttribute('data-x', x.toString());
-        cellDOM.setAttribute('data-y', y.toString());
-        cellLetter.setAttribute('data-x', x.toString());
-        cellLetter.setAttribute('data-y', y.toString());
-        if(type == "find-the-words") {
-            cellLetter.innerText = letter
-        }
-        cellDOM.appendChild(cellLetter)
-        // Add a small div for the clue number if the cell has one
-        if (type == "crossword" && grid[x][y].number) {
-            const numberText = document.createElement('div');
-            numberText.classList.add('clue-label');
-            numberText.contentEditable = "false";
-            numberText.innerHTML = grid[x][y].number.toString();
-            cellDOM.appendChild(numberText);
-        }
-    }
-    }
-    catch(error) {
-        DEV: console.log("newCellDOM(): Error at (" + x + "," + y + ")")
-    }
-
-    return cellDOM
-}
 
 /**
  * ```typescript
@@ -159,45 +83,6 @@ export function newCellDOM(document: Document, grid: Cell[][], type: string, x: 
 export interface GenerationResults {
     wordsAndClues: WordClue[],
     grid: Cell[][]
-}
-
-const graphemeSegmenters = new Map<string, Intl.Segmenter>();
-
-/** Split text into user-perceived characters using locale-aware grapheme rules. */
-export function splitGraphemes(text: string, locale = "en"): string[] {
-    const lang = locale || "en";
-    let segmenter = graphemeSegmenters.get(lang);
-    if (!segmenter) {
-        segmenter = new Intl.Segmenter(lang, { granularity: "grapheme" });
-        graphemeSegmenters.set(lang, segmenter);
-    }
-    return Array.from(segmenter.segment(text.normalize("NFC")), ({ segment }) => segment);
-}
-
-/** Words keep spaces and hyphens in their labels. Grid cells hold letters only. */
-export function wordGraphemes(word: string, locale = "en"): string[] {
-    return splitGraphemes(word, locale).filter(grapheme => /\p{L}/u.test(grapheme));
-}
-
-/** Uppercase one grapheme without allowing case expansion to occupy extra cells. */
-export function displayGrapheme(grapheme: string, locale = "en"): string {
-    const normalized = grapheme.normalize("NFC");
-    const upper = normalized.toLocaleUpperCase(locale);
-    return splitGraphemes(upper, locale).length === 1 ? upper : normalized;
-}
-
-/** Get the first letter grapheme from keyboard or IME text for a single grid cell. */
-export function firstLetterGrapheme(text: string, locale = "en"): string | undefined {
-    return wordGraphemes(text, locale)[0];
-}
-
-function sameGrapheme(a: string, b: string, locale: string): boolean {
-    return a.normalize("NFC").toLocaleLowerCase(locale) === b.normalize("NFC").toLocaleLowerCase(locale);
-}
-
-/** Create a filler alphabet from graphemes in the puzzle words. */
-export function getFillerGraphemes(words: WordClue[], locale = "en"): string[] {
-    return Array.from(new Set(words.flatMap(({ word }) => wordGraphemes(word, locale).map(letter => displayGrapheme(letter, locale)))));
 }
 
 function deleteElement<Type>(list: Type[], element: Type): Type {
@@ -222,7 +107,7 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
     /** The best grid found so far.
      * Smallest grid with the largest amount of words placed
      */
-    let bestGrid: Cell[][] // @type {Cell[][]}
+    let bestGrid!: Cell[][]
     let bestWordsPlaced: WordClue[] = []  // @type {string[]}
 
     /** Grid for testing adding / removing words */
@@ -265,14 +150,10 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
     try {
         generateCrosswordGrid(wordsClues, 0)
     }
-    catch(error) {
-        DEV: console.log("Crossword generation interrupted")
-        DEV: console.log(error.message)
-        DEV: console.log(error.stack)
+    catch {
+        // Generation was interrupted on purpose; the best grid found so far is used.
     }
 
-    //DEV: console.log("Words and clues:")
-    //DEV: console.log(wordsClues)
 
     // iterate through the cells and number them properly just in case
     clueCount = 0
@@ -281,36 +162,24 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
         let previousNumber = 0
         for (let j = 0; j < bestGrid.length; j++) {
             if(bestGrid[i][j].number) {
-                previousNumber = bestGrid[i][j].number
+                previousNumber = bestGrid[i][j].number!
                 bestGrid[i][j].number = clueCount + 1
                 clueCount += 1
             }
         }
     }
 
-    for(let wordClue of bestWordsPlaced) {
-        if(!wordClue.clueText) {
-//            wordClue.clueText = "* No clue for this word *"
-        }
-        if(!(wordClue.clueText && (wordClue.across != null) && wordClue.clueNumber && wordClue.word)) {
-            //DEV: console.log("Not all of the values for a WordClue type are defined for " + wordClue.word)
-        }
-    }
-
     // The following changes the original order, but I don't think that's necessarily bad?
 
     // Sort words by clue number
-    bestWordsPlaced.sort((a, b) => a.clueNumber - b.clueNumber)
+    bestWordsPlaced.sort((a, b) => a.clueNumber! - b.clueNumber!)
     // Sort words by across / down
     bestWordsPlaced.sort((a, b) => Number(b.across) - Number(a.across))
-    //DEV: console.log("bestWordsPlaced sorted by clue number and across / down:")
-    //DEV: console.log(bestWordsPlaced)
 
     // Bring words into inital order
     const orderWordsClues = wordsClues.map((wc) => bestWordsPlaced.find((bw) => bw.word == wc.word && bw.clueText == wc.clueText) || null).filter((nn) => nn != null)
 
     wordsClues = orderWordsClues
-    DEV: console.log(bestGrid)
 
     return {wordsAndClues: orderWordsClues, grid: bestGrid} 
 
@@ -453,8 +322,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
 
         // test all the placements to make sure they don't cross over already assigned squares, 
             // or have adjacent squares that don't belong to that word
-        //DEV: console.log("Possible placements for " + newWordClue.word + ": ")
-        //DEV: console.log(possiblePlacements)
         return possiblePlacements
     }
 
@@ -493,16 +360,16 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
         // I don't think this is iterating over chars 
         // TODO Troubleshoot, something's wrong here
 
-        let x = possiblePlcmnts[p].x
-        let y = possiblePlcmnts[p].y
+        let x = possiblePlcmnts[p].x!
+        let y = possiblePlcmnts[p].y!
 
-        if(possiblePlcmnts[p].x < 0 || possiblePlcmnts[p].y < 0) {
-            let shiftX = Math.abs(Math.max(possiblePlcmnts[p].x, 0))
-            let shiftY = Math.abs(Math.max(possiblePlcmnts[p].y, 0))
+        if(x < 0 || y < 0) {
+            let shiftX = Math.abs(Math.max(x, 0))
+            let shiftY = Math.abs(Math.max(y, 0))
             // Shift the coordinates for the possible placements
             for(let plcmnt of possiblePlcmnts) {
-                plcmnt.x += shiftX
-                plcmnt.y += shiftY
+                plcmnt.x! += shiftX
+                plcmnt.y! += shiftY
             }
             // Shift coordinates for placed words
             for(let wrdcl of wordsClues) {
@@ -533,10 +400,10 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
         // Add padding
         let leftmost: number, rightmost: number, topmost: number, bottommost: number
 
-        leftmost = wordsClues[0].y
-        rightmost = wordsClues[0].y
-        topmost = wordsClues[0].x
-        bottommost = wordsClues[0].x
+        leftmost = wordsClues[0].y!
+        rightmost = wordsClues[0].y!
+        topmost = wordsClues[0].x!
+        bottommost = wordsClues[0].x!
 
         for(let wordClue of wordsClues) {
             if(wordClue.x != null && wordClue.y != null) {
@@ -582,8 +449,8 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
             // Avoid adjusting a placement twice
             // (Since it was most probably passed by reference)
             if(plcmnt != possiblePlcmnts[p]) {
-                plcmnt.x = plcmnt.x - topmost + verticalPadding
-                plcmnt.y = plcmnt.y - leftmost + horizontalPadding
+                plcmnt.x = plcmnt.x! - topmost + verticalPadding
+                plcmnt.y = plcmnt.y! - leftmost + horizontalPadding
             }
         }
 
@@ -627,7 +494,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
     function sortWords(): WordClue[] {
         // Create an array of indices
         const indices = rankings.map((_, index) => index)
-        //DEV: console.log("indices: " + indices)
 
         // Sort the indices based on the values in the original array
         indices.sort((a, b) => {
@@ -635,7 +501,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
             if (rankings[a] > rankings[b]) return 1;
             return 0; // For equal values
         });
-        //DEV: console.log("sorted indices: " + indices)
 
         rankedList = []
 
@@ -654,13 +519,9 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
      * @param {WordClue[]} words
      * @returns {number} 0 if a grid was found, 1 otherwise - EDIT THIS
      */
-    function generateCrosswordGrid(wordsCluesGen: WordClue[], depth: number): number {
+    function generateCrosswordGrid(wordsCluesGen: WordClue[], depth: number): number | undefined {
 
-        ///DEV: console.log("wordsCluesGen pre-generateCrosswordFromList():")
-        ///DEV: console.log(wordsCluesGen)
         let inputGrid = generateCrosswordFromList(wordsCluesGen, locale)
-        //DEV: console.log("wordsCluesGen post-generateCrosswordFromList():")
-        //DEV: console.log(wordsCluesGen)
 
         if(bestGrid != null) {
             // TODO Check if number of words and clues for inputGrid is larger than bestGrid's and if so, don't do this
@@ -669,7 +530,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
                 return 1
             }
         }
-        //DEV: console.log("Depth: " + depth)
 
         crosswordGenTimeout += 1
         if(crosswordGenTimeout == epoch) {
@@ -723,32 +583,22 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
             return setBestGrid(inputGrid)
         }
 
-        function setBestGrid(grid: Cell[][]): number {
+        function setBestGrid(grid: Cell[][]): number | undefined {
            if(bestGrid == null) {
                 bestGrid = grid
-                // DEV: console.log("wordsCluesCopy:")
-                // DEV: console.log(wordsCluesCopy)
-                // DEV: console.log("wordsCluesGen:")
-                // DEV: console.log(wordsCluesGen)
                 bestWordsPlaced = wordsCluesCopy
-                DEV: console.log("New best grid:")
-                DEV: console.log(bestGrid)
                 return 0
             }
             else if(bestGrid.length > grid.length && grid.length != 0) {
                 if(nrWordsPlaced(bestWordsPlaced) <= nrWordsPlaced(wordsCluesCopy)) {
                     bestGrid = grid
                     bestWordsPlaced = wordsCluesCopy
-                    DEV: console.log("New best grid:")
-                    DEV: console.log(bestGrid)
                     return 0
                 }
                 else {
                     return 1
                 }
             }
-            //DEV: console.log("New grid but NOT best:")
-            //DEV: console.log(inputGrid)
         }
 
         /**
@@ -779,12 +629,9 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
         }
 
         function setClueNumbers(wordList: WordClue[]): WordClue[]{
-            //DEV: console.log("Setting clue numbers")
-            //DEV: console.log("wordList beffore:")
-            //DEV: console.log(wordList)
             let wordListCopy = wordList.map(wC => ({...wC}));
-            wordListCopy.sort((a, b) => a.y - b.y)
-            wordListCopy.sort((a, b) => a.x - b.x)
+            wordListCopy.sort((a, b) => a.y! - b.y!)
+            wordListCopy.sort((a, b) => a.x! - b.x!)
 
             let clueNr = 1
             for(let i = 0; i < wordListCopy.length; i++) {
@@ -805,8 +652,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
                 }
             }
 
-            //DEV: console.log("wordList after:")
-            //DEV: console.log(wordList)
             return wordList
         }
     }
@@ -821,7 +666,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
 export function generateCrosswordFromList(wordsClues: WordClue[], locale = "en"): Cell[][] {
 
     // Initialization
-    //DEV: console.log("Crossword generation from list triggered")
     if(!wordsClues?.length) {
         let grid: Cell[][] = []
 
@@ -836,10 +680,10 @@ export function generateCrosswordFromList(wordsClues: WordClue[], locale = "en")
 
     let leftmost: number, rightmost: number, topmost: number, bottommost: number
 
-    leftmost = wordsClues[0].y
-    rightmost = wordsClues[0].y
-    topmost = wordsClues[0].x
-    bottommost = wordsClues[0].x
+    leftmost = wordsClues[0].y!
+    rightmost = wordsClues[0].y!
+    topmost = wordsClues[0].x!
+    bottommost = wordsClues[0].x!
 
     // Shifting words and clues
     for(let wordClue of wordsClues) {

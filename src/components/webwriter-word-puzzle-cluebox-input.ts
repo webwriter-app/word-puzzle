@@ -5,41 +5,49 @@
  * @module crossword
  * @mergeModuleWith webwriter-word-puzzles
  */
-import { html, render, LitElement } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
-import { WebwriterWordPuzzle } from './webwriter-word-puzzle';
-import { WordClue } from '../lib/crossword-gen';
-import { cluebox_styles } from '../styles/styles'
+import { html, render } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import type { WebwriterWordPuzzle } from '../widgets/webwriter-word-puzzle';
+import { WordClue } from '../model/crossword-gen';
+import { cluebox_styles } from './word-puzzle.styles'
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import { SlButton, SlAlert, SlDrawer } from '@shoelace-style/shoelace';
+import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
+import SlDrawer from "@shoelace-style/shoelace/dist/components/drawer/drawer.component.js";
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component.js";
 
 // Icons
-import plus from 'bootstrap-icons/icons/plus-lg.svg';
-import minus from 'bootstrap-icons/icons/dash.svg';
-import magic_wand from 'bootstrap-icons/icons/magic.svg';
-import pencil_square from 'bootstrap-icons/icons/pencil-square.svg';
+import plus from '@tabler/icons/outline/plus.svg';
+import minus from '@tabler/icons/outline/minus.svg';
+import magic_wand from '@tabler/icons/outline/wand.svg';
 
-import {localizeElement} from "../../localization/localizer";
+import { LitElementWw } from "@webwriter/lit";
+import {widgetMsg} from "@webwriter/lit/localize";
+import {widgetPermissions} from "@webwriter/lit/permissions";
 
 
 /**
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-word-puzzle-cluebox-input")
-export class WebwriterWordPuzzleClueboxInput extends LitElement {
+export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
     // All methods have the same names as in crosswords-js
 
-    private readonly msg = localizeElement(this);
+    static styles = cluebox_styles
 
-    /**
-     * Whether the current display is a preview
-     */
-    @property({ type: Boolean, state: true, attribute: false })
-    _preview: boolean = false
+    static scopedElements = {
+        "sl-button": SlButton,
+        "sl-icon": SlIcon,
+        "sl-drawer": SlDrawer,
+    }
+
+    /** The widget that owns this element. Set by the widget right after creation. */
+    parentComponent!: WebwriterWordPuzzle
+
+    private readonly msg = widgetMsg(this);
+
+    readonly #permissions = widgetPermissions(this);
 
     /**
      * The input element for the words and clues of the crossword puzzle. 
@@ -55,26 +63,13 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({type: Array, attribute: false})
-    _wordsClues: WordClue[] = [{word: "", across: true}]
+    accessor _wordsClues: WordClue[] = [{word: "", across: true}]
 
     /**
      * drawer
      */
     @query("sl-drawer")
     accessor drawer: SlDrawer
-
-    /**
-     * @constructor
-     * 
-     * Does nothing I guess
-     */
-    constructor(private parentComponent: WebwriterWordPuzzle) {
-        super()
-    }
-
-    static get styles() {
-        return cluebox_styles
-    }
 
     /**
      * Dispatches an event to update the current words and clues.
@@ -103,21 +98,21 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
      * 
      */
     getNewWords() {
-        let wordsAndClues = []
+        let wordsAndClues: WordClue[] = []
         const rows = this.clueboxInput.querySelectorAll("tbody tr")
 
-        let words: string[] = Array.from(rows).map(row => 
+        let words: (string | null)[] = Array.from(rows).map(row => 
                 row.querySelector("td")?.textContent?.trim() || null
         )
 
         // Hard-coded the row here
-        let clues: string[] = Array.from(rows).map(row => 
+        let clues: (string | null)[] = Array.from(rows).map(row => 
                 row.querySelectorAll("td")[2]?.textContent?.trim() || null
         )
 
         for (let i = 0; i < words.length; i++) {
             if(words[i] != null) {
-                wordsAndClues.push({word: words[i], clueText: clues[i]})
+                wordsAndClues.push({word: words[i]!, clueText: clues[i]})
             }
         }
         this.setWordsClues(wordsAndClues)
@@ -134,7 +129,6 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
     }
 
     drawerKeyHandler(event: KeyboardEvent): void {
-        //DEV: console.log("Drawer handler")
         this.ctrlHandler(event)
         if (event.key === "Escape") {
             event.stopPropagation()
@@ -164,9 +158,10 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
      * @param {Event} e Click event of the button
      */
     deleteRow(e: Event) {
-        let button: HTMLButtonElement = (e.target)
-        const trow:  HTMLTableRowElement = button.closest("tr")
-        const tBody:  HTMLTableRowElement = trow.closest("tBody")
+        const button = e.target as Element
+        const trow = button.closest("tr")
+        const tBody = trow?.closest("tbody")
+        if(!trow || !tBody) return
         if(tBody.childElementCount > 5) {
             trow.remove()
         }else {
@@ -185,7 +180,7 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
     addRow(e: Event) {
         let newRow = this.clueboxInput.tBodies[0].insertRow()
 
-        render(this.new_row_template_inner(), newRow)
+        render(this.new_row_template_inner(), newRow, { creationScope: this.renderOptions.creationScope })
     }
 
     /**
@@ -200,7 +195,7 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
                 <td contenteditable></td>` : html``}
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-button title="${this.msg("Delete row")}" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                        <sl-button title="${this.msg("Delete row")}" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e: Event) => this.deleteRow(e)}>
                             <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
                         </sl-button>
                 </div>
@@ -208,24 +203,13 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
         `
     
     }
-    onPreviewToggle(contenteditable: boolean): void {
-        //DEV: console.log("Preview processing for crossword-cluebox")
-        this._preview = !contenteditable
-        //DEV: console.log("this._preview:")
-        //DEV: console.log(this._preview)
-
-        this.requestUpdate()
-    }
-
-    
 
     renderClueboxInput() {
-        //DEV: console.log("render cluebox input")
         const clueboxInputRender = []
 
         const clueboxButtonCell = html`<td class="button-cell" tabindex="-1">
                 <div class="button-cell-div">
-                        <sl-button title="Delete row" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e) => this.deleteRow(e)}>
+                        <sl-button title="Delete row" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e: Event) => this.deleteRow(e)}>
                             <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
                         </sl-button>
                 </div>
@@ -285,7 +269,7 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
                     <div class="plus-button-div">
                         <sl-button title="${this.msg("Add rows")}" tabindex="-1" size="small"
                         class="plus-button" variant="default" 
-                        circle @click=${(e) => this.addRow(e)}>
+                        circle @click=${(e: Event) => this.addRow(e)}>
                         <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
                     </sl-button>
                     </div>
@@ -321,8 +305,6 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
         /**
         * clueboxInput template
         */
-        //DEV: console.log("parent has attr contenteditable: " + this._parent.hasAttribute("contenteditable"))
-        //this.onPreviewToggle(this._parent.hasAttribute("contenteditable"))
         
         const sl_drawer = html`
                 <sl-drawer @keydown=${this.drawerKeyHandler} contained position="relative">
@@ -332,13 +314,8 @@ export class WebwriterWordPuzzleClueboxInput extends LitElement {
                         ${this.msg("Generate puzzle")}
                     </sl-button>
                 </sl-drawer>
-                <!--<sl-button id="button-drawer" title="Show editor for words and clues" class="drawer-button author-only" variant="default" circle @click=${() => this.showDrawer()}>
-                    <div style="justify-content:center;padding-top:2px;">
-                        <sl-icon src=${pencil_square}></sl-icon>-->
-                    </div>
-                </sl-button>
 `
                 
-        return html`${!this._preview ? sl_drawer : html``}`
+        return html`${this.#permissions.editing ? sl_drawer : html``}`
     }
 }

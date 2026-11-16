@@ -6,12 +6,12 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 import { html, HTMLTemplateResult, LitElement } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
-import { CwContext, WebwriterWordPuzzle } from './webwriter-word-puzzle';
-import { WordClue } from '../lib/crossword-gen';
-import { cluebox_styles } from '../styles/styles'
+import { property, query, state } from 'lit/decorators.js';
+import type { CwContext, WebwriterWordPuzzle } from '../widgets/webwriter-word-puzzle';
+import { WordClue } from '../model/crossword-gen';
+import { cluebox_styles } from './word-puzzle.styles'
 
-import {localizeElement} from "../../localization/localizer";
+import {widgetMsg} from "@webwriter/lit/localize";
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -21,11 +21,15 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-word-puzzle-cluebox")
 export class WebwriterWordPuzzleCluebox extends LitElement {
     // All methods have the same names as in crosswords-js
 
-    private readonly msg = localizeElement(this);
+    static styles = cluebox_styles
+
+    /** The widget that owns this element. Set by the widget right after creation. */
+    parentComponent!: WebwriterWordPuzzle
+
+    private readonly msg = widgetMsg(this);
 
     /**
      * The panel elements of the find the words puzzle, containing the words.
@@ -33,7 +37,7 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
      * See the constructor {@link WebwriterWordPuzzle.newClueBox | newClueBox()}
      */
     @query(".wordsbox")
-    accessor wordsbox: HTMLTableElement
+    accessor wordsbox: HTMLTableElement | null
 
     /**
      * The panel elements of the crossword puzzle, containing the words and clues. (WIP)
@@ -43,35 +47,22 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
      * See the constructor {@link WebwriterWordPuzzle.newClueBox | newClueBox()}
      */
     @query(".clueboxAcross")
-    accessor clueboxAcross: HTMLTableElement
+    accessor clueboxAcross: HTMLTableElement | null
 
     @query(".clueboxDown")
-    accessor clueboxDown: HTMLTableElement
+    accessor clueboxDown: HTMLTableElement | null
 
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
     @property({type: Array, attribute: true, reflect: true})
-    _wordsClues: WordClue[] = [{word: "", across: true}]
+    accessor _wordsClues: WordClue[] = [{word: "", across: true}]
 
     /**
      * Current crossword context; across and clue number
      */
-    @property({ type: Object, state: true, attribute: false })
-    _cwContext: CwContext
-
-    /**
-     * @constructor
-     * 
-     * Does nothing I guess
-     */
-    constructor(private parentComponent: WebwriterWordPuzzle) {
-        super()
-    }
-
-    static get styles() {
-        return cluebox_styles
-    }
+    @state()
+    accessor _cwContext!: CwContext
 
     /**
      * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context for crosswords
@@ -84,8 +75,8 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
     highlightContext(context: CwContext): void {
         // Remove any existing "current" attributes from both tables if it is a crossword
         if(this.parentComponent.type == "crossword") {
-            this.clueboxAcross.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
-            this.clueboxDown.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
+            this.clueboxAcross?.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
+            this.clueboxDown?.querySelectorAll('td[current]').forEach(cell => cell.removeAttribute("current"));
         }
 
         if (context.across != null && context.clue != null) {
@@ -100,7 +91,7 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
                 }
             // Highlight correctly found word for Find the words puzzles
             }else {
-                const newCell = this.wordsbox.querySelector(`td[clue="${context.clue}"][${context.across ? "across" : "down"}]`);
+                const newCell = this.wordsbox?.querySelector(`td[clue="${context.clue}"][${context.across ? "across" : "down"}]`);
                 if (newCell) {
                     newCell.setAttribute("current", "");
                 }

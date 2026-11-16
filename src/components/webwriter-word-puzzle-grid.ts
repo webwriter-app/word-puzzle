@@ -5,14 +5,12 @@
  * @module crossword
  */
 import { html, LitElement } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
-import { WebwriterWordPuzzle, CwContext } from './webwriter-word-puzzle';
-import { WordClue, Cell, defaultCell, newCellDOM, GenerationResults, generateCrossword, generateCrosswordFromList, wordGraphemes, displayGrapheme, firstLetterGrapheme, getFillerGraphemes } from '../lib/crossword-gen'
-import { grid_styles } from '../styles/styles'
-
-// TODO Replace with HelpOverlay, HelpPopup from "@webwriter/wui/dist/helpSystem/helpSystem.js"
-// @webwriter/wui
-import { SlAlert } from '@shoelace-style/shoelace';
+import { state } from 'lit/decorators.js';
+import type { WebwriterWordPuzzle, CwContext } from '../widgets/webwriter-word-puzzle';
+import { WordClue, Cell, defaultCell, generateCrossword, generateCrosswordFromList } from '../model/crossword-gen';
+import { wordGraphemes, displayGrapheme, firstLetterGrapheme, getFillerGraphemes } from '../model/graphemes';
+import { newCellDOM } from './word-puzzle-cell';
+import { grid_styles } from './word-puzzle.styles'
 
 // Shoelace
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -23,62 +21,57 @@ const DEFAULT_DIMENSION: number = 9
  * Crossword element for word puzzle widget. Includes grid and clue panel elements.
  * @returns { void } Nothing, but renders the DOM element for the crossword puzzle
  */
-@customElement("webwriter-word-puzzle-grid")
 export class WebwriterWordPuzzleGrid extends LitElement {
     // All methods have the same names as in crosswords-js
 
     /**
-     * Whether the current display is a preview
+     * Styles for the crossword grid.
+     * clue-label based off of crossword-js
      */
-    @property({ type: Boolean, state: true, attribute: false, 
-        hasChanged(newValue: boolean, oldValue: boolean): boolean 
-            {return this.onPreviewToggle(newValue, oldValue)} })
-    _preview: boolean = false
+    static styles = grid_styles
 
+    /** The widget that owns this element. Set by the widget right after creation. */
+    parentComponent!: WebwriterWordPuzzle
 
-    @property({ type: Array, state: true, attribute: true, reflect: true})
-    grid: Cell[][]
-    //protected grid: Cell[][]
+    @state()
+    accessor grid: Cell[][] = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
 
     /**
      * The DOM grid element of the crossword puzzle. Contains the cells
      * 
      * See the constructor {@link WebwriterWordPuzzle.newCrosswordGrid | newCrosswordGrid()}
      */
-    @property({ type: HTMLDivElement, state: true, attribute: false})
-    gridEl: HTMLDivElement
+    @state()
+    accessor gridEl!: HTMLDivElement
 
 
     /**
      * The DOM svg element for the find-the-words puzzle
      * 
      */
-    @property({ type: SVGSVGElement, state: true, attribute: false})
-    svgEl: SVGSVGElement
+    @state()
+    accessor svgEl!: SVGSVGElement
 
     /**
      * The list of words grouped with their clues, direction, and word number.
      */
-    @property({ type: Array, state: true, attribute: true, reflect: true})
-    _wordsClues: WordClue[]
+    @state()
+    accessor _wordsClues!: WordClue[]
 
-    /**
-     * 
-     */
-    @property({ type: Object, state: true, attribute: false})
-    _cwContext
+    @state()
+    accessor _cwContext: CwContext = {across: null, clue: null}
 
     /**
      * Current row
      */
     @state()
-    cur_row: number // @type {boolean}
+    accessor cur_row!: number
 
     /**
      * Current column
      */
     @state()
-    cur_col: number // @type {boolean}
+    accessor cur_col!: number
 
     private composingCell: HTMLDivElement | null = null;
     private skipCompositionInput: { cell: HTMLDivElement; data: string } | null = null;
@@ -92,26 +85,6 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         }
     }
 
-
-    /**
-     * @constructor
-     * Some constructor I apparently thought was a good idea.
-     * 
-     * Pretty much just makes a grid with 9x9 dimensions
-     */
-    constructor(private parentComponent: WebwriterWordPuzzle) {
-        super()
-        this.grid = Array.from({ length: DEFAULT_DIMENSION}, () => Array(DEFAULT_DIMENSION).fill(defaultCell()))
-        this._cwContext = {across: null, clue: null}
-    }
-
-    /**
-     * Styles for the crossword grid.
-     * clue-label based off of crossword-js
-     */
-    static get styles() {
-        return grid_styles
-    }
 
     // TODO Add event listener for adding the focus class based on the clue number and direction
 
@@ -130,7 +103,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             currentCell = e.target as HTMLDivElement
         }
 
-        let nextWord: WordClue
+        let nextWord: WordClue | null
         let nextCell: HTMLDivElement
         let row = (Number(currentCell.getAttribute("grid-row")))
         let col = (Number(currentCell.getAttribute("grid-col")))
@@ -155,11 +128,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         let initialAcross = acrossContext
         let initialClue = clueContext
 
-        let currentWordIndex = this.getNextWordIndex(acrossContext, clueContext) - 1
-        if (currentWordIndex == -1) {
-            currentWordIndex = this._wordsClues.length - 1
-        }
-        let iNextW = -1
+                let iNextW = -1
 
         let timeout = 0
         let pass = -1
@@ -188,8 +157,8 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                     iNextW = 0
                 }
                 nextWord = this._wordsClues[iNextW]
-                row = nextWord.x
-                col = nextWord.y
+                row = nextWord.x!
+                col = nextWord.y!
                 nextCell = this.getCellDOM(row, col)
             }
             // otherwise, get the next cell
@@ -205,17 +174,17 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             }
 
             if(nextWord) {
-                clueContext = nextWord.clueNumber
-                acrossContext = nextWord.across
+                clueContext = nextWord.clueNumber ?? null
+                acrossContext = nextWord.across ?? null
             }
 
             timeout += 1
             if(timeout >= timeoutLimit) {
                 throw new Error("You've created an infinite loop, congratulations")
             }
-        } while(pass < 2 && nextCell.querySelector(".cell-letter").textContent !== "")
+        } while(pass < 2 && nextCell.querySelector(".cell-letter")!.textContent !== "")
 
-        if(nextCell.querySelector(".cell-letter").textContent == "") {
+        if(nextCell.querySelector(".cell-letter")!.textContent == "") {
             nextCell.focus()
             this.cur_col = Number(nextCell.getAttribute("grid-row"))
             this.cur_row = Number(nextCell.getAttribute("grid-col"))
@@ -244,8 +213,8 @@ export class WebwriterWordPuzzleGrid extends LitElement {
 
 
     getContextFromCell(row: number, col: number): CwContext {
-        let cell: HTMLDivElement = this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
-        let across: boolean
+        let cell = this.getCellDOM(row, col)
+        let across: boolean | null
         let clue
 
         if(this._cwContext == null) {
@@ -273,7 +242,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @param {number} y 
      * @returns 
      */
-    private getClueNumber(across: boolean, x: number, y: number): number {
+    private getClueNumber(across: boolean | null, x: number, y: number): number | null {
             let shift_row = across ? 0 : 1
             let shift_col = 1 - shift_row
 
@@ -282,16 +251,15 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 y -= shift_col
             }
 
-            return this.grid[x][y].number
+            return this.grid[x][y].number ?? null
         }
 
     /**
      * Method for checking the answers.
      */
     checkAnswers(grid: Cell[][], gridDOM: HTMLDivElement) {
-        DEV: console.log("Checking answers")
         let cellDOM: HTMLDivElement
-        let cellDOMContents: HTMLDivElement
+        let cellDOMContents: HTMLDivElement | null
 
         for(let i = 0; i < grid.length; i++) {
             for(let j = 0; j < grid.length; j++) {
@@ -331,9 +299,9 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     */
     private getCellDOM(row: number, col: number, gridDOM?: HTMLDivElement): HTMLDivElement {
         if(gridDOM) {
-            return gridDOM.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
+            return gridDOM.querySelector<HTMLDivElement>('[grid-row="'+ row + '"][grid-col="' + col + '"]')!
         }
-        return this.gridEl.querySelector('[grid-row="'+ row + '"][grid-col="' + col + '"]')
+        return this.gridEl.querySelector<HTMLDivElement>('[grid-row="'+ row + '"][grid-col="' + col + '"]')!
     }
 
     /** Function for getting the next word in context of the direction and current clue number.
@@ -342,7 +310,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @returns {HTMLDivElement} the DOM element of the cell
     */
    // May not need the arguments lol
-    private getNextWordIndex(across: boolean, clue: number): number {
+    private getNextWordIndex(across: boolean | null, clue: number | null): number {
         if(this._wordsClues.length == 1) {
             return 0
         }
@@ -402,8 +370,8 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             case "Tab":
                 e.stopPropagation()
                 let nextWord  = this._wordsClues[this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)]
-                row = nextWord.x
-                col = nextWord.y
+                row = nextWord.x!
+                col = nextWord.y!
                 this.setContext(this._cwContext)
                 nextCell = this.getCellDOM(row, col)
                 nextCell.focus()
@@ -445,7 +413,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 break;
             case "Backspace":
             case "Delete":
-                cell.querySelector('.cell-letter').textContent = ""
+                cell.querySelector('.cell-letter')!.textContent = ""
                 break;
             // Insert character
             default: 
@@ -517,34 +485,12 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         const cell = e.target as HTMLDivElement;
         this.cur_row = Number(cell.getAttribute("grid-row"))
         this.cur_col = Number(cell.getAttribute("grid-col"))
-        //
-        // Needs to be corrected bc it's 1-indexed in the DOM
-        let x = this.cur_row
-        let y = this.cur_col
 
         // Ensure current context isn't null
         let {across: acrossContext, clue: clueContext} =  this.getContextFromCell(this.cur_row, this.cur_col)
 
-        // This is ideally not supposed to happen if a cell is already currently selected
-        //if (this._crosswordContext.acrossContext == null) {
-            this._cwContext.across = acrossContext
-        //}
-
+        this._cwContext.across = acrossContext
         this._cwContext.clue = clueContext
-
-        // Iterate to beginning of word
-        // NOTE: This may mean the context is changed even 
-        if(this._cwContext.acrossContext) {
-            while(y > 0 && this.grid[x][y-1].white) {
-                y -= 1
-            }
-        }
-        else {
-            while(x > 0 && this.grid[x-1][y].white) {
-                x -= 1
-            }
-        }
-        //DEV: console.log("Word beginning (0-indexed): (" + x + ", " + y + ")")
         this.setContext(this._cwContext)
     }
 
@@ -588,7 +534,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @returns {HTMLDivElement} the DOM element for the grid.
      * Source: crosswords-js
      */
-    newCrosswordGridDOM(document) {
+    newCrosswordGridDOM(document: Document) {
         let gridEl = document.createElement('div');
         gridEl.classList.add('grid')
         const fillerGraphemes = this.parentComponent.type === "find-the-words"
@@ -597,7 +543,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         for (let x = 0; x < this.grid.length; x += 1) {
             for (let y = 0; y < this.grid.length; y += 1) {
                 //  Build the cell element and place cell in grid element
-                gridEl.appendChild(this.newCellDOM(document, x, y, this.grid[x][y].answer, fillerGraphemes));
+                gridEl.appendChild(this.newCellDOM(document, x, y, this.grid[x][y].answer ?? "", fillerGraphemes));
             }
         }
 
@@ -628,14 +574,14 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             let startY = 0;
             let startIndexX = 0;
             let startIndexY = 0;
-            let lineEl = null;
+            let lineEl: SVGLineElement | null = null;
 
             const startDrag = (clientX: number, clientY: number, target: HTMLElement) => {
                 isDragging = true;
 
                 // Store the indices of the cell on which the dragging is started
-                startIndexX = parseInt(target.getAttribute('data-x'), 10);
-                startIndexY = parseInt(target.getAttribute('data-y'), 10);
+                startIndexX = parseInt(target.getAttribute('data-x') ?? "", 10);
+                startIndexY = parseInt(target.getAttribute('data-y') ?? "", 10);
 
                 // Store the coordinates of the start dragging point for visualization
                 const rect = this.svgEl.getBoundingClientRect();
@@ -648,10 +594,10 @@ export class WebwriterWordPuzzleGrid extends LitElement {
 
                 // Create the new line
                 lineEl = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                lineEl.setAttribute("x1", startX);
-                lineEl.setAttribute("y1", startY);
-                lineEl.setAttribute("x2", startX);
-                lineEl.setAttribute("y2", startY);
+                lineEl.setAttribute("x1", String(startX));
+                lineEl.setAttribute("y1", String(startY));
+                lineEl.setAttribute("x2", String(startX));
+                lineEl.setAttribute("y2", String(startY));
                 lineEl.setAttribute("stroke", "green");
                 lineEl.setAttribute("stroke-width", "25");
                 lineEl.setAttribute("stroke-opacity", "0.5");
@@ -670,14 +616,14 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 };
 
                 const rect = this.svgEl.getBoundingClientRect();
-                lineEl.setAttribute("x2", clientX - rect.left);
-                lineEl.setAttribute("y2", clientY - rect.top);
+                lineEl.setAttribute("x2", String(clientX - rect.left));
+                lineEl.setAttribute("y2", String(clientY - rect.top));
             };
 
             const endDrag = (endEl: HTMLElement) => {
                 // Get the indices of the cell on which the mouse was ended dragging
-                const endIndexX = parseInt(endEl?.getAttribute('data-x'), 10);
-                const endIndexY = parseInt(endEl?.getAttribute('data-y'), 10);
+                const endIndexX = parseInt(endEl?.getAttribute('data-x') ?? "", 10);
+                const endIndexY = parseInt(endEl?.getAttribute('data-y') ?? "", 10);
 
                 if (!isNaN(endIndexX) && !isNaN(endIndexY)) {
                     // Calculate the start of the word indices and end of the word indices
@@ -709,10 +655,10 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                     // Mark word as correct if a word was found
                     if(word) {
                         for(var i = 0; i < wordGraphemes(word.word, this.locale).length; i++) {
-                            const cellDOM = word.across ? this.getCellDOM(word.x, word.y + i, this.gridEl) : this.getCellDOM(word.x + i, word.y, this.gridEl)
+                            const cellDOM = word.across ? this.getCellDOM(word.x!, word.y! + i, this.gridEl) : this.getCellDOM(word.x! + i, word.y!, this.gridEl)
                             cellDOM.setAttribute("correct", "")
                             // Highlight the word in the words table
-                            this.setContext({across: word.across, clue: this.getClueNumber(word.across, word.x, word.y)})
+                            this.setContext({across: word.across ?? null, clue: this.getClueNumber(word.across ?? null, word.x!, word.y!)})
                         }
                     }
                 }
