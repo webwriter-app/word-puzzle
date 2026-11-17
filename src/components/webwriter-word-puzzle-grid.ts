@@ -73,6 +73,9 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     @state()
     accessor cur_col!: number
 
+    /** What the current grid element was built from; the grid is rebuilt only when one of these changes. */
+    private builtFor: { wordsClues: WordClue[]; type: string; locale: string } | null = null;
+
     private composingCell: HTMLDivElement | null = null;
     private skipCompositionInput: { cell: HTMLDivElement; data: string } | null = null;
 
@@ -124,9 +127,6 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         if(this._cwContext.clue != null) {
             clueContext = this._cwContext.clue
         }
-
-        let initialAcross = acrossContext
-        let initialClue = clueContext
 
                 let iNextW = -1
 
@@ -278,17 +278,10 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         setTimeout(() => { this.removeCellHighlighting(gridDOM); }, 5000);
     }
 
-    private removeCellHighlighting(gridDOM: HTMLDivElement, inc?: boolean) {
-        let correctCells = gridDOM.querySelectorAll("[correct]")
-            for(let cell of correctCells) {
-                cell.removeAttribute("correct")
-            }
-            if(inc) {
-                let incorrectCells = gridDOM.querySelectorAll("[incorrect]")
-                for(let cell of incorrectCells) {
-                    cell.removeAttribute("incorrect")
-                }
-            }
+    private removeCellHighlighting(gridDOM: HTMLDivElement) {
+        for(let cell of gridDOM.querySelectorAll("[correct]")) {
+            cell.removeAttribute("correct")
+        }
     }
 
     /** Function for getting a cell based on its location in the DOM grid.
@@ -331,7 +324,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * @returns {HTMLDivElement} the DOM element for the cell
      */
     protected newCellDOM(document: Document, x: number, y: number, letter: string, fillerGraphemes: string[] = []) {
-        const cellDOM = newCellDOM(document, this.grid, this.parentComponent.type, x, y, letter, this.locale, fillerGraphemes)
+        const cellDOM = newCellDOM(document, this.grid, this.parentComponent.type, x, y, letter, fillerGraphemes)
         cellDOM.addEventListener('keydown', (e) => { this.cellKeydownHandler(e) });
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {this.cellFocusHandler(e)});
         cellDOM.addEventListener('beforeinput', (e: InputEvent) => { this.cellBeforeInputHandler(e) });
@@ -563,7 +556,13 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     }
 
     render() {
-        this.grid = generateCrosswordFromList(this._wordsClues, this.locale)
+        const { type } = this.parentComponent, locale = this.locale
+        const built = this.builtFor
+        if(built && built.wordsClues === this._wordsClues && built.type === type && built.locale === locale) {
+            return html`${this.gridEl}`
+        }
+        this.builtFor = { wordsClues: this._wordsClues, type, locale }
+        this.grid = generateCrosswordFromList(this._wordsClues, locale)
         this.newCrosswordGridDOM(document)
 
 

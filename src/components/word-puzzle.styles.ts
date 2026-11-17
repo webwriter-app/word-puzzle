@@ -4,9 +4,6 @@
 import { css } from "lit";
 
 export const crossword_styles = css`
-    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-        display: none;
-    }
     :host  {
         overflow-x: auto;
     }
@@ -70,37 +67,13 @@ export const crossword_styles = css`
         flex-grow: 1;
     }
 
-    .container {
-        display: flex;
-        height: max-content;
-        border-width: 2px;
-        border-style: solid;
-        border-radius: 5px;
-        border-color: #6a6a6a;
-    }
 
-    .sidebar {
-        border: 1px solid #ccc;
-        padding: 10px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        height: max-content;
-        z-index: 2;
-    }
 `
 
 /**
  * Styles for the word-puzzle cluebox.
  */
 export const cluebox_styles = css`
-    [nopreview] {
-        display: none;
-    }
-    .hide-preview {
-        display: none;
-    }
     table {
         max-width: 300px;
         border-radius: 0.25rem;
@@ -139,9 +112,6 @@ export const cluebox_styles = css`
     }
     .button-column {
         width: 0%; /* Temporary width and height*/
-    }
-    #button-drawer{
-        position: absolute;
     }
     sl-drawer::part(title){
         font-size: 20px;
@@ -221,20 +191,6 @@ export const cluebox_styles = css`
     table.clueboxInput td {
         justify-content: left;
         min-height: 20px;
-    }
-    table.clueboxInput td[addRow] {
-        justify-content: center;
-        align-content: center;
-        height: fit-content;
-        padding: 0px;
-        margin: 0px;
-        text-align: center;
-    }
-    table.clueboxInput td[removeRow] {
-        justify-content: center;
-        align-content: center;
-        text-align: center;
-        padding: 5px;
     }
     table.clueboxInput th.button-header-cell {
         width: 0px;
@@ -358,14 +314,8 @@ export const cluebox_styles = css`
  * clue-label based off of crossword-js
  */
 export const grid_styles = css`
-    :host(:not([contenteditable=true]):not([contenteditable=""])) .author-only {
-            display: none;
-        }
         :host  {
             overflow: auto;
-        }
-        td:focus {
-            background-color: white;
         }
         div.grid {
             position: relative;
@@ -410,9 +360,6 @@ export const grid_styles = css`
         }
         div.cell:focus {
             background-color: lightblue;
-        }
-        div.focus-clue {
-            background-color: lightskyblue;
         }
         .cell-letter {
             grid-column-start: 1;

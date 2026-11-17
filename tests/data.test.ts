@@ -97,6 +97,20 @@ describe("<webwriter-word-puzzle> data block", function () {
     await until(() => block(widget)!.textContent!.includes("Lynx"), "the block to carry Lynx");
     await until(() => wordsOf(widget).includes("Lynx"), "the grid to show Lynx");
   });
+
+  it("focusing a cell keeps the grid and re-renders neither the widget nor the clue box", async function () {
+    const widget = await open("Crossword-Animals");
+    await until(() => wordsOf(widget).length === 11, "words");
+    await wait(300);
+    const { grid, clues } = parts(widget);
+    let renders = 0;
+    for (const element of [widget, clues]) { const render = element.render.bind(element); element.render = () => { renders++; return render(); }; }
+    const before = grid.gridEl;
+    (grid.gridEl.querySelector('[contenteditable="true"]') as HTMLElement).focus();
+    await wait(200);
+    assert.strictEqual(grid.gridEl, before);
+    assert.strictEqual(renders, 0);
+  });
 });
 
 mocha.run();

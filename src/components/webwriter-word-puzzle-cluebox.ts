@@ -6,7 +6,7 @@
  * @mergeModuleWith webwriter-word-puzzles
  */
 import { html, HTMLTemplateResult, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import type { CwContext, WebwriterWordPuzzle } from '../widgets/webwriter-word-puzzle';
 import { WordClue } from '../model/crossword-gen';
 import { cluebox_styles } from './word-puzzle.styles'
@@ -57,12 +57,6 @@ export class WebwriterWordPuzzleCluebox extends LitElement {
      */
     @property({type: Array, attribute: true, reflect: true})
     accessor _wordsClues: WordClue[] = [{word: "", across: true}]
-
-    /**
-     * Current crossword context; across and clue number
-     */
-    @state()
-    accessor _cwContext!: CwContext
 
     /**
      * Sets the "current" attribute in the cluebox to highlight the cell corresponding to the current context for crosswords

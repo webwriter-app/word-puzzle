@@ -25,10 +25,6 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 // Buttons
 import SlButton from "@shoelace-style/shoelace/dist/components/button/button.component.js";
 import SlIcon from "@shoelace-style/shoelace/dist/components/icon/icon.component.js";
-import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.component.js";
-import SlDrawer from "@shoelace-style/shoelace/dist/components/drawer/drawer.component.js";
-import SlSelect from "@shoelace-style/shoelace/dist/components/select/select.component.js";
-import SlOption from "@shoelace-style/shoelace/dist/components/option/option.component.js";
 import { LitElementWw } from '@webwriter/lit';
 import { jsonData } from '@webwriter/lit/data';
 import { localizer } from '@webwriter/lit/localize';
@@ -78,10 +74,6 @@ export class WebwriterWordPuzzle extends LitElementWw {
     static scopedElements = {
         "sl-button": SlButton,
         "sl-icon": SlIcon,
-        "sl-alert": SlAlert,
-        "sl-drawer": SlDrawer,
-        'sl-select': SlSelect,
-        'sl-option': SlOption,
         "webwriter-word-puzzle-grid": WebwriterWordPuzzleGrid,
         "webwriter-word-puzzle-cluebox": WebwriterWordPuzzleCluebox,
         "webwriter-word-puzzle-cluebox-input": WebwriterWordPuzzleClueboxInput
@@ -131,10 +123,10 @@ export class WebwriterWordPuzzle extends LitElementWw {
     accessor _wordsClues: WordClue[] = []
 
     /**
-     * Current crossword context; across and clue number
+     * Current crossword context; across and clue number. Not reactive: the grid and the clue box
+     * take it through `set-context` and update themselves.
      */
-    @state()
-    accessor _cwContext: CwContext = { across: null, clue: null }
+    _cwContext: CwContext = { across: null, clue: null }
 
     /** The grid element of the puzzle. */
     private gridW: WebwriterWordPuzzleGrid
@@ -151,12 +143,12 @@ export class WebwriterWordPuzzle extends LitElementWw {
      * 
      * Creates the grid, clue box and clue input elements in the widget's registry.
      */
-    constructor(dimension: number = 8) {
+    constructor() {
         super()
         this.gridW = this.createChild<WebwriterWordPuzzleGrid>("webwriter-word-puzzle-grid")
         this.clueW = this.createChild<WebwriterWordPuzzleCluebox>("webwriter-word-puzzle-cluebox")
         this.clueInpW = this.createChild<WebwriterWordPuzzleClueboxInput>("webwriter-word-puzzle-cluebox-input")
-        this.gridW.grid = Array.from({ length: dimension}, () => Array(dimension).fill(defaultCell()))
+        this.gridW.grid = Array.from({ length: 8 }, () => Array(8).fill(defaultCell()))
         this.gridW.newCrosswordGridDOM(document)
 
         this.setWordsCluesChildren(this._wordsClues, false)
@@ -190,9 +182,8 @@ export class WebwriterWordPuzzle extends LitElementWw {
 
     protected setContextHandler(e: CustomEvent<CwContext>) {
         this._cwContext = e.detail
-        this.gridW._cwContext = this._cwContext
-        this.clueW._cwContext = this._cwContext
-        this.clueW.highlightContext(this._cwContext)
+        this.gridW._cwContext = e.detail
+        this.clueW.highlightContext(e.detail)
     }
 
     protected setWordsCluesChildren(wordsClues: WordClue[], persist = false) {
@@ -204,18 +195,6 @@ export class WebwriterWordPuzzle extends LitElementWw {
         this.clueInpW._wordsClues = wordsClues
         this.clueInpW.reloadUnplacedMarkers(wordsClues);
     }
-
-    /**
-     * Generates crossword puzzle based off of words in the clue box and 
-     * writes it to the DOM.
-     * 
-     * Based off of Agarwal and Joshi 2020
-     */
-    protected generateCrossword() {
-        // Initialization
-        this.gridW.generateCrossword(this._wordsClues)
-    }
-
 
     render() {
         this.setWordsCluesChildren(this._wordsClues, false)

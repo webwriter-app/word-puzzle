@@ -142,10 +142,7 @@ export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
     ctrlHandler(event: KeyboardEvent): void {
         if (event.ctrlKey && event.key === "Enter") {
             event.stopPropagation()
-            this.getNewWords()
-            if(this._wordsClues.length != 0) {
-                this.triggerCwGeneration()
-            }
+            this.triggerCwGeneration()
         }
         else if(event.ctrlKey)
             event.stopPropagation()
@@ -172,12 +169,8 @@ export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
         }
     }
 
-    /**
-     * Handler for deleting the row corresponding to the clicked button.
-     * 
-     * @param {Event} e Click event of the button
-     */
-    addRow(e: Event) {
+    /** Appends an empty row to the input table. */
+    addRow() {
         let newRow = this.clueboxInput.tBodies[0].insertRow()
 
         render(this.new_row_template_inner(), newRow, { creationScope: this.renderOptions.creationScope })
@@ -269,7 +262,7 @@ export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
                     <div class="plus-button-div">
                         <sl-button title="${this.msg("Add rows")}" tabindex="-1" size="small"
                         class="plus-button" variant="default" 
-                        circle @click=${(e: Event) => this.addRow(e)}>
+                        circle @click=${() => this.addRow()}>
                         <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
                     </sl-button>
                     </div>

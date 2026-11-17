@@ -80,7 +80,7 @@ export function defaultCell(): Cell {
  * }
  * ```
  */
-export interface GenerationResults {
+interface GenerationResults {
     wordsAndClues: WordClue[],
     grid: Cell[][]
 }
@@ -110,40 +110,12 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
     let bestGrid!: Cell[][]
     let bestWordsPlaced: WordClue[] = []  // @type {string[]}
 
-    /** Grid for testing adding / removing words */
-    let scratchpadGrid: Cell[][] = [] // @type {Cell[][]}
-    let scratchWordsPlaced: WordClue[] = []  // @type {string[]}
-
-    // Initialize scratchpadGrid
-    for(let i = 0; i < wordsClues.reduce((accumulator, currentValue) => accumulator + wordGraphemes(currentValue.word, locale).length, 0); i++) {
-        scratchpadGrid[i] = []
-        for (let j = 0; j < wordsClues.reduce((accumulator, currentValue) => accumulator + wordGraphemes(currentValue.word, locale).length, 0); j++) {
-            scratchpadGrid[i][j] = defaultCell()
-        }
-    }
-
-    /** The rankings of the words; indices correspond to original word list */
-    let rankings: number[] = Array(wordsClues.length).fill(-1) // @type{number[]}
-
-    /** The words in a list from high to low based off of ranking.
-     * This may change based on backtracking so that the order 
-     * doesn't correspond to the actual ranking anymore
-     */
-    let rankedList: WordClue[]
-    rankedList = sortWords() // @type{string[]}
-
     /** How many clues there currently are. Used to calculate next clue number.
      */
     let clueCount = 0 // @type{number}
 
     /** Number of iterations until the algorithm stops */
     let epoch = 3000 // @type{number}
-
-    // Rank the words
-    for(let i = 0; i < wordsClues.length; null) {
-        rankings[i] = rankWord(i)
-        i++
-    }
 
     let crosswordGenTimeout = 0
 
@@ -159,10 +131,8 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
     clueCount = 0
 
     for(let i = 0; i < bestGrid.length; i++) {
-        let previousNumber = 0
         for (let j = 0; j < bestGrid.length; j++) {
             if(bestGrid[i][j].number) {
-                previousNumber = bestGrid[i][j].number!
                 bestGrid[i][j].number = clueCount + 1
                 clueCount += 1
             }
@@ -178,8 +148,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
 
     // Bring words into inital order
     const orderWordsClues = wordsClues.map((wc) => bestWordsPlaced.find((bw) => bw.word == wc.word && bw.clueText == wc.clueText) || null).filter((nn) => nn != null)
-
-    wordsClues = orderWordsClues
 
     return {wordsAndClues: orderWordsClues, grid: bestGrid} 
 
@@ -455,60 +423,6 @@ export function generateCrossword(wordsClues: WordClue[], locale = "en"): Genera
         }
 
         return wordsClues
-    }
-
-    /** Local helper function for ranking a word to place onto the grid next.
-     * This ranking strategy is independent of the grid content.
-     * The wordsClues array is used
-     * 
-     * @param { number } wordIndex - the index of the word to be added to the grid (based off original word list)
-     * @returns { number } - the rank of the word
-    */
-    function rankWord(wordIndex: number): number {
-        // Word-level intersections rather than letter-level intersections are used.
-        let rank = 0
-        
-        for(let i = 0; i < wordsClues.length; i++) {
-            if (i != wordIndex) {
-                wordLoop: for(let letter of wordGraphemes(wordsClues[wordIndex].word, locale)) {
-                    // Iterate over the letters of every word
-                    letterLoop: for (let letterOther of wordGraphemes(wordsClues[i].word, locale)) {
-                        if (sameGrapheme(letter, letterOther, locale)) {
-                            rank += 1
-                            break wordLoop
-                        }
-                    }
-                }
-            }
-        }
-        return rank
-    } 
-
-    /** Local helper function for sorting the list of words based off of their ranking,
-     * in ascending order.
-     * 
-     * Uses {@link wordsClues}
-     * 
-     * @returns { WordClue[] } - the list of words sorted by rank in ascending order
-    */
-    function sortWords(): WordClue[] {
-        // Create an array of indices
-        const indices = rankings.map((_, index) => index)
-
-        // Sort the indices based on the values in the original array
-        indices.sort((a, b) => {
-            if (rankings[a] < rankings[b]) return -1;
-            if (rankings[a] > rankings[b]) return 1;
-            return 0; // For equal values
-        });
-
-        rankedList = []
-
-        for (let i = 0; i < wordsClues.length; i++) {
-            rankedList[i] = wordsClues[indices[i]]
-        }
-
-        return rankedList;
     }
 
     /**

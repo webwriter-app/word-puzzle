@@ -10,7 +10,7 @@ import type { Cell } from "../model/crossword-gen";
 * @returns {HTMLDivElement} the DOM element for the _cell_
 * Source: crosswords-js, partially
 */
-export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string, locale = "en", fillerGraphemes: string[] = []) {
+export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string, fillerGraphemes: string[] = []) {
     const cellDOM: HTMLDivElement = document.createElement('div');
     cellDOM.className = 'cell'
     cellDOM.style.gridRowStart = (x+1).toString()
