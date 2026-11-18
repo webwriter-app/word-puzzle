@@ -13,6 +13,7 @@ import type { Cell } from "../model/crossword-gen";
 export function newCellDOM(document: Document, grid: Cell[][], type: string, x: number, y: number, letter: string, fillerGraphemes: string[] = []) {
     const cellDOM: HTMLDivElement = document.createElement('div');
     cellDOM.className = 'cell'
+    cellDOM.setAttribute("part", "cell")
     cellDOM.style.gridRowStart = (x+1).toString()
     cellDOM.style.gridColumnStart = (y+1).toString()
     cellDOM.setAttribute("grid-row", (x).toString())

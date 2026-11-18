@@ -345,7 +345,17 @@
       "ckb-Arab": "پازلێ وشەیی",
       "af-ZA": "Woordraaisel",
       "af-NA": "Woordraaisel"
-    }
+    },
+    "importFormats": [
+      ".csv",
+      ".txt",
+      ".json"
+    ],
+    "exportFormats": [
+      "text/csv",
+      "text/plain",
+      "application/json"
+    ]
   },
   "./snippets/Crossword-Animals": {
     "label": {

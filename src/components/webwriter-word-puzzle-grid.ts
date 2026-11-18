@@ -6,9 +6,11 @@
  */
 import { html, LitElement } from 'lit';
 import { state } from 'lit/decorators.js';
+import { str } from '@lit/localize';
+import { widgetMsg } from '@webwriter/lit/localize';
 import type { WebwriterWordPuzzle, CwContext } from '../widgets/webwriter-word-puzzle';
 import { WordClue, Cell, defaultCell, generateCrossword, generateCrosswordFromList } from '../model/crossword-gen';
-import { wordGraphemes, displayGrapheme, firstLetterGrapheme, getFillerGraphemes } from '../model/graphemes';
+import { wordGraphemes, displayGrapheme, firstLetterGrapheme, getFillerGraphemes, sameGrapheme } from '../model/graphemes';
 import { newCellDOM } from './word-puzzle-cell';
 import { grid_styles } from './word-puzzle.styles'
 
@@ -76,8 +78,76 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     /** What the current grid element was built from; the grid is rebuilt only when one of these changes. */
     private builtFor: { wordsClues: WordClue[]; type: string; locale: string } | null = null;
 
+    private readonly msg = widgetMsg(this);
+
+    /** Find the words: the cell a word starts at (keyboard or pointer), the line drawn from it and the pointer that drags it. */
+    private ftwAnchor: HTMLElement | null = null;
+    private ftwLine: SVGLineElement | null = null;
+    private ftwPointer: number | null = null;
+    private statusEl: HTMLElement | null = null;
+
+    /** Find the words: the words the reader has found since the grid was built, by place and direction. */
+    private ftwFound = new Set<string>();
+
+    /** Reports the reader's progress to the widget when letters or the grid change. */
+    private readonly progressObserver = new MutationObserver(() => this.reportProgress());
+    private reportedProgress = 0;
+
     private composingCell: HTMLDivElement | null = null;
     private skipCompositionInput: { cell: HTMLDivElement; data: string } | null = null;
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.progressObserver.observe(this.renderRoot, { childList: true, characterData: true, subtree: true });
+    }
+
+    disconnectedCallback() {
+        this.progressObserver.disconnect();
+        super.disconnectedCallback();
+    }
+
+    /** The share of the puzzle that is solved: matching letters in a crossword, found words in find the words. */
+    private measureProgress(): number {
+        if(this.parentComponent.type === "find-the-words") {
+            const total = this._wordsClues.filter(word => word.x != null && word.y != null).length
+            return total ? Math.min(1, this.ftwFound.size / total) : 0
+        }
+        let total = 0, right = 0
+        for(const cell of this.gridEl?.querySelectorAll<HTMLElement>('.cell[answer="true"]') ?? []) {
+            const expected = this.grid[Number(cell.getAttribute("grid-row"))]?.[Number(cell.getAttribute("grid-col"))]?.answer
+            if(!expected) continue
+            total++
+            const letter = cell.querySelector(".cell-letter")?.textContent?.trim()
+            if(letter && sameGrapheme(letter, expected, this.locale)) right++
+        }
+        return total ? right / total : 0
+    }
+
+    private reportProgress() {
+        const progress = this.measureProgress()
+        if(progress === this.reportedProgress) return
+        this.reportedProgress = progress
+        this.dispatchEvent(new CustomEvent("set-progress", { bubbles: true, composed: true, detail: progress }))
+    }
+
+    /** Empties the letters the reader entered in a crossword, or the words the reader found in find the words. */
+    clearAnswers() {
+        if(!this.gridEl) return
+        if(this.parentComponent.type === "find-the-words") {
+            this.ftwFound.clear()
+            this.gridEl.querySelectorAll("[correct]").forEach(cell => cell.removeAttribute("correct"))
+            if(this.statusEl) this.statusEl.textContent = ""
+        }
+        else {
+            for(const cell of this.gridEl.querySelectorAll<HTMLElement>('.cell[answer="true"]')) {
+                cell.removeAttribute("correct")
+                cell.removeAttribute("incorrect")
+                const letter = cell.querySelector(".cell-letter")
+                if(letter) letter.textContent = ""
+            }
+        }
+        this.reportProgress()
+    }
 
     private get locale(): string {
         const language = this.parentComponent.lang || document.documentElement.lang || "en";
@@ -315,6 +385,27 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         return i
     }
 
+    /** The word before the current one, wrapping to the last word. */
+    private getPreviousWordIndex(across: boolean | null, clue: number | null): number {
+        const count = this._wordsClues.length
+        if(count <= 1) return 0
+        const i = this._wordsClues.findIndex(wordClue => wordClue.clueNumber == clue && wordClue.across == across)
+        return i <= 0 ? count - 1 : i - 1
+    }
+
+    /** Moves focus from the grid to the first control after it, so that the grid never traps the keyboard. */
+    private leaveGrid(cell: HTMLElement) {
+        const buttons = this.parentComponent.shadowRoot?.querySelectorAll<HTMLElement>("#answer-check, #edit-words") ?? []
+        const next = Array.from(buttons).find(button => button.checkVisibility())
+        if(next) next.focus()
+        else cell.blur()
+    }
+
+    /** Focuses the cell a keyboard user starts from. */
+    focusFirstCell(options?: FocusOptions) {
+        this.gridEl?.querySelector<HTMLElement>('.cell[tabindex="0"], .cell[contenteditable="true"]')?.focus(options)
+    }
+
     /**
      * Constructor for the cells of the {@link WebwriterWordPuzzle.gridEl | grid} DOM element.
      * 
@@ -325,6 +416,19 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      */
     protected newCellDOM(document: Document, x: number, y: number, letter: string, fillerGraphemes: string[] = []) {
         const cellDOM = newCellDOM(document, this.grid, this.parentComponent.type, x, y, letter, fillerGraphemes)
+        const place = { row: x + 1, column: y + 1 }
+        if(this.parentComponent.type == "find-the-words") {
+            cellDOM.tabIndex = -1
+            cellDOM.setAttribute("role", "button")
+            const shown = cellDOM.querySelector(".cell-letter")?.textContent ?? ""
+            cellDOM.setAttribute("aria-label", this.msg(str`${shown}, row ${place.row}, column ${place.column}`))
+            cellDOM.setAttribute("aria-describedby", "help")
+        }
+        else if(cellDOM.getAttribute("answer") == "true") {
+            cellDOM.setAttribute("role", "textbox")
+            cellDOM.setAttribute("aria-label", this.msg(str`Row ${place.row}, column ${place.column}`))
+            cellDOM.setAttribute("aria-describedby", "help")
+        }
         cellDOM.addEventListener('keydown', (e) => { this.cellKeydownHandler(e) });
         cellDOM.addEventListener('focusin', (e: FocusEvent) => {this.cellFocusHandler(e)});
         cellDOM.addEventListener('beforeinput', (e: InputEvent) => { this.cellBeforeInputHandler(e) });
@@ -349,7 +453,13 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             e.stopPropagation();
             return;
         }
-        e.preventDefault(); // Prevent default character insertion
+        e.stopPropagation();
+        if(this.parentComponent.type == "find-the-words") {
+            this.ftwKeydown(e)
+            return
+        }
+        // Shortcuts of the browser and the system keep working; Alt with Ctrl is AltGr on some keyboards.
+        if ((e.ctrlKey && !e.altKey) || e.metaKey) return;
         let cell = e.target as HTMLDivElement
         let nextCell: HTMLDivElement
 
@@ -357,26 +467,34 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         let row = Number(cell.getAttribute("grid-row"))
         let col = Number(cell.getAttribute("grid-col"))
 
-        e.stopPropagation(); // Prevent default character insertion
         switch(e.key) {
-            // Go to next clue
-            case "Tab":
-                e.stopPropagation()
-                let nextWord  = this._wordsClues[this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)]
-                row = nextWord.x!
-                col = nextWord.y!
+            // Go to the next (Shift: previous) clue
+            case "Tab": {
+                const index = e.shiftKey
+                    ? this.getPreviousWordIndex(this._cwContext.across, this._cwContext.clue)
+                    : this.getNextWordIndex(this._cwContext.across, this._cwContext.clue)
+                const word = this._wordsClues[index]
+                if(word?.x == null || word.y == null) break;
+                e.preventDefault()
                 this.setContext(this._cwContext)
-                nextCell = this.getCellDOM(row, col)
-                nextCell.focus()
+                this.getCellDOM(word.x, word.y).focus()
                 break;
+            }
             // Change direction context if the current cell goes in both directions
             case " ":
+                e.preventDefault()
                 if(cell.getAttribute("direction") == "both") {
                     this.setContext({across: this._cwContext.across, clue: this.getClueNumber(this._cwContext.across, Number(cell.getAttribute("grid-row")), Number(cell.getAttribute("grid-col")))})
                 }
                 break;
+            // Leave the grid
+            case "Escape":
+                e.preventDefault()
+                this.leaveGrid(cell)
+                break;
             // NAVIGATION ========================================================
             case "ArrowLeft":
+                e.preventDefault()
                 col -= 1
                 if(col >= 0 && this.grid[row][col].white) {
                     nextCell = this.getCellDOM(row, col)
@@ -384,6 +502,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 }
                 break;
             case "ArrowRight":
+                e.preventDefault()
                 col += 1
                 if(col < this.grid.length && this.grid[row][col].white) {
                     nextCell = this.getCellDOM(row, col)
@@ -391,6 +510,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 }
                 break;
             case "ArrowUp":
+                e.preventDefault()
                 row -= 1
                 if(row >= 0 && this.grid[row][col].white) {
                     nextCell = this.getCellDOM(row, col)
@@ -398,6 +518,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 }
                 break;
             case "ArrowDown":
+                e.preventDefault()
                 row += 1
                 if(row < this.grid.length && this.grid[row][col].white) {
                     nextCell = this.getCellDOM(row, col)
@@ -406,26 +527,84 @@ export class WebwriterWordPuzzleGrid extends LitElement {
                 break;
             case "Backspace":
             case "Delete":
-                cell.querySelector('.cell-letter')!.textContent = ""
+                e.preventDefault()
+                const letter = cell.querySelector('.cell-letter')
+                if(letter) letter.textContent = ""
                 break;
             // Insert character
-            default: 
+            default:
+                // Named keys (Shift, F5, Dead, ...) are not letters; Enter must not break the cell into lines.
+                if(e.key.length > 1 && /^[A-Za-z][A-Za-z0-9]+$/.test(e.key)) {
+                    if(e.key == "Enter") e.preventDefault()
+                    break;
+                }
+                e.preventDefault()
                 this.commitCellText(e.key, cell);
         }
     }
 
+    /** Find the words by keyboard: arrows move, Enter or Space marks the first letter and then the last letter of a word. */
+    private ftwKeydown(e: KeyboardEvent) {
+        if ((e.ctrlKey && !e.altKey) || e.metaKey) return;
+        const cell = (e.target as HTMLElement).closest<HTMLElement>(".cell")
+        if(!cell) return
+        const row = Number(cell.getAttribute("grid-row"))
+        const col = Number(cell.getAttribute("grid-col"))
+        const step = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.key]
+        if(step) {
+            e.preventDefault()
+            const next = this.getCellDOM(row + step[0], col + step[1])
+            if(!next) return
+            next.focus()
+            if(this.ftwAnchor) {
+                const point = this.ftwCenter(next)
+                this.ftwMove(point.x, point.y)
+            }
+        }
+        else if(e.key == "Enter" || e.key == " ") {
+            e.preventDefault()
+            if(this.ftwAnchor) this.ftwFinish(cell)
+            else {
+                const point = this.ftwCenter(cell)
+                this.ftwBegin(cell, point.x, point.y)
+                cell.setAttribute("anchor", "")
+            }
+        }
+        else if(e.key == "Escape") {
+            e.preventDefault()
+            if(this.ftwAnchor) this.ftwClear()
+            else this.leaveGrid(cell)
+        }
+    }
 
     /**
      * Handles text input on Chrome on Android, where keydown does not work correctly.
      * See https://stackoverflow.com/questions/36753548/keycode-on-android-is-always-229
      */
     private cellBeforeInputHandler(e: InputEvent) {
+        const cell = e.currentTarget as HTMLDivElement;
         if (e.inputType === "insertFromComposition") {
             e.preventDefault();
             return;
         }
-        if (e.inputType !== "insertText" || !e.data) return;
-        const cell = e.currentTarget as HTMLDivElement;
+        // Paste, drop and deletions must not change the markup of the cell; paste and drop supply a letter, deletions empty the letter.
+        if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") {
+            e.preventDefault();
+            this.commitCellText(e.dataTransfer?.getData("text/plain") ?? "", cell);
+            return;
+        }
+        if (e.inputType.startsWith("delete") && !e.isComposing && this.composingCell !== cell) {
+            e.preventDefault();
+            const letter = cell.querySelector(".cell-letter");
+            if (letter) letter.textContent = "";
+            return;
+        }
+        if (e.inputType !== "insertText") {
+            // Undo, redo, line breaks and other edits would change the markup of the cell.
+            if (!e.isComposing && this.composingCell !== cell) e.preventDefault();
+            return;
+        }
+        if (!e.data) return;
         // Let the browser/IME own intermediate composition text. It is reduced
         // to one grapheme once compositionend fires.
         if (e.isComposing || this.composingCell === cell) return;
@@ -476,6 +655,12 @@ export class WebwriterWordPuzzleGrid extends LitElement {
     */
     private cellFocusHandler(e: FocusEvent) {
         const cell = e.target as HTMLDivElement;
+        if(this.parentComponent.type == "find-the-words") {
+            // One tab stop for the grid; the arrow keys move it.
+            this.gridEl.querySelector('.cell[tabindex="0"]')?.setAttribute("tabindex", "-1")
+            cell.setAttribute("tabindex", "0")
+            return
+        }
         this.cur_row = Number(cell.getAttribute("grid-row"))
         this.cur_col = Number(cell.getAttribute("grid-col"))
 
@@ -528,9 +713,13 @@ export class WebwriterWordPuzzleGrid extends LitElement {
      * Source: crosswords-js
      */
     newCrosswordGridDOM(document: Document) {
+        const findTheWords = this.parentComponent.type === "find-the-words"
         let gridEl = document.createElement('div');
+        this.ftwFound.clear()
         gridEl.classList.add('grid')
-        const fillerGraphemes = this.parentComponent.type === "find-the-words"
+        gridEl.dataset.type = this.parentComponent.type
+        gridEl.style.setProperty("--n", String(this.grid.length))
+        const fillerGraphemes = findTheWords
             ? getFillerGraphemes(this._wordsClues ?? [], this.locale)
             : [];
         for (let x = 0; x < this.grid.length; x += 1) {
@@ -540,19 +729,152 @@ export class WebwriterWordPuzzleGrid extends LitElement {
             }
         }
 
-        if(this.parentComponent.type == "find-the-words") {
+        const help = document.createElement("span")
+        help.id = "help"
+        help.className = "visually-hidden"
+        help.textContent = findTheWords
+            ? this.msg("Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.")
+            : this.msg("Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.")
+        gridEl.appendChild(help)
+
+        if(findTheWords) {
+            gridEl.querySelector(".cell")?.setAttribute("tabindex", "0")
+
+            const status = document.createElement("span")
+            status.className = "visually-hidden"
+            status.setAttribute("role", "status")
+            gridEl.appendChild(status)
+            this.statusEl = status
+
             // Create SVG element
             this.svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             this.svgEl.setAttribute("id", "line-layer");
             this.svgEl.setAttribute("style", "position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;");
-    
+            this.svgEl.setAttribute("aria-hidden", "true");
+
             // Append SVG to grid
             gridEl.appendChild(this.svgEl);
+
+            // Dragging over the letters of a word with a mouse, a finger or a pen
+            gridEl.addEventListener('pointerdown', (e) => this.ftwPointerDown(e));
+            gridEl.addEventListener('pointermove', (e) => this.ftwPointerMove(e));
+            gridEl.addEventListener('pointerup', (e) => this.ftwPointerUp(e));
+            gridEl.addEventListener('pointercancel', (e) => this.ftwPointerCancel(e));
         }
 
         this.gridEl = gridEl
         this.requestUpdate()
         return this.gridEl
+    }
+
+    /** A point in the coordinates of the line layer. */
+    private ftwPoint(clientX: number, clientY: number) {
+        const rect = this.svgEl.getBoundingClientRect();
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    private ftwCenter(cell: HTMLElement) {
+        const rect = cell.getBoundingClientRect();
+        return this.ftwPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    }
+
+    private ftwCell(target: EventTarget | null) {
+        return (target as Element | null)?.closest?.<HTMLElement>("[data-x]") ?? null;
+    }
+
+    /** Starts a word at a cell; the line follows the pointer or the keyboard cursor. */
+    private ftwBegin(cell: HTMLElement | null, x: number, y: number) {
+        this.ftwClear();
+        this.ftwAnchor = cell ?? this.gridEl;
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", String(x));
+        line.setAttribute("y1", String(y));
+        line.setAttribute("x2", String(x));
+        line.setAttribute("y2", String(y));
+        line.setAttribute("stroke", "green");
+        line.setAttribute("stroke-width", String(Math.round((cell?.offsetWidth || 42) * 0.6)));
+        line.setAttribute("stroke-opacity", "0.5");
+        line.setAttribute("stroke-linecap", "round");
+        this.svgEl.appendChild(line);
+        this.ftwLine = line;
+    }
+
+    private ftwMove(x: number, y: number) {
+        this.ftwLine?.setAttribute("x2", String(x));
+        this.ftwLine?.setAttribute("y2", String(y));
+    }
+
+    private ftwClear() {
+        this.ftwLine?.remove();
+        this.ftwLine = null;
+        this.ftwAnchor?.removeAttribute("anchor");
+        this.ftwAnchor = null;
+        this.ftwPointer = null;
+    }
+
+    /** Ends a word at a cell: marks the word when it starts and ends where the puzzle's word does. */
+    private ftwFinish(endEl: HTMLElement | null) {
+        const startIndexX = parseInt(this.ftwAnchor?.getAttribute('data-x') ?? "", 10);
+        const startIndexY = parseInt(this.ftwAnchor?.getAttribute('data-y') ?? "", 10);
+        const endIndexX = parseInt(endEl?.getAttribute('data-x') ?? "", 10);
+        const endIndexY = parseInt(endEl?.getAttribute('data-y') ?? "", 10);
+
+        if (!isNaN(endIndexX) && !isNaN(endIndexY)) {
+            // The user could draw from the end of the word to its start; words are horizontal or vertical,
+            // so the smaller and the larger coordinates give start and end. X is the row, Y the column.
+            const startWordIndexX = Math.min(startIndexX, endIndexX)
+            const startWordIndexY = Math.min(startIndexY, endIndexY)
+            const endWordIndexX = Math.max(startIndexX, endIndexX)
+            const endWordIndexY = Math.max(startIndexY, endIndexY)
+
+            const word = this._wordsClues.find((w) => {
+                if(w.x != startWordIndexX || w.y != startWordIndexY) {
+                    return false;
+                }
+                if(w.across) {
+                    return w.x == endWordIndexX && w.y + wordGraphemes(w.word, this.locale).length - 1 == endWordIndexY
+                }else {
+                    return w.x + wordGraphemes(w.word, this.locale).length - 1 == endWordIndexX && w.y == endWordIndexY
+                }
+            })
+
+            if(word) {
+                for(let i = 0; i < wordGraphemes(word.word, this.locale).length; i++) {
+                    const cellDOM = word.across ? this.getCellDOM(word.x!, word.y! + i, this.gridEl) : this.getCellDOM(word.x! + i, word.y!, this.gridEl)
+                    cellDOM.setAttribute("correct", "")
+                }
+                this.ftwFound.add(`${word.x},${word.y},${word.across ? 1 : 0}`)
+                this.reportProgress()
+                // Highlight the word in the words table
+                this.setContext({across: word.across ?? null, clue: this.getClueNumber(word.across ?? null, word.x!, word.y!)})
+                if(this.statusEl) this.statusEl.textContent = this.msg(str`Found: ${word.word}`)
+            }
+        }
+        this.ftwClear();
+    }
+
+    private ftwPointerDown(e: PointerEvent) {
+        if(e.pointerType == "mouse" && e.button !== 0) return;
+        try { this.gridEl.setPointerCapture(e.pointerId); } catch { /* a pointer that is already gone cannot be captured */ }
+        const point = this.ftwPoint(e.clientX, e.clientY);
+        this.ftwBegin(this.ftwCell(e.target), point.x, point.y);
+        this.ftwPointer = e.pointerId;
+    }
+
+    private ftwPointerMove(e: PointerEvent) {
+        if(this.ftwPointer !== e.pointerId) return;
+        const point = this.ftwPoint(e.clientX, e.clientY);
+        this.ftwMove(point.x, point.y);
+    }
+
+    private ftwPointerUp(e: PointerEvent) {
+        if(this.ftwPointer !== e.pointerId) return;
+        this.ftwFinish(this.ftwCell(this.shadowRoot?.elementFromPoint(e.clientX, e.clientY) ?? null));
+    }
+
+    private ftwPointerCancel(e: PointerEvent) {
+        if(this.ftwPointer === e.pointerId) this.ftwClear();
     }
 
     render() {
@@ -564,144 +886,7 @@ export class WebwriterWordPuzzleGrid extends LitElement {
         this.builtFor = { wordsClues: this._wordsClues, type, locale }
         this.grid = generateCrosswordFromList(this._wordsClues, locale)
         this.newCrosswordGridDOM(document)
-
-
-        // Add event listeners for dragging over the words and getting feedback
-        if(this.parentComponent.type == "find-the-words") {
-            let isDragging = false;
-            let startX = 0;
-            let startY = 0;
-            let startIndexX = 0;
-            let startIndexY = 0;
-            let lineEl: SVGLineElement | null = null;
-
-            const startDrag = (clientX: number, clientY: number, target: HTMLElement) => {
-                isDragging = true;
-
-                // Store the indices of the cell on which the dragging is started
-                startIndexX = parseInt(target.getAttribute('data-x') ?? "", 10);
-                startIndexY = parseInt(target.getAttribute('data-y') ?? "", 10);
-
-                // Store the coordinates of the start dragging point for visualization
-                const rect = this.svgEl.getBoundingClientRect();
-                startX = clientX - rect.left;
-                startY = clientY - rect.top;
-                // Remove old line if still existing
-                if (lineEl && lineEl.parentNode) {
-                    lineEl.parentNode.removeChild(lineEl);
-                }
-
-                // Create the new line
-                lineEl = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                lineEl.setAttribute("x1", String(startX));
-                lineEl.setAttribute("y1", String(startY));
-                lineEl.setAttribute("x2", String(startX));
-                lineEl.setAttribute("y2", String(startY));
-                lineEl.setAttribute("stroke", "green");
-                lineEl.setAttribute("stroke-width", "25");
-                lineEl.setAttribute("stroke-opacity", "0.5");
-                lineEl.setAttribute("stroke-linecap", "round");
-
-                this.svgEl.appendChild(lineEl);
-            };
-
-            const moveDrag = (clientX: number, clientY: number) => {
-                if (!isDragging || !lineEl) {
-                    if (lineEl && lineEl.parentNode) {
-                        lineEl.parentNode.removeChild(lineEl);
-                    }
-                    lineEl = null;
-                    return
-                };
-
-                const rect = this.svgEl.getBoundingClientRect();
-                lineEl.setAttribute("x2", String(clientX - rect.left));
-                lineEl.setAttribute("y2", String(clientY - rect.top));
-            };
-
-            const endDrag = (endEl: HTMLElement) => {
-                // Get the indices of the cell on which the mouse was ended dragging
-                const endIndexX = parseInt(endEl?.getAttribute('data-x') ?? "", 10);
-                const endIndexY = parseInt(endEl?.getAttribute('data-y') ?? "", 10);
-
-                if (!isNaN(endIndexX) && !isNaN(endIndexY)) {
-                    // Calculate the start of the word indices and end of the word indices
-                    // The use could potentially draw over the words from the end of the word to the start
-                    // In that case the coordinates are switched and this works because words can only be horizontal or vertical
-                    const startWordIndexX = Math.min(startIndexX, endIndexX)
-                    const startWordIndexY = Math.min(startIndexY, endIndexY)
-
-                    const endWordIndexX = Math.max(startIndexX, endIndexX)
-                    const endWordIndexY = Math.max(startIndexY, endIndexY)
-
-                    // Check if the word over which was drawn is in the word list
-                    const word = this._wordsClues.find((w) => {
-                        // Not the right word if the gragging was not started on the correct character
-                        if(w.x != startWordIndexX || w.y != startWordIndexY) {
-                            return false;
-                        }
-
-                        // Check if it is the correct word by looking if the dragging was ended on the correct character
-                        // Please dont wonder that x and y are not the normal way. Them seems to be switched in the implementation
-                        // X is for rows, Y for columns
-                        if(w.across) {
-                            return w.x == endWordIndexX && w.y + wordGraphemes(w.word, this.locale).length - 1 == endWordIndexY
-                        }else {
-                            return w.x + wordGraphemes(w.word, this.locale).length - 1 == endWordIndexX && w.y == endWordIndexY
-                        }
-                    })
-
-                    // Mark word as correct if a word was found
-                    if(word) {
-                        for(var i = 0; i < wordGraphemes(word.word, this.locale).length; i++) {
-                            const cellDOM = word.across ? this.getCellDOM(word.x!, word.y! + i, this.gridEl) : this.getCellDOM(word.x! + i, word.y!, this.gridEl)
-                            cellDOM.setAttribute("correct", "")
-                            // Highlight the word in the words table
-                            this.setContext({across: word.across ?? null, clue: this.getClueNumber(word.across ?? null, word.x!, word.y!)})
-                        }
-                    }
-                }
-
-                isDragging = false;
-                if (lineEl && lineEl.parentNode) {
-                    lineEl.parentNode.removeChild(lineEl);
-                }
-                lineEl = null;
-            };
-
-            this.gridEl.addEventListener('mousedown', (e) => {
-                startDrag(e.clientX, e.clientY, e.target as HTMLElement);
-            });
-
-            this.gridEl.addEventListener('mousemove', (e) => {
-                moveDrag(e.clientX, e.clientY);
-            });
-
-            this.gridEl.addEventListener('mouseup', (e) => {
-                endDrag(e.target as HTMLElement);
-            });
-            
-            this.gridEl.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                startDrag(touch.clientX, touch.clientY, e.target as HTMLElement);
-            }, { passive: false });
-
-            this.gridEl.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                moveDrag(touch.clientX, touch.clientY);
-            }, { passive: false });
-
-            this.gridEl.addEventListener('touchend', (e) => {
-                const touch = e.changedTouches[0];
-                const endEl = this.shadowRoot?.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
-                endDrag(endEl);
-            });
-        }
-
         return (html`${this.gridEl}`)
     }
 
 }
-

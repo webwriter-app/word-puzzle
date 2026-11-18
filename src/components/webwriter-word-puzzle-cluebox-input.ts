@@ -188,8 +188,8 @@ export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
                 <td contenteditable></td>` : html``}
                 <td class="button-cell" tabindex="-1">
                     <div class="button-cell-div">
-                        <sl-button title="${this.msg("Delete row")}" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e: Event) => this.deleteRow(e)}>
-                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                        <sl-button title="${this.msg("Delete row")}" size="small" class="minus-button" variant="default" circle @click=${(e: Event) => this.deleteRow(e)}>
+                            <div class="sl-icon-div"><sl-icon src=${minus} label=${this.msg("Delete row")}></sl-icon></div>
                         </sl-button>
                 </div>
                 </td>
@@ -202,8 +202,8 @@ export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
 
         const clueboxButtonCell = html`<td class="button-cell" tabindex="-1">
                 <div class="button-cell-div">
-                        <sl-button title="Delete row" tabindex="-1" size="small" class="minus-button" variant="default" circle @click=${(e: Event) => this.deleteRow(e)}>
-                            <div class="sl-icon-div"><sl-icon src=${minus}></sl-icon></div>
+                        <sl-button title=${this.msg("Delete row")} size="small" class="minus-button" variant="default" circle @click=${(e: Event) => this.deleteRow(e)}>
+                            <div class="sl-icon-div"><sl-icon src=${minus} label=${this.msg("Delete row")}></sl-icon></div>
                         </sl-button>
                 </div>
             </td>`
@@ -260,10 +260,10 @@ export class WebwriterWordPuzzleClueboxInput extends LitElementWw {
                     <th style=${wordColumnWidthStyle}>${this.msg("Words")}</th>
                     <th class="button-header-cell"> 
                     <div class="plus-button-div">
-                        <sl-button title="${this.msg("Add rows")}" tabindex="-1" size="small"
+                        <sl-button title="${this.msg("Add rows")}" size="small"
                         class="plus-button" variant="default" 
                         circle @click=${() => this.addRow()}>
-                        <div class="sl-icon-div"><sl-icon src=${plus}></sl-icon></div>
+                        <div class="sl-icon-div"><sl-icon src=${plus} label=${this.msg("Add rows")}></sl-icon></div>
                     </sl-button>
                     </div>
                     </th>

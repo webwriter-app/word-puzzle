@@ -4,15 +4,29 @@
 import { css } from "lit";
 
 export const crossword_styles = css`
-    :host  {
-        overflow-x: auto;
+    :host {
+        display: block;
+        box-sizing: border-box;
+        min-width: 300px;
+        max-width: 2100px;
+        min-height: 10rem;
+        container-type: inline-size;
+        color: var(--ww-text-color, inherit);
+        font-family: var(--ww-font-family, inherit);
+        /* Soft tint of the theme's first accent; unset (so the old colors apply) without a theme. */
+        --accent-soft: color-mix(in srgb, var(--ww-theme-accent-1) 30%, Canvas);
+    }
+    sl-button::part(base) {
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+    }
+    sl-button:focus-visible::part(base) {
+        outline: 2px solid var(--ww-theme-accent-1, var(--sl-color-primary-600));
+        outline-offset: 2px;
     }
     div.wrapper {
-        aspect-ratio: 16 / 9;
         display: flex;
         justify-content: center;
-        margin: 20px;
-        gap: 0px;
+        margin: clamp(8px, 3cqi, 20px);
         flex-wrap: wrap;
         gap: 5px;
     }
@@ -33,7 +47,9 @@ export const crossword_styles = css`
         width: 100%;
     }
     .button-div .crossword-button {
-        width: 50%;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: 50%;
         display: flex;
     }
     sl-button[variant="success"]::part(base) {
@@ -44,6 +60,36 @@ export const crossword_styles = css`
     }
     #answer-check div{
         margin-top: 0;
+    }
+    @container (max-width: 26rem) {
+        div.button-div {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .button-div .crossword-button {
+            flex: 0 0 auto;
+            max-width: none;
+        }
+    }
+    @media print {
+        :host {
+            min-width: 0;
+            max-width: none;
+        }
+        div.wrapper {
+            margin: 0;
+        }
+        div.button-div,
+        webwriter-word-puzzle-cluebox-input {
+            display: none;
+        }
+        div.cw-grid-wrapper,
+        webwriter-word-puzzle-cluebox {
+            break-inside: avoid;
+        }
+        div.cw-cluebox-wrapper {
+            flex-basis: 100%;
+        }
     }
     webwriter-word-puzzle-cluebox {
         display:flex;
@@ -74,6 +120,10 @@ export const crossword_styles = css`
  * Styles for the word-puzzle cluebox.
  */
 export const cluebox_styles = css`
+    :host {
+        color: var(--ww-text-color, inherit);
+        font-family: var(--ww-font-family, inherit);
+    }
     table {
         max-width: 300px;
         border-radius: 0.25rem;
@@ -93,13 +143,13 @@ export const cluebox_styles = css`
         /*Temporary width and height*/
         /*min-width: 200px;*/
         width: 48%;
-        min-width: 300px;
+        min-width: min(300px, calc(100cqi - 2rem));
         min-height: 200px;
         height: fit-content;
         border: 2px solid var(--sl-color-gray-300);
-        font-family: var(--sl-font-sans);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
         font-size: smaller;
-        color: var(--sl-color-gray-700);
+        color: var(--ww-text-color, var(--sl-color-gray-700));
         background-color: var(--sl-color-gray-100);
         table-layout: fixed;
         margin-left: auto;
@@ -118,7 +168,7 @@ export const cluebox_styles = css`
         font-weight: bold;
         margin: 10px;
         padding: 10 var(--header-spacing);
-        color: var(--sl-color-gray-700);
+        color: var(--ww-text-color, var(--sl-color-gray-700));
     }
     sl-drawer::part(header-actions){
         padding: 10 var(--header-spacing);
@@ -150,8 +200,8 @@ export const cluebox_styles = css`
         font-size: 10px;
     }
     table.clueboxInput > thead {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-700);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-700));
         background-color: var(--sl-color-gray-300);
     }
     table.clueboxInput > thead > tr {
@@ -159,8 +209,8 @@ export const cluebox_styles = css`
         margin: 0px;
     }
     table.clueboxInput th {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-700);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-700));
         border-collapse: collapse;
         background-color: var(--sl-color-gray-300);
         padding: 10px;
@@ -169,14 +219,14 @@ export const cluebox_styles = css`
         border: 3px solid var(--sl-color-gray-200);
     }
     table.clueboxInput > tbody > tr {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-900);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-900));
         word-wrap: break-word;
         overflow-wrap: anywhere;
     }
     table.clueboxInput > tbody > tr > td {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-900);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-900));
         border-right: 1px solid var(--sl-color-gray-200);
         border-left: 1px solid var(--sl-color-gray-200);
         border-bottom: 2px solid var(--sl-color-gray-200);
@@ -248,12 +298,12 @@ export const cluebox_styles = css`
         transform: scale(0.80)
     }
     table.cluebox {
-        min-width: 300px;
+        min-width: min(300px, calc(100cqi - 2rem));
         height: fit-content;
         border: 2px solid var(--sl-color-gray-300);
-        font-family: var(--sl-font-sans);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
         font-size: smaller;
-        color: var(--sl-color-gray-700);
+        color: var(--ww-text-color, var(--sl-color-gray-700));
         background-color: var(--sl-color-gray-100);
         table-layout: fixed;
         text-align: center;
@@ -265,8 +315,8 @@ export const cluebox_styles = css`
         width: 50%;
     }
     table.cluebox > thead {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-700);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-700));
         background-color: var(--sl-color-gray-300);
     }
     table.cluebox > thead > tr {
@@ -274,8 +324,8 @@ export const cluebox_styles = css`
         margin: 0px;
     }
     table.cluebox th {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-700);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-700));
         border-collapse: collapse;
         background-color: var(--sl-color-gray-300);
         padding: 10px;
@@ -284,15 +334,15 @@ export const cluebox_styles = css`
         border: 3px solid var(--sl-color-gray-200);
     }
     table.cluebox > tbody > tr {
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-900);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-900));
         word-wrap: break-word;
         overflow-wrap: anywhere;
     }
     table.cluebox td {
         text-align: left;
-        font-family: var(--sl-font-sans);
-        color: var(--sl-color-gray-900);
+        font-family: var(--ww-font-family, var(--sl-font-sans));
+        color: var(--ww-text-color, var(--sl-color-gray-900));
         border-right: 1px solid var(--sl-color-gray-200);
         border-left: 1px solid var(--sl-color-gray-200);
         border-bottom: 2px solid var(--sl-color-gray-200);
@@ -304,8 +354,35 @@ export const cluebox_styles = css`
         width: 50%;
     }
     table.cluebox td[current] {
-        background-color: #E7F1CD;
+        background-color: var(--accent-soft, #E7F1CD);
         font-weight: bold;
+    }
+    @media print {
+        table.cluebox {
+            break-inside: avoid;
+            min-width: 0;
+            max-width: none;
+            width: 48%;
+        }
+        table.cluebox th,
+        table.cluebox td {
+            border: 1px solid var(--sl-color-gray-400);
+        }
+        table.cluebox td {
+            padding: 4px 10px;
+            height: auto;
+        }
+        /* The words of a find-the-words puzzle run in columns, so that they share the page with the grid. */
+        table.wordsbox {
+            width: 100%;
+        }
+        table.wordsbox tbody {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+        }
+        table.wordsbox td {
+            width: auto;
+        }
     }
 `
 
@@ -314,8 +391,12 @@ export const cluebox_styles = css`
  * clue-label based off of crossword-js
  */
 export const grid_styles = css`
-        :host  {
+        :host {
+            display: block;
+            max-width: 100%;
             overflow: auto;
+            color: var(--ww-text-color, inherit);
+            font-family: var(--ww-font-family, inherit);
         }
         div.grid {
             position: relative;
@@ -330,6 +411,12 @@ export const grid_styles = css`
             height: max-content;
             border: 2px solid var(--sl-color-gray-400);
             border-radius: 0.25rem;
+            /* Cell size follows the container so that wide grids shrink instead of overflowing. */
+            --cell: clamp(18px, calc((100cqi - 24px) / var(--n, 9)), 42px);
+        }
+        div.grid[data-type="find-the-words"] {
+            touch-action: none;
+            user-select: none;
         }
         div.cell {
             display: grid;
@@ -338,15 +425,18 @@ export const grid_styles = css`
             aspect-ratio: 1;
             height: 100%;
             width: 100%;
-            min-width: 40px;
-            min-height: 40px;
+            box-sizing: border-box;
+            width: var(--cell, 42px);
+            height: var(--cell, 42px);
+            min-width: 0;
+            min-height: 0;
+            max-width: none;
+            max-height: none;
             border: 1px solid var(--sl-color-gray-400);
-            max-width: 40px;
-            max-height: 40px;
             position: center;
             align-items: center;
             text-align: center;
-            font-size: 18pt;
+            font-size: calc(var(--cell, 42px) * 0.571);
             caret-color: transparent;
         }
         div.cell[black] {
@@ -359,7 +449,23 @@ export const grid_styles = css`
             background-color: #ffcccc;
         }
         div.cell:focus {
-            background-color: lightblue;
+            background-color: var(--accent-soft, lightblue);
+        }
+        div.cell:focus-visible {
+            outline: 2px solid var(--ww-theme-accent-1, var(--sl-color-primary-600));
+            outline-offset: -2px;
+        }
+        div.cell[anchor] {
+            background-color: var(--accent-soft, lightblue);
+            box-shadow: inset 0 0 0 2px var(--ww-theme-accent-1, var(--sl-color-primary-600));
+        }
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
         }
         .cell-letter {
             grid-column-start: 1;
@@ -369,7 +475,7 @@ export const grid_styles = css`
             height: 100%;
             width: 100%;
             position: center;
-            font-size: 18pt;
+            font-size: calc(var(--cell, 42px) * 0.571);
             user-select: none;
         }
         .clue-label {
@@ -379,8 +485,24 @@ export const grid_styles = css`
             grid-row-end: span row1-end;
             position: absolute;
             margin: 1px 0px 0px 1px;
-            font-size: 8pt;
+            font-size: max(7px, calc(var(--cell, 42px) * 0.254));
             place-self: start;
             pointer-events: none;
+        }
+        @media print {
+            :host {
+                overflow: visible;
+            }
+            div.grid {
+                --cell: clamp(18px, calc((100cqi - 24px) / var(--n, 9)), 34px);
+                break-inside: avoid;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            div.cell:focus,
+            div.cell[anchor] {
+                background-color: transparent;
+                box-shadow: none;
+            }
         }
 `
