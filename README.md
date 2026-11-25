@@ -1,7 +1,7 @@
 # Word Puzzle (`@webwriter/word-puzzle@2.0.0`)
 [License: MIT](LICENSE) | Version: 2.0.0
 
-Crossword and word search puzzle creation tool featuring customizable grids, clues, and interactive solving.
+Create crossword and word-search puzzles, then solve them.
 
 ## Snippets
 [Snippets](https://webwriter.app/docs/snippets/snippets/) are examples and templates using the package's widgets.
@@ -121,4 +121,4 @@ npm install @webwriter/word-puzzle
 
 
 ---
-*Generated with @webwriter/build@1.14.0*
+*Generated with @webwriter/build@1.15.0*

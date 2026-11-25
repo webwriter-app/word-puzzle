@@ -430,9 +430,7 @@
           },
           "summary": "Crossword and find-the-words puzzles with a word and clue editor.",
           "tagName": "webwriter-word-puzzle",
-          "customElement": true,
-          "modulePath": "src/widgets/webwriter-word-puzzle.ts",
-          "definitionPath": "src/widgets/webwriter-word-puzzle.ts"
+          "customElement": true
         }
       ],
       "exports": [
