@@ -1,5 +1,5 @@
-# Word Puzzle (`@webwriter/word-puzzle@2.0.0`)
-[License: MIT](LICENSE) | Version: 2.0.0
+# Word Puzzle (`@webwriter/word-puzzle@2.0.1`)
+[License: MIT](LICENSE) | Version: 2.0.1
 
 Create crossword and word-search puzzles, then solve them.
 
