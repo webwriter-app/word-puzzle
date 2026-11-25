@@ -46,9 +46,11 @@
 <target>အဖြေများ ပြပါ</target></trans-unit>
 <trans-unit id="s2ef6214897d50bc5">
   <source><x id="0" equiv-text="${shown}"/>, row <x id="1" equiv-text="${place.row}"/>, column <x id="2" equiv-text="${place.column}"/></source>
+<target><x id="0" equiv-text="${shown}"/>, အတန်း <x id="1" equiv-text="${place.row}"/>, ကော်လံ <x id="2" equiv-text="${place.column}"/></target>
 </trans-unit>
 <trans-unit id="sdc1c97aeea28f335">
   <source>Row <x id="0" equiv-text="${place.row}"/>, column <x id="1" equiv-text="${place.column}"/></source>
+<target>အတန်း <x id="0" equiv-text="${place.row}"/>, ကော်လံ <x id="1" equiv-text="${place.column}"/></target>
 </trans-unit>
 <trans-unit id="s32c49edb048874a7">
   <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source>
@@ -58,6 +60,7 @@
 </trans-unit>
 <trans-unit id="s9a36ae5f4bf613c9">
   <source>Found: <x id="0" equiv-text="${word.word}"/></source>
+<target>ဝင်လာသော: <x id="0" equiv-text="${word.word}"/></target>
 </trans-unit>
 <trans-unit id="sa7a3ac4919cb2c6d">
   <source>Place the words on a new grid? The current layout is replaced.</source>

@@ -61,6 +61,18 @@
   <source>The file is not valid JSON.</source>
 <target>檔案不是有效的 JSON。</target>
 </trans-unit>
+<trans-unit id="s2ef6214897d50bc5">
+  <source><x id="0" equiv-text="${shown}"/>, row <x id="1" equiv-text="${place.row}"/>, column <x id="2" equiv-text="${place.column}"/></source>
+<target><x id="0" equiv-text="${shown}"/>，第 <x id="1" equiv-text="${place.row}"/> 行，第 <x id="2" equiv-text="${place.column}"/> 欄</target>
+</trans-unit>
+<trans-unit id="sdc1c97aeea28f335">
+  <source>Row <x id="0" equiv-text="${place.row}"/>, column <x id="1" equiv-text="${place.column}"/></source>
+<target>第 <x id="0" equiv-text="${place.row}"/> 行，第 <x id="1" equiv-text="${place.column}"/> 欄</target>
+</trans-unit>
+<trans-unit id="s9a36ae5f4bf613c9">
+  <source>Found: <x id="0" equiv-text="${word.word}"/></source>
+<target>已找到：<x id="0" equiv-text="${word.word}"/></target>
+</trans-unit>
 </body>
   </file>
 </xliff>
