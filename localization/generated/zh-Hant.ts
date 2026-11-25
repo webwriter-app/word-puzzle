@@ -1,0 +1,38 @@
+
+    // Do not modify this file by hand!
+    // Re-generate this file by running lit-localize
+
+
+    import {str} from '@lit/localize';
+
+    /* eslint-disable no-irregular-whitespace */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+
+    export const templates = {
+      's00735d668cff3a0f': `拼圖類型`,
+'s008c5a6f1b7a2726': `檔案未描述文字謎題。`,
+'s032c13736048bf35': `下降`,
+'s0f350bc4e538e3ea': `詞彙`,
+'s11d431ec3d1ca364': `編輯字詞`,
+'s24a1e8050d72f287': `填字遊戲`,
+'s255c598befd01e5a': `產生謎題`,
+'s289958fb66c0ec21': `線索`,
+'s29df917c1b19b804': `橫向`,
+'s2ef6214897d50bc5': str`${0}，第 ${1} 行，第 ${2} 欄`,
+'s32c49edb048874a7': `使用方向鍵在字母間移動。按 Enter 或空白鍵標記單字的首字母；移動後再標記末字母。按 Escape 取消。`,
+'s4b77b5180fde5e24': `檢查答案`,
+'s4ff14b1526907732': `刪除行`,
+'s53bd9518f8790649': `清除答案`,
+'s853d5a0283b26daf': `顯示答案`,
+'s96d87a3f67a79bfd': `要清除所有字母和已找到的單字嗎？`,
+'s99ab01c90f7f6dd0': `尋找字詞`,
+'s99ec23e52b13345b': `檔案中沒有單字。`,
+'s9a36ae5f4bf613c9': str`已找到：${0}`,
+'sa7a3ac4919cb2c6d': `要將單字放在新網格中嗎？目前的版面配置將被取代。`,
+'sb8c878135ee917b1': `檔案不是有效的 JSON。`,
+'sca3966636984e031': `新增行數`,
+'scc1c5a630594c265': `輸入字母填入儲存格。方向鍵移動，空白鍵切換方向，Tab 跳至下一個提示，Escape 離開網格。`,
+'sdc1c97aeea28f335': str`第 ${0} 行，第 ${1} 欄`,
+'sf0b51a82d3e78f19': `檔案中的謎題版面配置無效。`,
+'sfb25b0bc01e67b0d': `謎題`,
+    };

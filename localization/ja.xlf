@@ -1,4 +1,5 @@
-<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" version="1.2">
   <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="ja">
     <body>
       <trans-unit id="s29df917c1b19b804">
@@ -53,6 +54,49 @@
         <source>Show answers</source>
         <target>回答を表示する</target>
       </trans-unit>
-    </body>
+    <trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>パズル</target></trans-unit>
+<trans-unit id="s2ef6214897d50bc5">
+  <source><x id="0" equiv-text="${shown}"/>, row <x id="1" equiv-text="${place.row}"/>, column <x id="2" equiv-text="${place.column}"/></source>
+<target><x id="0" equiv-text="${shown}"/>, 行 <x id="1" equiv-text="${place.row}"/>, 列 <x id="2" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="sdc1c97aeea28f335">
+  <source>Row <x id="0" equiv-text="${place.row}"/>, column <x id="1" equiv-text="${place.column}"/></source>
+<target>行 <x id="0" equiv-text="${place.row}"/>, 列 <x id="1" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="s32c49edb048874a7">
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>矢印キーで文字の間を移動します。Enter または Space で単語の最初の文字をマークし、移動後に最後の文字をマークします。Escape でキャンセルします。</target>
+</trans-unit>
+<trans-unit id="scc1c5a630594c265">
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>文字を入力してセルを埋めます。矢印キーで移動し、Space で方向を切り替え、Tab で次の手掛かりへ移動し、Escape でグリッドを終了します。</target>
+</trans-unit>
+<trans-unit id="s9a36ae5f4bf613c9">
+  <source>Found: <x id="0" equiv-text="${word.word}"/></source>
+<target>発見: <x id="0" equiv-text="${word.word}"/></target>
+</trans-unit>
+<trans-unit id="sa7a3ac4919cb2c6d">
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>新しいグリッドに単語を配置しますか？現在のレイアウトは置き換えられます。</target>
+</trans-unit>
+<trans-unit id="s53bd9518f8790649">
+  <source>Clear answers</source><target>回答を消去</target>
+</trans-unit>
+<trans-unit id="s96d87a3f67a79bfd">
+  <source>Clear all letters and found words?</source><target>すべての文字と見つかった単語を消去しますか？</target>
+</trans-unit>
+<trans-unit id="s99ec23e52b13345b">
+  <source>The file contains no words.</source><target>ファイルに単語がありません。</target>
+</trans-unit>
+<trans-unit id="sb8c878135ee917b1">
+  <source>The file is not valid JSON.</source>
+<target>ファイルは有効な JSON ではありません。</target>
+</trans-unit>
+<trans-unit id="s008c5a6f1b7a2726">
+  <source>The file does not describe a word puzzle.</source><target>ファイルはワードパズルを記述していません。</target>
+</trans-unit>
+<trans-unit id="sf0b51a82d3e78f19">
+  <source>The layout of the puzzle in the file is not valid.</source><target>ファイル内のパズルレイアウトが無効です。</target>
+</trans-unit>
+</body>
   </file>
 </xliff>

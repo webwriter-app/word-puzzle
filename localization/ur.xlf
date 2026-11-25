@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="ur" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s4ff14b1526907732">
+  <source>Delete row</source>
+<target>قطار حذف کریں</target></trans-unit>
+<trans-unit id="sca3966636984e031">
+  <source>Add rows</source>
+<target>قطاریں شامل کریں</target></trans-unit>
+<trans-unit id="s289958fb66c0ec21">
+  <source>Clues</source>
+<target>اشارے</target></trans-unit>
+<trans-unit id="s255c598befd01e5a">
+  <source>Generate puzzle</source>
+<target>پہیلی بنائیں</target></trans-unit>
+<trans-unit id="s0f350bc4e538e3ea">
+  <source>Words</source>
+<target>الفاظ</target></trans-unit>
+<trans-unit id="s29df917c1b19b804">
+  <source>Across</source>
+<target>افقی</target></trans-unit>
+<trans-unit id="s032c13736048bf35">
+  <source>Down</source>
+<target>عمودی</target></trans-unit>
+<trans-unit id="s00735d668cff3a0f">
+  <source>Puzzle Type</source>
+<target>پہیلی کی قسم</target></trans-unit>
+<trans-unit id="s24a1e8050d72f287">
+  <source>Crossword</source>
+<target>لفظی معمہ</target></trans-unit>
+<trans-unit id="s99ab01c90f7f6dd0">
+  <source>Find the words</source>
+<target>الفاظ تلاش کریں</target></trans-unit>
+<trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>پہیلی</target></trans-unit>
+<trans-unit id="s11d431ec3d1ca364">
+  <source>Edit words</source>
+<target>الفاظ میں ترمیم کریں</target></trans-unit>
+<trans-unit id="s4b77b5180fde5e24">
+  <source>Check answers</source>
+<target>جوابات جانچیں</target></trans-unit>
+<trans-unit id="s853d5a0283b26daf">
+  <source>Show answers</source>
+<target>جوابات دکھائیں</target></trans-unit>
+<trans-unit id="s2ef6214897d50bc5">
+  <source><x id="0" equiv-text="${shown}"/>, row <x id="1" equiv-text="${place.row}"/>, column <x id="2" equiv-text="${place.column}"/></source>
+<target><x id="0" equiv-text="${shown}"/>, قطار <x id="1" equiv-text="${place.row}"/>, کالم <x id="2" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="sdc1c97aeea28f335">
+  <source>Row <x id="0" equiv-text="${place.row}"/>, column <x id="1" equiv-text="${place.column}"/></source>
+<target>قطار <x id="0" equiv-text="${place.row}"/>, کالم <x id="1" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="s32c49edb048874a7">
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>حروف کے درمیان جانے کے لیے تیر والی کلیدیں استعمال کریں۔ Enter یا Space لفظ کا پہلا حرف اور آگے بڑھنے کے بعد آخری حرف نشان زد کرتا ہے۔ Escape منسوخ کرتا ہے۔</target>
+</trans-unit>
+<trans-unit id="scc1c5a630594c265">
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>خانے میں حرف بھرنے کے لیے ٹائپ کریں۔ تیر والی کلیدیں حرکت کرتی ہیں، Space سمت بدلتا ہے، Tab اگلی سراغ پر جاتا ہے اور Escape گرڈ سے باہر نکلتا ہے۔</target>
+</trans-unit>
+<trans-unit id="s9a36ae5f4bf613c9">
+  <source>Found: <x id="0" equiv-text="${word.word}"/></source>
+<target>دریافت: <x id="0" equiv-text="${word.word}"/></target>
+</trans-unit>
+<trans-unit id="sa7a3ac4919cb2c6d">
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>الفاظ نئے گرڈ میں رکھیں؟ موجودہ لے آؤٹ بدل دیا جائے گا۔</target>
+</trans-unit>
+<trans-unit id="s53bd9518f8790649">
+  <source>Clear answers</source><target>جوابات صاف کریں</target>
+</trans-unit>
+<trans-unit id="s96d87a3f67a79bfd">
+  <source>Clear all letters and found words?</source><target>تمام حروف اور ملے ہوئے الفاظ صاف کریں؟</target>
+</trans-unit>
+<trans-unit id="s99ec23e52b13345b">
+  <source>The file contains no words.</source><target>فائل میں کوئی الفاظ نہیں۔</target>
+</trans-unit>
+<trans-unit id="sb8c878135ee917b1">
+  <source>The file is not valid JSON.</source>
+<target>فائل میں درست JSON نہیں ہے۔</target>
+</trans-unit>
+<trans-unit id="s008c5a6f1b7a2726">
+  <source>The file does not describe a word puzzle.</source><target>فائل لفظی پہیلی کی وضاحت نہیں کرتی۔</target>
+</trans-unit>
+<trans-unit id="sf0b51a82d3e78f19">
+  <source>The layout of the puzzle in the file is not valid.</source><target>فائل میں پہیلی کا لے آؤٹ درست نہیں۔</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

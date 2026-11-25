@@ -1,0 +1,7 @@
+{
+  "type": "crossword",
+  "wordsClues": [
+    {"word": "Cat", "clueText": "Says meow", "x": 0, "y": 0, "across": true, "clueNumber": 1},
+    {"word": "Car", "clueText": "Has four wheels", "x": 0, "y": 0, "across": false, "clueNumber": 1}
+  ]
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<file target-language="cy" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s4ff14b1526907732">
+  <source>Delete row</source>
+<target>Dileu rhes</target></trans-unit>
+<trans-unit id="sca3966636984e031">
+  <source>Add rows</source>
+<target>Ychwanegu rhesi</target></trans-unit>
+<trans-unit id="s289958fb66c0ec21">
+  <source>Clues</source>
+<target>Cliwiau</target></trans-unit>
+<trans-unit id="s255c598befd01e5a">
+  <source>Generate puzzle</source>
+<target>Creu pos</target></trans-unit>
+<trans-unit id="s0f350bc4e538e3ea">
+  <source>Words</source>
+<target>Geiriau</target></trans-unit>
+<trans-unit id="s29df917c1b19b804">
+  <source>Across</source>
+<target>Ar draws</target></trans-unit>
+<trans-unit id="s032c13736048bf35">
+  <source>Down</source>
+<target>I lawr</target></trans-unit>
+<trans-unit id="s00735d668cff3a0f">
+  <source>Puzzle Type</source>
+<target>Math o bos</target></trans-unit>
+<trans-unit id="s24a1e8050d72f287">
+  <source>Crossword</source>
+<target>Croesair</target></trans-unit>
+<trans-unit id="s99ab01c90f7f6dd0">
+  <source>Find the words</source>
+<target>Dod o hyd i’r geiriau</target></trans-unit>
+<trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>Pos</target></trans-unit>
+<trans-unit id="s11d431ec3d1ca364">
+  <source>Edit words</source>
+<target>Golygu geiriau</target></trans-unit>
+<trans-unit id="s4b77b5180fde5e24">
+  <source>Check answers</source>
+<target>Gwirio atebion</target></trans-unit>
+<trans-unit id="s853d5a0283b26daf">
+  <source>Show answers</source>
+<target>Dangos atebion</target></trans-unit>
+<trans-unit id="s2ef6214897d50bc5">
+  <source><x id="0" equiv-text="${shown}"/>, row <x id="1" equiv-text="${place.row}"/>, column <x id="2" equiv-text="${place.column}"/></source>
+<target><x id="0" equiv-text="${shown}"/>, rhes <x id="1" equiv-text="${place.row}"/>, colofn <x id="2" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="sdc1c97aeea28f335">
+  <source>Row <x id="0" equiv-text="${place.row}"/>, column <x id="1" equiv-text="${place.column}"/></source>
+<target>rhes <x id="0" equiv-text="${place.row}"/>, colofn <x id="1" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="s32c49edb048874a7">
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>Defnyddiwch y bysellau saeth i symud rhwng llythrennau. Mae Enter neu Space yn marcio llythyren gyntaf gair ac, ar ôl symud, ei llythyren olaf. Mae Escape yn canslo.</target>
+</trans-unit>
+<trans-unit id="scc1c5a630594c265">
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>Teipiwch lythyren i lenwi’r gell. Mae’r saethau’n symud, mae Space yn newid cyfeiriad, mae Tab yn neidio at y cliw nesaf ac mae Escape yn gadael y grid.</target>
+</trans-unit>
+<trans-unit id="s9a36ae5f4bf613c9">
+  <source>Found: <x id="0" equiv-text="${word.word}"/></source>
+<target>Wedi’i ganfod: <x id="0" equiv-text="${word.word}"/></target>
+</trans-unit>
+<trans-unit id="sa7a3ac4919cb2c6d">
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>Rhoi’r geiriau ar grid newydd? Bydd y cynllun presennol yn cael ei ddisodli.</target>
+</trans-unit>
+<trans-unit id="s53bd9518f8790649">
+  <source>Clear answers</source><target>Clirio atebion</target>
+</trans-unit>
+<trans-unit id="s96d87a3f67a79bfd">
+  <source>Clear all letters and found words?</source><target>Clirio’r holl lythrennau a’r geiriau a ganfuwyd?</target>
+</trans-unit>
+<trans-unit id="s99ec23e52b13345b">
+  <source>The file contains no words.</source><target>Nid yw’r ffeil yn cynnwys geiriau.</target>
+</trans-unit>
+<trans-unit id="sb8c878135ee917b1">
+  <source>The file is not valid JSON.</source>
+<target>Nid yw’r ffeil yn JSON dilys.</target>
+</trans-unit>
+<trans-unit id="s008c5a6f1b7a2726">
+  <source>The file does not describe a word puzzle.</source><target>Nid yw’r ffeil yn disgrifio pos geiriau.</target>
+</trans-unit>
+<trans-unit id="sf0b51a82d3e78f19">
+  <source>The layout of the puzzle in the file is not valid.</source><target>Nid yw cynllun y pos yn y ffeil yn ddilys.</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

@@ -1,4 +1,5 @@
-<xliff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd" version="1.2">
   <file original="lit-localize-inputs" datatype="plaintext" source-language="en" target-language="ko">
     <body>
       <trans-unit id="s29df917c1b19b804">
@@ -53,6 +54,49 @@
         <source>Show answers</source>
         <target>답변 표시</target>
       </trans-unit>
-    </body>
+    <trans-unit id="sfb25b0bc01e67b0d">
+  <source>Puzzle</source>
+<target>퍼즐</target></trans-unit>
+<trans-unit id="s2ef6214897d50bc5">
+  <source><x id="0" equiv-text="${shown}"/>, row <x id="1" equiv-text="${place.row}"/>, column <x id="2" equiv-text="${place.column}"/></source>
+<target><x id="0" equiv-text="${shown}"/>, 행 <x id="1" equiv-text="${place.row}"/>, 열 <x id="2" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="sdc1c97aeea28f335">
+  <source>Row <x id="0" equiv-text="${place.row}"/>, column <x id="1" equiv-text="${place.column}"/></source>
+<target>행 <x id="0" equiv-text="${place.row}"/>, 열 <x id="1" equiv-text="${place.column}"/></target>
+</trans-unit>
+<trans-unit id="s32c49edb048874a7">
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>화살표 키로 글자 사이를 이동합니다. Enter 또는 Space를 누르면 단어의 첫 글자를 표시하고, 이동한 뒤 마지막 글자를 표시합니다. Escape를 누르면 취소됩니다.</target>
+</trans-unit>
+<trans-unit id="scc1c5a630594c265">
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>글자를 입력해 셀을 채우세요. 화살표 키로 이동하고 Space로 방향을 바꾸며 Tab으로 다음 단서로 이동하고 Escape로 격자를 나갑니다.</target>
+</trans-unit>
+<trans-unit id="s9a36ae5f4bf613c9">
+  <source>Found: <x id="0" equiv-text="${word.word}"/></source>
+<target>발견: <x id="0" equiv-text="${word.word}"/></target>
+</trans-unit>
+<trans-unit id="sa7a3ac4919cb2c6d">
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>새 격자에 단어를 배치할까요? 현재 레이아웃이 대체됩니다.</target>
+</trans-unit>
+<trans-unit id="s53bd9518f8790649">
+  <source>Clear answers</source><target>답 지우기</target>
+</trans-unit>
+<trans-unit id="s96d87a3f67a79bfd">
+  <source>Clear all letters and found words?</source><target>모든 글자와 찾은 단어를 지울까요?</target>
+</trans-unit>
+<trans-unit id="s99ec23e52b13345b">
+  <source>The file contains no words.</source><target>파일에 단어가 없습니다.</target>
+</trans-unit>
+<trans-unit id="sb8c878135ee917b1">
+  <source>The file is not valid JSON.</source>
+<target>파일이 유효한 JSON 형식이 아닙니다.</target>
+</trans-unit>
+<trans-unit id="s008c5a6f1b7a2726">
+  <source>The file does not describe a word puzzle.</source><target>파일에 단어 퍼즐 설명이 없습니다.</target>
+</trans-unit>
+<trans-unit id="sf0b51a82d3e78f19">
+  <source>The layout of the puzzle in the file is not valid.</source><target>파일의 퍼즐 레이아웃이 올바르지 않습니다.</target>
+</trans-unit>
+</body>
   </file>
 </xliff>

@@ -1,9 +1,1 @@
-{
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "sourceMap": true,
-    "target": "es2022",
-    "moduleResolution": "Bundler",
-    "module": "ES2022"
-  }
-}
+{"extends": "@webwriter/build/tsconfig.json", "include": ["src", "tests"]}
