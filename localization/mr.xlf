@@ -53,36 +53,36 @@
 <target>ओळ <x id="0" equiv-text="${place.row}"/>, स्तंभ <x id="1" equiv-text="${place.column}"/></target>
 </trans-unit>
 <trans-unit id="s32c49edb048874a7">
-  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source>
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>अक्षरांमध्ये जाण्यासाठी बाणांच्या कळा वापरा. Enter किंवा Space शब्दाचे पहिले अक्षर आणि पुढे गेल्यावर शेवटचे अक्षर चिन्हांकित करते. Escape रद्द करते.</target>
 </trans-unit>
 <trans-unit id="scc1c5a630594c265">
-  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source>
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>चौकट भरण्यासाठी अक्षर टाइप करा. बाणांच्या कळा हलवतात, Space दिशा बदलते, Tab पुढील सूचनेकडे जाते आणि Escape जाळी सोडते.</target>
 </trans-unit>
 <trans-unit id="s9a36ae5f4bf613c9">
   <source>Found: <x id="0" equiv-text="${word.word}"/></source>
 <target>सापडले: <x id="0" equiv-text="${word.word}"/></target>
 </trans-unit>
 <trans-unit id="sa7a3ac4919cb2c6d">
-  <source>Place the words on a new grid? The current layout is replaced.</source>
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>शब्द नवीन जाळीवर ठेवायचे? सध्याची मांडणी बदलली जाईल.</target>
 </trans-unit>
 <trans-unit id="s53bd9518f8790649">
-  <source>Clear answers</source>
+  <source>Clear answers</source><target>उत्तरे पुसा</target>
 </trans-unit>
 <trans-unit id="s96d87a3f67a79bfd">
-  <source>Clear all letters and found words?</source>
+  <source>Clear all letters and found words?</source><target>सर्व अक्षरे आणि सापडलेले शब्द पुसायचे?</target>
 </trans-unit>
 <trans-unit id="s99ec23e52b13345b">
-  <source>The file contains no words.</source>
+  <source>The file contains no words.</source><target>फाइलमध्ये शब्द नाहीत.</target>
 </trans-unit>
 <trans-unit id="sb8c878135ee917b1">
   <source>The file is not valid JSON.</source>
 <target>फाइलमध्ये वैध JSON नाही.</target>
 </trans-unit>
 <trans-unit id="s008c5a6f1b7a2726">
-  <source>The file does not describe a word puzzle.</source>
+  <source>The file does not describe a word puzzle.</source><target>फाइल शब्दकोडे वर्णन करत नाही.</target>
 </trans-unit>
 <trans-unit id="sf0b51a82d3e78f19">
-  <source>The layout of the puzzle in the file is not valid.</source>
+  <source>The layout of the puzzle in the file is not valid.</source><target>फाइलमधील कोड्याची मांडणी अवैध आहे.</target>
 </trans-unit>
 </body>
 </file>

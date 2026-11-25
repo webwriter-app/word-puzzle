@@ -73,6 +73,38 @@
   <source>Found: <x id="0" equiv-text="${word.word}"/></source>
 <target>已找到：<x id="0" equiv-text="${word.word}"/></target>
 </trans-unit>
+<trans-unit id="s32c49edb048874a7">
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source>
+  <target>使用方向鍵在字母間移動。按 Enter 或空白鍵標記單字的首字母；移動後再標記末字母。按 Escape 取消。</target>
+</trans-unit>
+<trans-unit id="scc1c5a630594c265">
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source>
+  <target>輸入字母填入儲存格。方向鍵移動，空白鍵切換方向，Tab 跳至下一個提示，Escape 離開網格。</target>
+</trans-unit>
+<trans-unit id="sa7a3ac4919cb2c6d">
+  <source>Place the words on a new grid? The current layout is replaced.</source>
+  <target>要將單字放在新網格中嗎？目前的版面配置將被取代。</target>
+</trans-unit>
+<trans-unit id="s53bd9518f8790649">
+  <source>Clear answers</source>
+  <target>清除答案</target>
+</trans-unit>
+<trans-unit id="s96d87a3f67a79bfd">
+  <source>Clear all letters and found words?</source>
+  <target>要清除所有字母和已找到的單字嗎？</target>
+</trans-unit>
+<trans-unit id="s99ec23e52b13345b">
+  <source>The file contains no words.</source>
+  <target>檔案中沒有單字。</target>
+</trans-unit>
+<trans-unit id="s008c5a6f1b7a2726">
+  <source>The file does not describe a word puzzle.</source>
+  <target>檔案未描述文字謎題。</target>
+</trans-unit>
+<trans-unit id="sf0b51a82d3e78f19">
+  <source>The layout of the puzzle in the file is not valid.</source>
+  <target>檔案中的謎題版面配置無效。</target>
+</trans-unit>
 </body>
   </file>
 </xliff>

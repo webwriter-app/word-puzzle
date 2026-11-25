@@ -53,36 +53,36 @@
 <target>hàng <x id="0" equiv-text="${place.row}"/>, cột <x id="1" equiv-text="${place.column}"/></target>
 </trans-unit>
 <trans-unit id="s32c49edb048874a7">
-  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source>
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>Dùng các phím mũi tên để di chuyển giữa các chữ cái. Enter hoặc Space đánh dấu chữ cái đầu của một từ và, sau khi di chuyển, chữ cái cuối. Escape để hủy.</target>
 </trans-unit>
 <trans-unit id="scc1c5a630594c265">
-  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source>
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>Nhập chữ cái để điền ô. Phím mũi tên để di chuyển, Space đổi hướng, Tab chuyển sang gợi ý tiếp theo và Escape thoát khỏi lưới.</target>
 </trans-unit>
 <trans-unit id="s9a36ae5f4bf613c9">
   <source>Found: <x id="0" equiv-text="${word.word}"/></source>
 <target>Không rõ nguồn: <x id="0" equiv-text="${word.word}"/></target>
 </trans-unit>
 <trans-unit id="sa7a3ac4919cb2c6d">
-  <source>Place the words on a new grid? The current layout is replaced.</source>
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>Đặt từ vào lưới mới? Bố cục hiện tại sẽ được thay thế.</target>
 </trans-unit>
 <trans-unit id="s53bd9518f8790649">
-  <source>Clear answers</source>
+  <source>Clear answers</source><target>Xóa câu trả lời</target>
 </trans-unit>
 <trans-unit id="s96d87a3f67a79bfd">
-  <source>Clear all letters and found words?</source>
+  <source>Clear all letters and found words?</source><target>Xóa tất cả chữ cái và từ đã tìm thấy?</target>
 </trans-unit>
 <trans-unit id="s99ec23e52b13345b">
-  <source>The file contains no words.</source>
+  <source>The file contains no words.</source><target>Tệp không có từ nào.</target>
 </trans-unit>
 <trans-unit id="sb8c878135ee917b1">
   <source>The file is not valid JSON.</source>
 <target>Tệp không chứa JSON hợp lệ.</target>
 </trans-unit>
 <trans-unit id="s008c5a6f1b7a2726">
-  <source>The file does not describe a word puzzle.</source>
+  <source>The file does not describe a word puzzle.</source><target>Tệp không mô tả trò chơi ô chữ.</target>
 </trans-unit>
 <trans-unit id="sf0b51a82d3e78f19">
-  <source>The layout of the puzzle in the file is not valid.</source>
+  <source>The layout of the puzzle in the file is not valid.</source><target>Bố cục câu đố trong tệp không hợp lệ.</target>
 </trans-unit>
 </body>
 </file>

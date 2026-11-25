@@ -53,36 +53,36 @@
 <target>قطار <x id="0" equiv-text="${place.row}"/>, کالم <x id="1" equiv-text="${place.column}"/></target>
 </trans-unit>
 <trans-unit id="s32c49edb048874a7">
-  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source>
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>حروف کے درمیان جانے کے لیے تیر والی کلیدیں استعمال کریں۔ Enter یا Space لفظ کا پہلا حرف اور آگے بڑھنے کے بعد آخری حرف نشان زد کرتا ہے۔ Escape منسوخ کرتا ہے۔</target>
 </trans-unit>
 <trans-unit id="scc1c5a630594c265">
-  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source>
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>خانے میں حرف بھرنے کے لیے ٹائپ کریں۔ تیر والی کلیدیں حرکت کرتی ہیں، Space سمت بدلتا ہے، Tab اگلی سراغ پر جاتا ہے اور Escape گرڈ سے باہر نکلتا ہے۔</target>
 </trans-unit>
 <trans-unit id="s9a36ae5f4bf613c9">
   <source>Found: <x id="0" equiv-text="${word.word}"/></source>
 <target>دریافت: <x id="0" equiv-text="${word.word}"/></target>
 </trans-unit>
 <trans-unit id="sa7a3ac4919cb2c6d">
-  <source>Place the words on a new grid? The current layout is replaced.</source>
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>الفاظ نئے گرڈ میں رکھیں؟ موجودہ لے آؤٹ بدل دیا جائے گا۔</target>
 </trans-unit>
 <trans-unit id="s53bd9518f8790649">
-  <source>Clear answers</source>
+  <source>Clear answers</source><target>جوابات صاف کریں</target>
 </trans-unit>
 <trans-unit id="s96d87a3f67a79bfd">
-  <source>Clear all letters and found words?</source>
+  <source>Clear all letters and found words?</source><target>تمام حروف اور ملے ہوئے الفاظ صاف کریں؟</target>
 </trans-unit>
 <trans-unit id="s99ec23e52b13345b">
-  <source>The file contains no words.</source>
+  <source>The file contains no words.</source><target>فائل میں کوئی الفاظ نہیں۔</target>
 </trans-unit>
 <trans-unit id="sb8c878135ee917b1">
   <source>The file is not valid JSON.</source>
 <target>فائل میں درست JSON نہیں ہے۔</target>
 </trans-unit>
 <trans-unit id="s008c5a6f1b7a2726">
-  <source>The file does not describe a word puzzle.</source>
+  <source>The file does not describe a word puzzle.</source><target>فائل لفظی پہیلی کی وضاحت نہیں کرتی۔</target>
 </trans-unit>
 <trans-unit id="sf0b51a82d3e78f19">
-  <source>The layout of the puzzle in the file is not valid.</source>
+  <source>The layout of the puzzle in the file is not valid.</source><target>فائل میں پہیلی کا لے آؤٹ درست نہیں۔</target>
 </trans-unit>
 </body>
 </file>

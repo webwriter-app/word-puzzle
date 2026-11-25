@@ -53,36 +53,36 @@
 <target>行 <x id="0" equiv-text="${place.row}"/>, 列 <x id="1" equiv-text="${place.column}"/></target>
 </trans-unit>
 <trans-unit id="s32c49edb048874a7">
-  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source>
+  <source>Arrow keys move between letters. Enter or Space marks the first letter of a word and, after moving, its last letter. Escape cancels.</source><target>使用方向键在字母间移动。按 Enter 或空格键标记单词的首字母；移动后再标记末字母。按 Escape 取消。</target>
 </trans-unit>
 <trans-unit id="scc1c5a630594c265">
-  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source>
+  <source>Type a letter to fill the cell. Arrow keys move, Space changes direction, Tab jumps to the next clue, Escape leaves the grid.</source><target>输入字母填充单元格。方向键移动，空格键切换方向，Tab 跳到下一个提示，Escape 离开网格。</target>
 </trans-unit>
 <trans-unit id="s9a36ae5f4bf613c9">
   <source>Found: <x id="0" equiv-text="${word.word}"/></source>
 <target>发现: <x id="0" equiv-text="${word.word}"/></target>
 </trans-unit>
 <trans-unit id="sa7a3ac4919cb2c6d">
-  <source>Place the words on a new grid? The current layout is replaced.</source>
+  <source>Place the words on a new grid? The current layout is replaced.</source><target>要在新网格中放置单词吗？当前布局将被替换。</target>
 </trans-unit>
 <trans-unit id="s53bd9518f8790649">
-  <source>Clear answers</source>
+  <source>Clear answers</source><target>清除答案</target>
 </trans-unit>
 <trans-unit id="s96d87a3f67a79bfd">
-  <source>Clear all letters and found words?</source>
+  <source>Clear all letters and found words?</source><target>要清除所有字母和已找到的单词吗？</target>
 </trans-unit>
 <trans-unit id="s99ec23e52b13345b">
-  <source>The file contains no words.</source>
+  <source>The file contains no words.</source><target>文件中没有单词。</target>
 </trans-unit>
 <trans-unit id="sb8c878135ee917b1">
   <source>The file is not valid JSON.</source>
 <target>文件不是有效的 JSON。</target>
 </trans-unit>
 <trans-unit id="s008c5a6f1b7a2726">
-  <source>The file does not describe a word puzzle.</source>
+  <source>The file does not describe a word puzzle.</source><target>文件不是一个文字谜题。</target>
 </trans-unit>
 <trans-unit id="sf0b51a82d3e78f19">
-  <source>The layout of the puzzle in the file is not valid.</source>
+  <source>The layout of the puzzle in the file is not valid.</source><target>文件中的谜题布局无效。</target>
 </trans-unit>
 </body>
 </file>
