@@ -1,6 +1,6 @@
 {
   "name": "@webwriter/word-puzzle",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Create crossword and word-search puzzles, then solve them.",
   "keywords": [
     "webwriter-widget",
@@ -192,6 +192,7 @@
       "default": "./dist/tests/signals.*"
     },
     "./icon": "./icon.svg",
+    "./preview": "./assets/preview.mp4",
     "./editing-config.json": "./editing-config.json",
     "./custom-elements.json": "./custom-elements.json"
   },
